@@ -296,8 +296,12 @@ static void test_rmode_switch(void)
     set_target(0, 45.0f, -4.0f, amp_for(45.0f));
     double emax = 0.0;
     int ninv = 0, nshort = 0;
-    for (int i = 0; i < 1800; i++) {
-        if (sim.tgt[0].range_m < 12.0f) { sim.tgt[0].vr_mps = 4.0f; }
+    int climb = 0;
+    for (int i = 0; i < 8000; i++) {
+        if (sim.tgt[0].range_m < 12.0f) { climb = 1; }
+        if (climb && (sim.tgt[0].vr_mps < 4.0f)) {           /* 2 m/s^2 pull-up */
+            sim.tgt[0].vr_mps = fminf(4.0f, sim.tgt[0].vr_mps + 2.0f * last_dt);
+        }
         sim.tgt[0].amp_lsb = amp_for(sim.tgt[0].range_m);
         const float vr = sim.tgt[0].vr_mps;
         const alt_output_t *o = step_pair();
