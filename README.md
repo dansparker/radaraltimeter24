@@ -70,7 +70,8 @@ make -C test
 4. Optional, eingebaut am Flugzeug: `zero 0` (Anzeige = 0 auf dem Boden), `save`.
 5. Optional: `bg capture` mit Antenne zum freien Himmel (Fahrwerks-/Leckage-Echos), `bg on`, `save`.
 
-Alle Kommandos: `help`. Siehe [docs/hardware.md](docs/hardware.md).
+Alle Kommandos: `help`. Siehe [docs/hardware.md](docs/hardware.md) und die vollständige
+**[Checkliste zur Inbetriebnahme](docs/inbetriebnahme.md)**.
 
 ## Ausgabe
 
