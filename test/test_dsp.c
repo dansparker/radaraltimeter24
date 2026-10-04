@@ -189,7 +189,11 @@ static void test_fmcw(void)
     /* down mirrored: fR=300, fD=-500 -> up 800, down |300-500|=200 */
     CHECK(rdsp_fmcw_updown(800.0f, 200.0f, RDSP_UD_DOWN_MIRRORED, &fr, &fd) == 0);
     CHECK_NEAR(fr, 300.0, 1e-3); CHECK_NEAR(fd, -500.0, 1e-3);
-    CHECK(rdsp_fmcw_updown(900.0f, 1100.0f, RDSP_UD_UP_MIRRORED, &fr, &fd) != 0);
+    /* (900, 1100) is also explained by fR=100, fD=1000 (mirrored): only the
+     * tracker / Doppler limit can resolve this ambiguity */
+    CHECK(rdsp_fmcw_updown(900.0f, 1100.0f, RDSP_UD_UP_MIRRORED, &fr, &fd) == 0);
+    CHECK_NEAR(fr, 100.0, 1e-3); CHECK_NEAR(fd, 1000.0, 1e-3);
+    CHECK(rdsp_fmcw_updown(900.0f, 1100.0f, RDSP_UD_DOWN_MIRRORED, &fr, &fd) != 0);
 }
 
 static void test_tracker(void)

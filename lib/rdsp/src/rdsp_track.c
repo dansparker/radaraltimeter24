@@ -58,6 +58,7 @@ static void start(rdsp_track_t *t, float z, float vz, rdsp_trk_state_t st)
 
 static void miss(rdsp_track_t *t, float dt)
 {
+    if (t->state == RDSP_TRK_LOST) { return; }   /* nothing to extrapolate */
     t->x = rdsp_track_predict(t, dt);
     if (t->misses < 0xFFFFu) { t->misses++; }
     switch (t->state) {
@@ -72,7 +73,7 @@ static void miss(rdsp_track_t *t, float dt)
     default:
         break;
     }
-    if (t->state == RDSP_TRK_LOST) { t->hits = 0u; t->alt_hits = 0u; }
+    if (t->state == RDSP_TRK_LOST) { t->hits = 0u; t->alt_hits = 0u; t->v = 0.0f; }
 }
 
 int rdsp_track_update(rdsp_track_t *t, int has_z, float z, float vz, float dt)

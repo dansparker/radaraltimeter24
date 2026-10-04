@@ -37,11 +37,13 @@
 #define ALT_CFAR_TRAIN     12u
 #define ALT_CFAR_GUARD     3u
 #define ALT_CFAR_PFA       1.0e-4f
-#define ALT_SNR_MIN_DB     12.0f     /**< additional absolute SNR requirement */
+#define ALT_SNR_MIN_DB     12.0f     /**< SNR of the averaged spectrum */
+#define ALT_SNR_CUR_DB     6.0f      /**< SNR the current frame must confirm */
 #define ALT_MIN_BIN        2u        /**< lowest analysed bin (DC / leakage) */
 #define ALT_MAX_CAND       8u        /**< detections kept per ramp */
 #define ALT_SEL_REL_DB     15.0f     /**< nearest target within X dB of the strongest */
 #define ALT_V_MAX_MPS      25.0f     /**< max. vertical speed (Doppler window) */
+#define ALT_V_GATE_MPS     3.0f      /**< Doppler speed gate around the track */
 #define ALT_CLIP_MAX       3u        /**< clipped samples tolerated per frame */
 #define ALT_BG_SCALE       0.125f    /**< background int16 LSB = 1/8 ADC LSB */
 

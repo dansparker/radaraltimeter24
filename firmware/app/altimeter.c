@@ -268,13 +268,21 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
     const float *p = a->avg[pd].acc;
     const uint32_t nd = rdsp_cfar_detect(&a->cfar, p, RADAR_NBINS, a->bin_min, a->bin_max,
                                          det, ALT_MAX_CAND);
+    /* The average gives a stable detection; the current frame must confirm the
+     * peak and is used for the frequency estimate. This avoids the lag of the
+     * average for moving targets and lets a vanished target drop out at once. */
+    const float k_cur = powf(10.0f, 0.1f * ALT_SNR_CUR_DB);
     uint8_t nc = 0u;
     for (uint32_t i = 0; i < nd; i++) {
         if (det[i].snr_db < ALT_SNR_MIN_DB) { continue; }
-        const float dlt = rdsp_peak_interp(p, RADAR_NBINS, det[i].bin, ALT_INTERP);
-        a->cand[pd][nc].freq_hz = ((float)det[i].bin + dlt) * a->bin_hz;
+        uint32_t b = det[i].bin;
+        if ((b + 1u < RADAR_NBINS) && (x[b + 1u] > x[b])) { b++; }
+        if ((b > 1u) && (x[b - 1u] > x[b])) { b--; }
+        if (!(x[b] >= k_cur * det[i].noise)) { continue; }
+        const float dlt = rdsp_peak_interp(x, RADAR_NBINS, b, ALT_INTERP);
+        a->cand[pd][nc].freq_hz = ((float)b + dlt) * a->bin_hz;
         a->cand[pd][nc].power = det[i].power;
-        a->cand[pd][nc].snr_db = det[i].snr_db;
+        a->cand[pd][nc].snr_db = 10.0f * log10f(x[b] / det[i].noise);
         nc++;
     }
     a->ncand[pd] = nc;
@@ -336,9 +344,10 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                         if (rdsp_fmcw_updown(U[i].freq_hz, D[j].freq_hz, (rdsp_ud_hyp_t)h, &fr, &fd) != 0) { continue; }
                         if (fabsf(fd) > a->fd_max_hz) { continue; }
                         const float r = rdsp_fmcw_range(&a->fm, fr);
-                        if (fabsf(r - rp) > gate) { continue; }
+                        const float dv = rdsp_fmcw_closing_speed(&a->fm, fd) - vcp;
+                        if ((fabsf(r - rp) > gate) || (fabsf(dv) > ALT_V_GATE_MPS)) { continue; }
                         const float er = (r - rp) / sig_r;
-                        const float ev = (rdsp_fmcw_closing_speed(&a->fm, fd) - vcp) / sig_v;
+                        const float ev = dv / sig_v;
                         const float cost = er * er + ev * ev + ((h != 0) ? 4.0f : 0.0f);
                         if (cost < best) {
                             best = cost;
