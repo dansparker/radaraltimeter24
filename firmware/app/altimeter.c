@@ -193,6 +193,26 @@ void alt_cal_abort(altimeter_t *a)
 
 /* ---- per frame ---------------------------------------------------------- */
 
+/* Sub-bin peak position with the IF high-pass response removed: the steep
+ * analog high-pass tilts the spectrum around low beat frequencies and would
+ * bias the interpolation towards higher frequencies. */
+static float interp_peak(const altimeter_t *a, const float *p, uint32_t b)
+{
+    if ((b == 0u) || (b + 1u >= RADAR_NBINS)) { return (float)b; }
+    float q[3];
+    for (uint32_t j = 0; j < 3u; j++) {
+        q[j] = p[b - 1u + j];
+#if ALT_IF_HP_ORDER > 0
+        const float r = ((float)(b - 1u + j) * a->bin_hz) / ALT_IF_HP_FC_HZ;
+        const float h2 = (r * r) / (1.0f + r * r);           /* |H|^2 of one stage */
+        float g = 1.0f;
+        for (int s = 0; s < ALT_IF_HP_ORDER; s++) { g *= h2; }
+        q[j] = (g > 1.0e-6f) ? q[j] / g : q[j] * 1.0e6f;
+#endif
+    }
+    return (float)b + rdsp_peak_interp(q, 3u, 1u, ALT_INTERP);
+}
+
 static void process_spectrum(altimeter_t *a, const uint16_t *frame,
                              const alt_frame_info_t *fi, uint8_t pd)
 {
@@ -279,8 +299,7 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
         if ((b + 1u < RADAR_NBINS) && (x[b + 1u] > x[b])) { b++; }
         if ((b > 1u) && (x[b - 1u] > x[b])) { b--; }
         if (!(x[b] >= k_cur * det[i].noise)) { continue; }
-        const float dlt = rdsp_peak_interp(x, RADAR_NBINS, b, ALT_INTERP);
-        a->cand[pd][nc].freq_hz = ((float)b + dlt) * a->bin_hz;
+        a->cand[pd][nc].freq_hz = interp_peak(a, x, b) * a->bin_hz;
         a->cand[pd][nc].power = det[i].power;
         a->cand[pd][nc].snr_db = 10.0f * log10f(x[b] / det[i].noise);
         nc++;
@@ -352,8 +371,10 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                         if (cost < best) {
                             best = cost;
                             found = 1;
+                            const float fmin = RDSP_MIN(U[i].freq_hz, D[j].freq_hz);
                             fill_meas(a, m, fr, fd, U[i].freq_hz, D[j].freq_hz,
-                                      RDSP_MIN(U[i].snr_db, D[j].snr_db), (uint8_t)(h != 0));
+                                      RDSP_MIN(U[i].snr_db, D[j].snr_db),
+                                      (uint8_t)((h != 0) || (fmin < ALT_RELIABLE_BIN * a->bin_hz)));
                         }
                     }
                 }
@@ -419,7 +440,11 @@ static int finish_pair(altimeter_t *a)
     }
     if (a->cand_clip[0] || a->cand_clip[1]) { st |= ALT_ST_CLIPPED; }
 
-    const float vz = (have && !m.degraded) ? -m.closing : NAN;   /* range rate */
+    float vz = (have && !m.degraded) ? -m.closing : NAN;         /* range rate */
+    if (((a->trk.state == RDSP_TRK_CONFIRMED) || (a->trk.state == RDSP_TRK_COAST)) &&
+        (fabsf(vz - a->trk.v) > ALT_V_GATE_MPS)) {
+        vz = NAN;                                                /* implausible Doppler */
+    }
     (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, RADAR_PAIR_DT_S);
     if (!have) {
         st |= ALT_ST_NO_TARGET;

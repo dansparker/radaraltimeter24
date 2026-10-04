@@ -38,7 +38,10 @@
 #define ALT_CFAR_GUARD     3u
 #define ALT_CFAR_PFA       1.0e-4f
 #define ALT_SNR_MIN_DB     12.0f     /**< SNR of the averaged spectrum */
-#define ALT_SNR_CUR_DB     6.0f      /**< SNR the current frame must confirm */
+#define ALT_SNR_CUR_DB     9.0f      /**< SNR the current frame must confirm */
+#define ALT_RELIABLE_BIN   4.0f      /**< beats below: no Doppler fusion (HP skew, DC) */
+#define ALT_IF_HP_FC_HZ    1130.0f   /**< IF high-pass 300R/470nF (schematic), 0 = off */
+#define ALT_IF_HP_ORDER    3         /**< number of 1st-order high-pass stages */
 #define ALT_MIN_BIN        2u        /**< lowest analysed bin (DC / leakage) */
 #define ALT_MAX_CAND       8u        /**< detections kept per ramp */
 #define ALT_SEL_REL_DB     15.0f     /**< nearest target within X dB of the strongest */
@@ -55,7 +58,7 @@
 /* tracker */
 #define ALT_TRK_ALPHA      0.40f
 #define ALT_TRK_BETA       0.05f
-#define ALT_TRK_GAMMA      0.30f
+#define ALT_TRK_GAMMA      0.20f
 #define ALT_TRK_GATE_ABS   1.5f      /**< [m] */
 #define ALT_TRK_GATE_REL   0.03f
 #define ALT_TRK_CONFIRM    3u
