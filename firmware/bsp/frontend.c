@@ -7,11 +7,13 @@
 #include "ramp.h"
 #include <string.h>
 
-#define FE_LEN (2u * RADAR_FRAME_LEN)
+#define FE_LEN_MAX (2u * RADAR_FRAME_LEN_MAX)
 
 /* DMA buffers must be in SRAM (not CCM) */
-static uint16_t s_dac[FE_LEN];
-static volatile uint16_t s_adc[FE_LEN];
+static uint16_t s_dac[FE_LEN_MAX];
+static volatile uint16_t s_adc[FE_LEN_MAX];
+static uint32_t s_len;                   /* frame length of the running mode */
+static uint8_t s_rmode;
 
 static volatile uint32_t s_frame_id;      /* completed frames */
 static volatile uint32_t s_lost;          /* frames not fetched in time */
@@ -61,10 +63,12 @@ void frontend_stop(void)
     s_ready = 0u;
 }
 
-void frontend_start(const cfg_module_t *m, uint8_t dac_buffer)
+void frontend_start(const cfg_module_t *m, uint8_t dac_buffer, uint8_t rmode)
 {
     frontend_stop();
-    ramp_build(s_dac, RADAR_FRAME_LEN, m->dac_lo, m->dac_hi, m->ramp_q);
+    s_rmode = (rmode < RADAR_NMODES) ? rmode : RADAR_RMODE_LONG;
+    s_len = radar_frame_len(s_rmode);
+    ramp_build(s_dac, s_len, m->dac_lo, m->dac_hi, m->ramp_q);
 
     /* TIM2: 84 MHz / 280 = 300 kHz, TRGO on update; no UG (would trigger) */
     TIM2->CR1 = 0u;
@@ -79,7 +83,7 @@ void frontend_start(const cfg_module_t *m, uint8_t dac_buffer)
     DAC->DHR12R1 = s_dac[0];
     DMA1_Stream5->PAR = (uint32_t)&DAC->DHR12R1;
     DMA1_Stream5->M0AR = (uint32_t)s_dac;
-    DMA1_Stream5->NDTR = FE_LEN;
+    DMA1_Stream5->NDTR = 2u * s_len;
     DMA1_Stream5->FCR = 0u;
     DMA1_Stream5->CR = DMA_CHSEL(7) | DMA_PL_VHIGH | DMA_MSIZE_16 | DMA_PSIZE_16 |
                        DMA_MINC | DMA_CIRC | DMA_DIR_M2P;
@@ -98,7 +102,7 @@ void frontend_start(const cfg_module_t *m, uint8_t dac_buffer)
 
     DMA2_Stream0->PAR = (uint32_t)&ADC1->DR;
     DMA2_Stream0->M0AR = (uint32_t)s_adc;
-    DMA2_Stream0->NDTR = FE_LEN;
+    DMA2_Stream0->NDTR = 2u * s_len;
     DMA2_Stream0->FCR = 0u;
     DMA2_Stream0->CR = DMA_CHSEL(0) | DMA_PL_VHIGH | DMA_MSIZE_16 | DMA_PSIZE_16 |
                        DMA_MINC | DMA_CIRC | DMA_TCIE | DMA_HTIE | DMA_TEIE;
@@ -118,6 +122,11 @@ void frontend_start(const cfg_module_t *m, uint8_t dac_buffer)
 void frontend_set_gain(uint8_t level)
 {
     s_pending_gain = (uint8_t)(level & 3u);
+}
+
+uint8_t frontend_rmode(void)
+{
+    return s_rmode;
 }
 
 uint32_t frontend_errors(void)
@@ -144,6 +153,7 @@ void DMA2_Stream0_IRQHandler(void)
     if (s_ready) { s_lost++; }
     s_frame_id++;
     s_info.id = s_frame_id;
+    s_info.rmode = s_rmode;
     s_info.dac_dir = half;
     s_info.gain = s_cur_gain;
     s_info.settling = s_settling;
@@ -165,6 +175,7 @@ int frontend_fetch(uint16_t *dst, alt_frame_info_t *info)
     __disable_irq();
     alt_frame_info_t fi;
     fi.id = s_info.id;
+    fi.rmode = s_info.rmode;
     fi.dac_dir = s_info.dac_dir;
     fi.gain = s_info.gain;
     fi.settling = s_info.settling;
@@ -173,7 +184,8 @@ int frontend_fetch(uint16_t *dst, alt_frame_info_t *info)
     s_ready = 0u;
     __enable_irq();
 
-    memcpy(dst, (const void *)&s_adc[fi.dac_dir ? RADAR_FRAME_LEN : 0u], RADAR_FRAME_LEN * sizeof(uint16_t));
+    const uint32_t len = radar_frame_len(fi.rmode);
+    memcpy(dst, (const void *)&s_adc[fi.dac_dir ? len : 0u], len * sizeof(uint16_t));
 
     /* our half is overwritten only after the NEXT boundary: still same id -> data intact */
     if ((s_frame_id != fi.id) || (lost != s_lost_seen)) {

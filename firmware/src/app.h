@@ -8,7 +8,7 @@
 #include "altimeter.h"
 #include "config.h"
 
-#define APP_BG_LEN (RADAR_NGAIN * 2u * RADAR_NFFT)
+#define APP_BG_LEN RADAR_BG_LEN
 
 typedef struct {
     config_t cfg;

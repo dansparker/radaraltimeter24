@@ -13,13 +13,13 @@
 #include <string.h>
 
 app_t g_app;
-static uint16_t s_buf[RADAR_FRAME_LEN];
-static uint16_t s_frame[2][RADAR_FRAME_LEN];   /* last frame per DAC direction */
+static uint16_t s_buf[RADAR_FRAME_LEN_MAX];
+static uint16_t s_frame[2][RADAR_FRAME_LEN_MAX];   /* last frame per DAC direction */
 static alt_frame_info_t s_frame_info[2];
 
 void app_restart_frontend(void)
 {
-    frontend_start(cfg_active_module(&g_app.cfg), g_app.cfg.dac_buffer);
+    frontend_start(cfg_active_module(&g_app.cfg), g_app.cfg.dac_buffer, alt_rmode_request(&g_app.alt));
     alt_apply_config(&g_app.alt);
     g_app.fe_restarts++;
 }
@@ -43,9 +43,13 @@ void app_dump_frame(void)
         line[n++] = (char)('0' + d);
         line[n++] = ',';
         line[n++] = (char)('0' + (fi->gain & 3u));
-        memcpy(&line[n], ",2432\r\n", 7u); n += 7u;
+        const uint32_t len = radar_frame_len(fi->rmode);
+        line[n++] = ',';
+        n += proto_fmt_fixed(&line[n], (float)len, 0u);
+        line[n++] = '\r';
+        line[n++] = '\n';
         uart_write_blocking(line, n);
-        for (uint32_t i = 0; i < RADAR_FRAME_LEN; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             n = proto_fmt_fixed(line, (float)s_frame[d][i], 0u);
             line[n++] = ((i % 16u) == 15u) ? '\n' : ',';
             uart_write_blocking(line, n);
@@ -113,8 +117,13 @@ int main(void)
             const int out = alt_process_frame(&g_app.alt, s_buf, &fi);
             frontend_set_gain(alt_gain_request(&g_app.alt));
             if (out) { emit(&g_app.alt.out); }
-            memcpy(s_frame[fi.dac_dir], s_buf, sizeof(s_buf));   /* for 'dump' */
+            memcpy(s_frame[fi.dac_dir], s_buf, radar_frame_len(fi.rmode) * sizeof(uint16_t));  /* for 'dump' */
             s_frame_info[fi.dac_dir] = fi;
+            /* ramp mode change requested by the pipeline: reconfigure at once */
+            if (alt_rmode_request(&g_app.alt) != frontend_rmode()) {
+                frontend_start(cfg_active_module(&g_app.cfg), g_app.cfg.dac_buffer,
+                               alt_rmode_request(&g_app.alt));
+            }
             board_dbg(0);
             last_frame_ms = bsp_millis();
         }

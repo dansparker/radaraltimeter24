@@ -64,6 +64,7 @@ int cfg_is_valid(const config_t *c)
     if (c->module >= MOD_COUNT) { return 0; }
     if ((c->gain_mode != CFG_GAIN_AUTO) && (c->gain_mode > 3u)) { return 0; }
     if ((c->vco_sign != 1) && (c->vco_sign != -1)) { return 0; }
+    if (c->ramp_mode > CFG_RMODE_SHORT) { return 0; }
     if (!(c->max_range_m > 1.0f) || !(c->max_range_m <= 2000.0f)) { return 0; }
     if (!(c->min_range_m >= 0.0f) || !(c->min_range_m < c->max_range_m)) { return 0; }
     for (unsigned i = 0; i < MOD_COUNT; i++) {
@@ -72,6 +73,8 @@ int cfg_is_valid(const config_t *c)
         if (!(m->sweep_hz > 1.0e6f) || !(m->sweep_hz < 5.0e9f)) { return 0; }
         if (!isfinite(m->r_offset_m) || (fabsf(m->r_offset_m) > 50.0f)) { return 0; }
         if (!isfinite(m->ramp_q) || (fabsf(m->ramp_q) > 0.5f)) { return 0; }
+        if ((m->sweep_short_hz != 0.0f) &&
+            (!(m->sweep_short_hz > 1.0e6f) || !(m->sweep_short_hz < 5.0e9f))) { return 0; }
     }
     return 1;
 }
@@ -79,4 +82,9 @@ int cfg_is_valid(const config_t *c)
 const cfg_module_t *cfg_active_module(const config_t *c)
 {
     return &c->mod[(c->module < MOD_COUNT) ? c->module : 0u];
+}
+
+float cfg_sweep_hz(const cfg_module_t *m, unsigned rmode)
+{
+    return ((rmode != 0u) && (m->sweep_short_hz > 0.0f)) ? m->sweep_short_hz : m->sweep_hz;
 }

@@ -67,7 +67,7 @@ uint8_t fs_load_bg(int16_t *bg, size_t n)
 {
     const bg_hdr_t *h = (const bg_hdr_t *)(FS_BASE + FS_BG_OFS);
     const int16_t *src = (const int16_t *)(FS_BASE + FS_BG_OFS + sizeof(bg_hdr_t));
-    if ((h->magic != BG_MAGIC) || (h->n != n) || (h->mask > 0xFu)) { return 0u; }
+    if ((h->magic != BG_MAGIC) || (h->n != n) || (h->mask > 0xFFu)) { return 0u; }
     if (cfg_crc32(src, n * sizeof(int16_t)) != h->crc) { return 0u; }
     memcpy(bg, src, n * sizeof(int16_t));
     return (uint8_t)h->mask;

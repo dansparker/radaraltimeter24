@@ -11,11 +11,13 @@
 #define ALT_CCM   /* placed in CCM RAM on the target (defined by the build) */
 #endif
 
-static ALT_CCM float s_tw[RADAR_NFFT];
-static ALT_CCM float s_win[RADAR_NFFT];
-static ALT_CCM float s_work[RADAR_NFFT];
-static ALT_CCM float s_avgbuf[2][RADAR_NBINS];
-static ALT_CCM float s_bgacc[2][RADAR_NFFT];
+static ALT_CCM float s_tw_long[RADAR_NFFT_LONG];
+static ALT_CCM float s_win_long[RADAR_NFFT_LONG];
+static ALT_CCM float s_tw_short[RADAR_NFFT_SHORT];
+static ALT_CCM float s_win_short[RADAR_NFFT_SHORT];
+static ALT_CCM float s_work[RADAR_NFFT_MAX];
+static ALT_CCM float s_avgbuf[2][RADAR_NBINS_MAX];
+static ALT_CCM float s_bgacc[2][RADAR_NFFT_MAX];
 
 typedef struct {
     float range_m;
@@ -30,7 +32,8 @@ typedef struct {
 
 /* ------------------------------------------------------------------------ */
 
-static void reset_dynamic(altimeter_t *a)
+/* spectral state (averages, candidates); the tracker survives mode changes */
+static void reset_spectral(altimeter_t *a)
 {
     for (unsigned d = 0; d < 2u; d++) {
         rdsp_psd_avg_reset(&a->avg[d]);
@@ -39,7 +42,23 @@ static void reset_dynamic(altimeter_t *a)
         a->cand_clip[d] = 0u;
         a->ncand[d] = 0u;
     }
+}
+
+static void reset_dynamic(altimeter_t *a)
+{
+    reset_spectral(a);
     rdsp_track_reset(&a->trk);
+}
+
+/* make mode m the active processing mode */
+static void set_rmode(altimeter_t *a, uint8_t m)
+{
+    const alt_mpar_t *p = &a->mp[m];
+    a->rmode = m;
+    for (unsigned d = 0; d < 2u; d++) { a->avg[d].nbins = p->nbins; }
+    reset_spectral(a);
+    a->trk.cfg.max_coast = (uint16_t)(ALT_TRK_MAX_COAST_S / p->pair_dt);
+    a->coast_valid = (uint16_t)(ALT_COAST_VALID_S / p->pair_dt);
 }
 
 void alt_apply_config(altimeter_t *a)
@@ -47,21 +66,27 @@ void alt_apply_config(altimeter_t *a)
     const config_t *c = a->cfg;
     const cfg_module_t *m = cfg_active_module(c);
 
-    a->fm.slope_hz_s = ramp_slope_hz_s(m->sweep_hz, RADAR_FRAME_LEN, RADAR_FS_HZ);
-    a->fm.lambda_m = RADAR_LAMBDA_M;
-    a->fm.r_offset_m = m->r_offset_m;
-    a->bin_hz = (float)RADAR_FS_HZ / (float)RADAR_NFFT;
-    a->fd_max_hz = rdsp_fmcw_doppler(&a->fm, ALT_V_MAX_MPS);
-
-    float fmax = rdsp_fmcw_beat(&a->fm, c->max_range_m) + a->fd_max_hz;
-    if (fmax < 0.0f) { fmax = 0.0f; }
-    uint32_t bmax = (uint32_t)(fmax / a->bin_hz) + ALT_CFAR_GUARD + 1u;
-    if (bmax > RADAR_NBINS - 2u) { bmax = RADAR_NBINS - 2u; }
-    a->bin_min = (uint16_t)ALT_MIN_BIN;
-    a->bin_max = (uint16_t)bmax;
+    for (uint8_t k = 0; k < RADAR_NMODES; k++) {
+        alt_mpar_t *p = &a->mp[k];
+        p->fm.slope_hz_s = ramp_slope_hz_s(cfg_sweep_hz(m, k), p->len, RADAR_FS_HZ);
+        p->fm.lambda_m = RADAR_LAMBDA_M;
+        p->fm.r_offset_m = m->r_offset_m;
+        p->bin_hz = (float)RADAR_FS_HZ / (float)p->nfft;
+        p->fd_max_hz = rdsp_fmcw_doppler(&p->fm, ALT_V_MAX_MPS);
+        p->pair_dt = radar_pair_dt(k);
+        float fmax = rdsp_fmcw_beat(&p->fm, c->max_range_m) + p->fd_max_hz;
+        if (fmax < 0.0f) { fmax = 0.0f; }
+        uint32_t bmax = (uint32_t)(fmax / p->bin_hz) + ALT_CFAR_GUARD + 1u;
+        if (bmax > p->nbins - 2u) { bmax = p->nbins - 2u; }
+        p->bin_min = (uint16_t)ALT_MIN_BIN;
+        p->bin_max = (uint16_t)bmax;
+    }
     a->uncal = (m->calibrated != 0u) ? 0u : 1u;
     a->gain_req = (c->gain_mode == CFG_GAIN_AUTO) ? a->agc.level : c->gain_mode;
+    if (c->ramp_mode == CFG_RMODE_SHORT) { a->rmode_req = RADAR_RMODE_SHORT; }
+    else if (c->ramp_mode == CFG_RMODE_LONG) { a->rmode_req = RADAR_RMODE_LONG; }
     reset_dynamic(a);
+    set_rmode(a, a->rmode);
 }
 
 void alt_init(altimeter_t *a, const config_t *cfg, int16_t *bg_storage, uint8_t bg_valid)
@@ -71,8 +96,18 @@ void alt_init(altimeter_t *a, const config_t *cfg, int16_t *bg_storage, uint8_t 
     a->bg = bg_storage;
     a->bg_valid = (bg_storage != NULL) ? bg_valid : 0u;
 
-    (void)rdsp_rfft_init(&a->fft, RADAR_NFFT, s_tw);
-    (void)rdsp_window_make(s_win, RADAR_NFFT, ALT_WINDOW, &a->wi);
+    float *const tw[RADAR_NMODES] = { s_tw_long, s_tw_short };
+    float *const win[RADAR_NMODES] = { s_win_long, s_win_short };
+    for (uint8_t k = 0; k < RADAR_NMODES; k++) {
+        alt_mpar_t *p = &a->mp[k];
+        p->nfft = (uint16_t)radar_nfft(k);
+        p->nbins = (uint16_t)(p->nfft / 2u);
+        p->head = (uint16_t)radar_head(k);
+        p->len = (uint16_t)radar_frame_len(k);
+        (void)rdsp_rfft_init(&p->fft, p->nfft, tw[k]);
+        (void)rdsp_window_make(win[k], p->nfft, ALT_WINDOW, &p->wi);
+        p->win = win[k];
+    }
     (void)rdsp_cfar_init(&a->cfar, ALT_CFAR_TYPE, ALT_CFAR_TRAIN, ALT_CFAR_GUARD, 0u, ALT_CFAR_PFA);
     rdsp_agc_init(&a->agc, RADAR_NGAIN, 0u, ALT_AGC_HI, ALT_AGC_LO, ALT_AGC_UP_FRAMES);
 
@@ -80,15 +115,22 @@ void alt_init(altimeter_t *a, const config_t *cfg, int16_t *bg_storage, uint8_t 
         .alpha = ALT_TRK_ALPHA, .beta = ALT_TRK_BETA, .gamma = ALT_TRK_GAMMA,
         .gate_abs = ALT_TRK_GATE_ABS, .gate_rel = ALT_TRK_GATE_REL,
         .v_max = ALT_V_MAX_MPS, .confirm_n = ALT_TRK_CONFIRM,
-        .max_coast = ALT_TRK_MAX_COAST, .reacq_n = ALT_TRK_REACQ
+        .max_coast = 60u, .reacq_n = ALT_TRK_REACQ
     };
     rdsp_track_init(&a->trk, &tc);
     for (unsigned d = 0; d < 2u; d++) {
-        rdsp_psd_avg_init(&a->avg[d], s_avgbuf[d], RADAR_NBINS, ALT_PSD_ALPHA);
+        rdsp_psd_avg_init(&a->avg[d], s_avgbuf[d], RADAR_NBINS_MAX, ALT_PSD_ALPHA);
     }
     a->mode = ALT_MODE_RUN;
     a->out.raw_range_m = NAN;
+    a->rmode = RADAR_RMODE_LONG;
+    a->rmode_req = RADAR_RMODE_LONG;
     alt_apply_config(a);
+}
+
+uint8_t alt_rmode_request(const altimeter_t *a)
+{
+    return a->rmode_req;
 }
 
 uint8_t alt_gain_request(const altimeter_t *a)
@@ -108,6 +150,8 @@ void alt_bg_start(altimeter_t *a, uint16_t frames_per_dir)
     if ((a->bg == NULL) || (frames_per_dir == 0u)) { return; }
     memset(s_bgacc, 0, sizeof(s_bgacc));
     a->bg_gain = 0u;
+    a->bg_rmode = RADAR_RMODE_LONG;
+    a->rmode_req = RADAR_RMODE_LONG;
     a->bg_frames = frames_per_dir;
     a->bg_cnt[0] = a->bg_cnt[1] = 0u;
     a->bg_tries = 0u;
@@ -127,8 +171,14 @@ static void bg_next_gain(altimeter_t *a)
     memset(s_bgacc, 0, sizeof(s_bgacc));
     a->bg_cnt[0] = a->bg_cnt[1] = 0u;
     a->bg_tries = 0u;
-    if (++a->bg_gain >= RADAR_NGAIN) {
+    if ((++a->bg_gain >= RADAR_NGAIN) && (a->bg_rmode == RADAR_RMODE_LONG)) {
+        a->bg_gain = 0u;
+        a->bg_rmode = RADAR_RMODE_SHORT;
+        a->rmode_req = RADAR_RMODE_SHORT;
+        a->gain_req = 0u;
+    } else if (a->bg_gain >= RADAR_NGAIN) {
         a->mode = ALT_MODE_RUN;
+        a->rmode_req = RADAR_RMODE_LONG;
         a->gain_req = (a->cfg->gain_mode == CFG_GAIN_AUTO) ? a->agc.level : a->cfg->gain_mode;
         reset_dynamic(a);
     } else {
@@ -140,23 +190,24 @@ static void bg_next_gain(altimeter_t *a)
 static void bg_accumulate(altimeter_t *a, const float *x, const alt_frame_info_t *fi)
 {
     const uint8_t d = fi->dac_dir ? 1u : 0u;
-    if (fi->gain != a->bg_gain) { return; }
+    const uint32_t n = a->mp[a->rmode].nfft;
+    if ((fi->gain != a->bg_gain) || (a->rmode != a->bg_rmode)) { return; }
     a->bg_tries++;
     if ((x != NULL) && (a->bg_cnt[d] < a->bg_frames)) {
-        for (uint32_t i = 0; i < RADAR_NFFT; i++) { s_bgacc[d][i] += x[i]; }
+        for (uint32_t i = 0; i < n; i++) { s_bgacc[d][i] += x[i]; }
         a->bg_cnt[d]++;
     }
     if ((a->bg_cnt[0] >= a->bg_frames) && (a->bg_cnt[1] >= a->bg_frames)) {
         const float k = 1.0f / ((float)a->bg_frames * ALT_BG_SCALE);
         for (uint32_t dd = 0; dd < 2u; dd++) {
-            int16_t *dst = &a->bg[((uint32_t)a->bg_gain * 2u + dd) * RADAR_NFFT];
-            for (uint32_t i = 0; i < RADAR_NFFT; i++) {
+            int16_t *dst = &a->bg[radar_bg_offset(a->bg_rmode, a->bg_gain, dd)];
+            for (uint32_t i = 0; i < n; i++) {
                 float v = s_bgacc[dd][i] * k;
                 v = (v > 32767.0f) ? 32767.0f : ((v < -32768.0f) ? -32768.0f : v);
                 dst[i] = (int16_t)lrintf(v);
             }
         }
-        a->bg_valid |= (uint8_t)(1u << a->bg_gain);
+        a->bg_valid |= (uint8_t)(1u << (4u * a->bg_rmode + a->bg_gain));
         bg_next_gain(a);
     } else if (a->bg_tries > 8u * a->bg_frames) {
         bg_next_gain(a);   /* e.g. permanent clipping at this gain: leave it invalid */
@@ -199,10 +250,12 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
                              const alt_frame_info_t *fi, uint8_t pd)
 {
     const config_t *c = a->cfg;
+    const alt_mpar_t *mp = &a->mp[a->rmode];
+    const uint32_t nfft = mp->nfft, nb = mp->nbins;
     float *x = s_work;
     rdsp_frame_stats_t s;
 
-    rdsp_frame_condition_u16(frame + RADAR_N_HEAD, RADAR_NFFT, x,
+    rdsp_frame_condition_u16(frame + mp->head, nfft, x,
                              RADAR_ADC_CLIP_LO, RADAR_ADC_CLIP_HI, RADAR_ADC_MAX, &s);
 
     /* health: frozen data or railed bias point */
@@ -236,7 +289,7 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
         if (a->mode == ALT_MODE_BG) { bg_accumulate(a, NULL, fi); }
         return;
     }
-    if (c->detrend) { rdsp_frame_detrend(x, RADAR_NFFT); }
+    if (c->detrend) { rdsp_frame_detrend(x, nfft); }
 
     if (a->mode == ALT_MODE_BG) {
         bg_accumulate(a, x, fi);
@@ -244,17 +297,17 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
     }
 
     const uint8_t g = (uint8_t)(fi->gain & 3u);
-    if (c->bg_enable && (a->bg != NULL) && ((a->bg_valid & (1u << g)) != 0u)) {
+    if (c->bg_enable && (a->bg != NULL) && ((a->bg_valid & (1u << (4u * a->rmode + g))) != 0u)) {
         const uint32_t dd = fi->dac_dir ? 1u : 0u;
-        rdsp_frame_sub_bg_i16(x, &a->bg[((uint32_t)g * 2u + dd) * RADAR_NFFT], RADAR_NFFT, ALT_BG_SCALE);
+        rdsp_frame_sub_bg_i16(x, &a->bg[radar_bg_offset(a->rmode, g, dd)], nfft, ALT_BG_SCALE);
     }
 
     /* spectrum */
-    rdsp_window_apply(x, s_win, RADAR_NFFT);
-    rdsp_rfft(&a->fft, x);
-    rdsp_rfft_power(x, x, RADAR_NFFT);
-    rdsp_psd_onesided(x, RADAR_NBINS, (float)RADAR_FS_HZ, a->wi.s2);
-    if (!rdsp_all_finite(x, RADAR_NBINS)) {
+    rdsp_window_apply(x, mp->win, nfft);
+    rdsp_rfft(&mp->fft, x);
+    rdsp_rfft_power(x, x, nfft);
+    rdsp_psd_onesided(x, nb, (float)RADAR_FS_HZ, mp->wi.s2);
+    if (!rdsp_all_finite(x, nb)) {
         a->st.nonfinite++;
         rdsp_psd_avg_reset(&a->avg[pd]);
         return;
@@ -268,7 +321,7 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
     /* detection */
     rdsp_det_t det[ALT_MAX_CAND];
     const float *p = a->avg[pd].acc;
-    const uint32_t nd = rdsp_cfar_detect(&a->cfar, p, RADAR_NBINS, a->bin_min, a->bin_max,
+    const uint32_t nd = rdsp_cfar_detect(&a->cfar, p, nb, mp->bin_min, mp->bin_max,
                                          det, ALT_MAX_CAND);
     /* The average gives a stable detection; the current frame must confirm the
      * peak and is used for the frequency estimate. This avoids the lag of the
@@ -278,10 +331,10 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
     for (uint32_t i = 0; i < nd; i++) {
         if (det[i].snr_db < ALT_SNR_MIN_DB) { continue; }
         uint32_t b = det[i].bin;
-        if ((b + 1u < RADAR_NBINS) && (x[b + 1u] > x[b])) { b++; }
+        if ((b + 1u < nb) && (x[b + 1u] > x[b])) { b++; }
         if ((b > 1u) && (x[b - 1u] > x[b])) { b--; }
         if (!(x[b] >= k_cur * det[i].noise)) { continue; }
-        a->cand[pd][nc].freq_hz = ((float)b + rdsp_peak_interp(x, RADAR_NBINS, b, ALT_INTERP)) * a->bin_hz;
+        a->cand[pd][nc].freq_hz = ((float)b + rdsp_peak_interp(x, nb, b, ALT_INTERP)) * mp->bin_hz;
         a->cand[pd][nc].power = det[i].power;
         a->cand[pd][nc].snr_db = 10.0f * log10f(x[b] / det[i].noise);
         nc++;
@@ -310,9 +363,10 @@ static int select_nearest_strong(const alt_cand_t *c, uint8_t n)
 static void fill_meas(const altimeter_t *a, meas_t *m, float fr, float fd, float fu, float fdn,
                       float snr, uint8_t degraded)
 {
+    const rdsp_fmcw_t *fm = &a->mp[a->rmode].fm;
     m->f_r = fr;
-    m->range_m = rdsp_fmcw_range(&a->fm, fr);
-    m->closing = rdsp_fmcw_closing_speed(&a->fm, fd);
+    m->range_m = rdsp_fmcw_range(fm, fr);
+    m->closing = rdsp_fmcw_closing_speed(fm, fd);
     m->f_rise = fu;
     m->f_fall = fdn;
     m->snr_db = snr;
@@ -327,14 +381,16 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
     const uint8_t nu = a->cand_ok[ALT_DIR_RISE] ? a->ncand[ALT_DIR_RISE] : 0u;
     const uint8_t nd = a->cand_ok[ALT_DIR_FALL] ? a->ncand[ALT_DIR_FALL] : 0u;
     const rdsp_track_t *t = &a->trk;
-    const float dt = RADAR_PAIR_DT_S;
+    const alt_mpar_t *mp = &a->mp[a->rmode];
+    const rdsp_fmcw_t *fm = &mp->fm;
+    const float dt = mp->pair_dt;
     float fr, fd;
 
     if ((t->state == RDSP_TRK_CONFIRMED) || (t->state == RDSP_TRK_COAST)) {
         const float rp = rdsp_track_predict(t, dt);
         const float gate = rdsp_track_gate(t, dt);
         const float vcp = -t->v;                       /* predicted closing speed */
-        const float fdp = rdsp_fmcw_doppler(&a->fm, vcp);
+        const float fdp = rdsp_fmcw_doppler(fm, vcp);
         const float sig_r = 0.25f * gate, sig_v = 2.0f;
         float best = 1.0e30f;
         int found = 0;
@@ -344,9 +400,9 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                 for (uint8_t j = 0; j < nd; j++) {
                     for (int h = 0; h < 3; h++) {
                         if (rdsp_fmcw_updown(U[i].freq_hz, D[j].freq_hz, (rdsp_ud_hyp_t)h, &fr, &fd) != 0) { continue; }
-                        if (fabsf(fd) > a->fd_max_hz) { continue; }
-                        const float r = rdsp_fmcw_range(&a->fm, fr);
-                        const float dv = rdsp_fmcw_closing_speed(&a->fm, fd) - vcp;
+                        if (fabsf(fd) > mp->fd_max_hz) { continue; }
+                        const float r = rdsp_fmcw_range(fm, fr);
+                        const float dv = rdsp_fmcw_closing_speed(fm, fd) - vcp;
                         if ((fabsf(r - rp) > gate) || (fabsf(dv) > ALT_V_GATE_MPS)) { continue; }
                         const float er = (r - rp) / sig_r;
                         const float ev = dv / sig_v;
@@ -357,7 +413,7 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                             const float fmin = RDSP_MIN(U[i].freq_hz, D[j].freq_hz);
                             fill_meas(a, m, fr, fd, U[i].freq_hz, D[j].freq_hz,
                                       RDSP_MIN(U[i].snr_db, D[j].snr_db),
-                                      (uint8_t)((h != 0) || (fmin < ALT_RELIABLE_BIN * a->bin_hz)));
+                                      (uint8_t)((h != 0) || (fmin < ALT_RELIABLE_BIN * mp->bin_hz)));
                         }
                     }
                 }
@@ -375,7 +431,7 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                     else          { cands[0] = f - fdp; cands[1] = -f - fdp; }  /* f = |fR + fD| */
                     for (int k = 0; k < 2; k++) {
                         if (cands[k] < 0.0f) { continue; }
-                        const float r = rdsp_fmcw_range(&a->fm, cands[k]);
+                        const float r = rdsp_fmcw_range(fm, cands[k]);
                         if (fabsf(r - rp) > gate) { continue; }
                         const float er = (r - rp) / sig_r;
                         const float cost = er * er + 9.0f;
@@ -400,15 +456,30 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
     const int id = select_nearest_strong(D, nd);
     if ((iu < 0) || (id < 0)) { return 0; }
     if (rdsp_fmcw_updown(U[iu].freq_hz, D[id].freq_hz, RDSP_UD_NORMAL, &fr, &fd) != 0) { return 0; }
-    if (fabsf(fd) > a->fd_max_hz) { return 0; }
+    if (fabsf(fd) > mp->fd_max_hz) { return 0; }
     fill_meas(a, m, fr, fd, U[iu].freq_hz, D[id].freq_hz, RDSP_MIN(U[iu].snr_db, D[id].snr_db), 0u);
     return 1;
+}
+
+/* AUTO ramp mode: SHORT at low altitude, LONG for acquisition / high altitude */
+static void decide_rmode(altimeter_t *a, int valid)
+{
+    const config_t *c = a->cfg;
+    if (a->mode != ALT_MODE_RUN) { return; }        /* locked during cal / bg */
+    if (c->ramp_mode == CFG_RMODE_LONG) { a->rmode_req = RADAR_RMODE_LONG; return; }
+    if (c->ramp_mode == CFG_RMODE_SHORT) { a->rmode_req = RADAR_RMODE_SHORT; return; }
+    if (a->rmode == RADAR_RMODE_LONG) {
+        if (valid && (a->trk.x < ALT_SHORT_ENTER_M)) { a->rmode_req = RADAR_RMODE_SHORT; }
+    } else if ((valid && (a->trk.x > ALT_SHORT_EXIT_M)) || (a->trk.state == RDSP_TRK_LOST)) {
+        a->rmode_req = RADAR_RMODE_LONG;
+    }
 }
 
 static int finish_pair(altimeter_t *a)
 {
     alt_output_t *o = &a->out;
     const config_t *c = a->cfg;
+    const float dt = a->mp[a->rmode].pair_dt;
     uint16_t st = 0u;
     meas_t m = { 0 };
     int have = 0;
@@ -430,9 +501,9 @@ static int finish_pair(altimeter_t *a)
         vz = NAN;                                                /* implausible Doppler */
     }
     if (have && m.single) {
-        (void)rdsp_track_update_pos(&a->trk, m.range_m, RADAR_PAIR_DT_S);
+        (void)rdsp_track_update_pos(&a->trk, m.range_m, dt);
     } else {
-        (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, RADAR_PAIR_DT_S);
+        (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, dt);
     }
     if (!have) {
         st |= ALT_ST_NO_TARGET;
@@ -456,7 +527,7 @@ static int finish_pair(altimeter_t *a)
     st |= a->ext_status;
 
     const int trk_ok = (ts == RDSP_TRK_CONFIRMED) ||
-                       ((ts == RDSP_TRK_COAST) && (a->trk.misses <= ALT_COAST_VALID));
+                       ((ts == RDSP_TRK_COAST) && (a->trk.misses <= a->coast_valid));
     if (trk_ok && !a->hw_fault && (a->mode != ALT_MODE_BG) && isfinite(a->trk.x) &&
         (a->trk.x <= 1.1f * c->max_range_m)) {
         st |= ALT_ST_VALID;
@@ -473,10 +544,19 @@ static int finish_pair(altimeter_t *a)
     o->status = st;
     o->gain = a->cand_gain[ALT_DIR_FALL];
     o->track_state = (uint8_t)ts;
+    o->rmode = a->rmode;
 
     a->cand_ok[0] = a->cand_ok[1] = 0u;     /* consumed */
     a->cand_clip[0] = a->cand_clip[1] = 0u;
-    return 1;
+    decide_rmode(a, (st & ALT_ST_VALID) != 0u);
+
+    /* decimate the transmitted outputs to ~60 Hz in both modes */
+    a->out_acc += dt;
+    if (a->out_acc + 1.0e-4f >= ALT_OUT_PERIOD_S) {
+        a->out_acc = 0.0f;
+        return 1;
+    }
+    return 0;
 }
 
 int alt_process_frame(altimeter_t *a, const uint16_t *frame, const alt_frame_info_t *fi)
@@ -487,6 +567,9 @@ int alt_process_frame(altimeter_t *a, const uint16_t *frame, const alt_frame_inf
     const uint8_t pd = (a->cfg->vco_sign < 0) ? (uint8_t)(1u - dac_dir) : dac_dir;
 
     a->st.frames++;
+    if ((fi->rmode < RADAR_NMODES) && (fi->rmode != a->rmode)) {
+        set_rmode(a, fi->rmode);                 /* the frontend switched the ramp */
+    }
     if (fi->overrun) {
         a->st.overruns++;
         a->ovr_hold = 8u;

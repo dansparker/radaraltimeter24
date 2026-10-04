@@ -24,8 +24,8 @@ void sim_init(sim_t *s, float sweep_hz)
 {
     memset(s, 0, sizeof(*s));
     s->fs_hz = (float)RADAR_FS_HZ;
-    s->frame_len = RADAR_FRAME_LEN;
-    s->slope_hz_s = ramp_slope_hz_s(sweep_hz, RADAR_FRAME_LEN, RADAR_FS_HZ);
+    s->sweep_hz = sweep_hz;
+    sim_set_rmode(s, RADAR_RMODE_LONG);
     s->lambda_m = RADAR_LAMBDA_M;
     s->vco_sign = 1;
     s->gain_lin[0] = 1.0f;
@@ -39,6 +39,12 @@ void sim_init(sim_t *s, float sweep_hz)
     s->hp_fc_hz = 1100.0f;
     s->hp_order = 3;
     s->rng = 12345u;
+}
+
+void sim_set_rmode(sim_t *s, unsigned rmode)
+{
+    s->frame_len = radar_frame_len(rmode);
+    s->slope_hz_s = ramp_slope_hz_s(s->sweep_hz, s->frame_len, RADAR_FS_HZ);
 }
 
 void sim_advance(sim_t *s, float dt)

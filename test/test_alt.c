@@ -13,10 +13,11 @@
 static config_t cfg;
 static altimeter_t alt;
 static sim_t sim;
-static uint16_t frame[RADAR_FRAME_LEN];
-static int16_t bg[RADAR_NGAIN * 2u * RADAR_NFFT];
+static uint16_t frame[RADAR_FRAME_LEN_MAX];
+static int16_t bg[RADAR_BG_LEN];
 static uint32_t frame_id;
-static uint8_t cur_gain;
+static uint8_t cur_gain, cur_rmode;
+static float last_dt;   /* pair duration of the last step */
 
 #define SWEEP_HZ 90.0e6f
 
@@ -28,20 +29,29 @@ static void setup(float sweep_true)
     sim_init(&sim, sweep_true);
     frame_id = 0u;
     cur_gain = alt_gain_request(&alt);
+    cur_rmode = alt_rmode_request(&alt);
+    last_dt = radar_pair_dt(cur_rmode);
 }
 
 /* one ramp pair as the STM32 frontend would deliver it; returns the output */
 static const alt_output_t *step_pair(void)
 {
+    /* the firmware restarts the frontend when the pipeline requests another ramp */
+    const uint8_t rm = alt_rmode_request(&alt);
+    const int restart = (rm != cur_rmode);
+    cur_rmode = rm;
+    sim_set_rmode(&sim, rm);
     for (int d = 0; d < 2; d++) {
         const uint8_t req = alt_gain_request(&alt);
-        alt_frame_info_t fi = { ++frame_id, (uint8_t)d, req, (uint8_t)(req != cur_gain), 0u };
+        alt_frame_info_t fi = { ++frame_id, rm, (uint8_t)d, req,
+                                (uint8_t)((req != cur_gain) || (restart && (d == 0))), 0u };
         cur_gain = req;
         sim_frame(&sim, d, cur_gain, frame);
         const int out = alt_process_frame(&alt, frame, &fi);
-        CHECK(out == d);
+        if (d == 0) { CHECK(out == 0); }
     }
-    sim_advance(&sim, RADAR_PAIR_DT_S);
+    last_dt = radar_pair_dt(rm);
+    sim_advance(&sim, last_dt);
     return &alt.out;
 }
 
@@ -73,8 +83,8 @@ static void test_static_altitudes(void)
             }
         }
         const double tol = fmax(0.25, 0.005 * alts[k]);
-        printf("  %6.1f m: max error %.3f m (tol %.2f), valid %d/60, gain %u\n",
-               alts[k], emax, tol, nvalid, alt.out.gain);
+        printf("  %6.1f m: max error %.3f m (tol %.2f), valid %d/60, gain %u, %s ramp\n",
+               alts[k], emax, tol, nvalid, alt.out.gain, alt.out.rmode ? "short" : "long");
         CHECK(nvalid == 60);
         CHECK(emax < tol);
     }
@@ -94,7 +104,7 @@ static void test_descent_and_climb(void)
             if (i >= 100) {
                 nvalid += valid(o);
                 /* the output refers to the measurement time (before sim_advance) */
-                const double truth = sim.tgt[0].range_m - vr[k] * RADAR_PAIR_DT_S;
+                const double truth = sim.tgt[0].range_m - vr[k] * last_dt;
                 emax = fmax(emax, fabs(o->altitude_m - truth));
                 if (fabs(o->vspeed_mps - vr[k]) > 0.3) {
                     printf("    i=%d R=%.2f vs=%.2f st=%04X gain=%u fu=%.1f fd=%.1f\n", i, truth,
@@ -162,7 +172,7 @@ static void test_dropout(void)
     int nvalid = 0;
     for (int i = 0; i < 40; i++) { nvalid += valid(step_pair()); }
     printf("  dropout: %d valid pairs while target missing\n", nvalid);
-    CHECK(nvalid <= (int)ALT_COAST_VALID + 3);
+    CHECK(nvalid <= (int)alt.coast_valid + 3);
     CHECK(!valid(&alt.out));
 
     /* target back */
@@ -232,7 +242,7 @@ static void test_landing_low_altitude(void)
     while (sim.tgt[0].range_m > 4.5f) {
         sim.tgt[0].amp_lsb = amp_for(sim.tgt[0].range_m);
         const alt_output_t *o = step_pair();
-        const double truth = sim.tgt[0].range_m + 3.0 * RADAR_PAIR_DT_S;
+        const double truth = sim.tgt[0].range_m + 3.0 * last_dt;
         if (truth < 25.0) {
             ninv += !valid(o);
             ndeg += (o->status & ALT_ST_DEGRADED) != 0u;
@@ -243,9 +253,68 @@ static void test_landing_low_altitude(void)
             emax = fmax(emax, fabs(o->altitude_m - truth));
         }
     }
-    printf("  landing: max error %.3f m, invalid %d, degraded %d\n", emax, ninv, ndeg);
+    printf("  landing: max error %.3f m, invalid %d, degraded %d, %s ramp\n", emax, ninv, ndeg,
+           alt.out.rmode ? "short" : "long");
     CHECK(ninv == 0);
-    CHECK(emax < 0.6);
+    CHECK(emax < 0.3);
+    CHECK(alt.out.rmode == RADAR_RMODE_SHORT);
+}
+
+/* flare: the sink rate drops from 3 to 0.8 m/s between 12 m and 5 m. This
+ * is the worst case for the single-ramp solution (rate prediction error). */
+static void test_flare(void)
+{
+    for (int mode = 0; mode < 2; mode++) {
+        setup(SWEEP_HZ);
+        cfg.ramp_mode = mode ? CFG_RMODE_AUTO : CFG_RMODE_LONG;
+        alt_apply_config(&alt);
+        set_target(0, 30.0f, -3.0f, amp_for(30.0f));
+        double emax = 0.0;
+        int ninv = 0;
+        while (sim.tgt[0].range_m > 4.8f) {
+            const float r = sim.tgt[0].range_m;
+            sim.tgt[0].vr_mps = (r > 12.0f) ? -3.0f : -(0.8f + 2.2f * (r - 5.0f) / 7.0f);
+            sim.tgt[0].amp_lsb = amp_for(r);
+            const float vr = sim.tgt[0].vr_mps;
+            const alt_output_t *o = step_pair();
+            const double truth = sim.tgt[0].range_m - vr * last_dt;
+            if (truth < 20.0) {
+                ninv += !valid(o);
+                emax = fmax(emax, fabs(o->altitude_m - truth));
+            }
+        }
+        printf("  flare, %s ramp: max error %.3f m, invalid %d\n", mode ? "auto (short)" : "long only", emax, ninv);
+        CHECK(ninv == 0);
+        if (mode) { CHECK(emax < 0.5); }
+    }
+}
+
+/* automatic ramp switching while descending and climbing through the thresholds */
+static void test_rmode_switch(void)
+{
+    setup(SWEEP_HZ);
+    set_target(0, 45.0f, -4.0f, amp_for(45.0f));
+    double emax = 0.0;
+    int ninv = 0, nshort = 0;
+    for (int i = 0; i < 1800; i++) {
+        if (sim.tgt[0].range_m < 12.0f) { sim.tgt[0].vr_mps = 4.0f; }
+        sim.tgt[0].amp_lsb = amp_for(sim.tgt[0].range_m);
+        const float vr = sim.tgt[0].vr_mps;
+        const alt_output_t *o = step_pair();
+        if (i > 80) {
+            const double truth = sim.tgt[0].range_m - vr * last_dt;
+            ninv += !valid(o);
+            emax = fmax(emax, fabs(o->altitude_m - truth));
+            nshort += (o->rmode == RADAR_RMODE_SHORT);
+        }
+        if (sim.tgt[0].range_m > 50.0f) { break; }
+    }
+    printf("  ramp switching: max error %.3f m, invalid %d, short-ramp pairs %d, now %s\n",
+           emax, ninv, nshort, alt.out.rmode ? "short" : "long");
+    CHECK(nshort > 100);
+    CHECK(ninv < 3);
+    CHECK(emax < 0.5);
+    CHECK(alt.out.rmode == RADAR_RMODE_LONG);
 }
 
 static void test_hw_fault(void)
@@ -273,7 +342,7 @@ static void test_vco_sign(void)
     set_target(0, 80.0f, -6.0f, amp_for(80.0f));
     for (int i = 0; i < 200; i++) { step_pair(); }
     CHECK(valid(&alt.out));
-    CHECK_NEAR(alt.out.altitude_m, sim.tgt[0].range_m + 6.0 * RADAR_PAIR_DT_S, 0.5);
+    CHECK_NEAR(alt.out.altitude_m, sim.tgt[0].range_m + 6.0 * last_dt, 0.5);
     CHECK_NEAR(alt.out.vspeed_mps, -6.0, 0.4);
 }
 
@@ -289,6 +358,8 @@ static void test_background(void)
     printf("  background valid mask 0x%X after %d pairs\n", alt.bg_valid, guard);
     CHECK(alt.bg_valid != 0u);
 
+    CHECK((alt.bg_valid & 0x0Fu) != 0u);    /* long ramp */
+    CHECK((alt.bg_valid & 0xF0u) != 0u);    /* short ramp */
     /* without subtraction the nearest strong target (gear) is reported */
     set_target(1, 35.0f, 0.0f, amp_for(35.0f));
     for (int i = 0; i < 100; i++) { step_pair(); }
@@ -301,16 +372,28 @@ static void test_background(void)
     printf("  with bg: %.2f m\n", alt.out.altitude_m);
     CHECK(valid(&alt.out));
     CHECK_NEAR(alt.out.altitude_m, 35.0, 0.3);
+
+    /* low altitude: short ramp + its own background */
+    sim.tgt[1].range_m = 15.0f;
+    sim.tgt[1].amp_lsb = amp_for(15.0f);
+    for (int i = 0; i < 300; i++) { step_pair(); }
+    printf("  with bg, short ramp: %.2f m (%s)\n", alt.out.altitude_m, alt.out.rmode ? "short" : "long");
+    CHECK(alt.out.rmode == RADAR_RMODE_SHORT);
+    CHECK(valid(&alt.out));
+    CHECK_NEAR(alt.out.altitude_m, 15.0, 0.3);
 }
 
 static void test_calibration(void)
 {
     /* the radar sweeps 110 MHz but the config assumes 90 MHz: 2-point calibration */
     const float true_sweep = 110.0e6f;
-    float f[2];
     const float ref[2] = { 10.0f, 40.0f };
+    for (unsigned rm = 0; rm < RADAR_NMODES; rm++) {
+    float f[2];
     for (int p = 0; p < 2; p++) {
         setup(true_sweep);
+        cfg.ramp_mode = rm ? CFG_RMODE_SHORT : CFG_RMODE_LONG;
+        alt_apply_config(&alt);
         set_target(0, ref[p], 0.0f, amp_for(ref[p]));
         for (int i = 0; i < 60; i++) { step_pair(); }
         alt_cal_start(&alt, 100u);
@@ -322,9 +405,10 @@ static void test_calibration(void)
         f[p] = m;
     }
     const float slope = RDSP_C0_MPS * (f[1] - f[0]) / (2.0f * (ref[1] - ref[0]));
-    const float sweep = slope * (float)(RADAR_FRAME_LEN - 1u) / (float)RADAR_FS_HZ;
-    printf("  calibrated sweep %.3f MHz (true 110)\n", sweep * 1e-6);
+    const float sweep = slope * (float)(radar_frame_len(rm) - 1u) / (float)RADAR_FS_HZ;
+    printf("  %s ramp: calibrated sweep %.3f MHz (true 110)\n", rm ? "short" : "long", sweep * 1e-6);
     CHECK_NEAR(sweep, true_sweep, 0.005 * true_sweep);
+    }
 }
 
 static void test_protocol(void)
@@ -374,15 +458,20 @@ static void test_config(void)
     cfg_seal(&c);
     CHECK(!cfg_is_valid(&c));
 
-    static uint16_t t[2u * RADAR_FRAME_LEN];
-    ramp_build(t, RADAR_FRAME_LEN, 0u, 2480u, 0.0f);
-    CHECK(t[0] == 0u && t[RADAR_FRAME_LEN - 1u] == 2480u);
-    CHECK(t[RADAR_FRAME_LEN] == 2480u && t[2u * RADAR_FRAME_LEN - 1u] == 0u);
-    int mono = 1;
-    for (uint32_t i = 1; i < RADAR_FRAME_LEN; i++) { if (t[i] < t[i - 1u]) { mono = 0; } }
-    CHECK(mono);
-    ramp_build(t, RADAR_FRAME_LEN, 75u, 4091u, 0.0f);
-    CHECK(t[0] == 75u && t[RADAR_FRAME_LEN - 1u] == 4091u);
+    static uint16_t t[2u * RADAR_FRAME_LEN_MAX];
+    for (unsigned rm = 0; rm < RADAR_NMODES; rm++) {
+        const uint32_t n = radar_frame_len(rm);
+        ramp_build(t, n, 0u, 2480u, 0.0f);
+        CHECK(t[0] == 0u && t[n - 1u] == 2480u);
+        CHECK(t[n] == 2480u && t[2u * n - 1u] == 0u);
+        int mono = 1;
+        for (uint32_t i = 1; i < n; i++) { if (t[i] < t[i - 1u]) { mono = 0; } }
+        CHECK(mono);
+        ramp_build(t, n, 75u, 4091u, 0.0f);
+        CHECK(t[0] == 75u && t[n - 1u] == 4091u);
+    }
+    CHECK(radar_frame_len(RADAR_RMODE_LONG) == 2432u);
+    CHECK(radar_frame_len(RADAR_RMODE_SHORT) == 704u);
 }
 
 void test_alt_all(void)
@@ -398,6 +487,8 @@ void test_alt_all(void)
     RUN(test_step_change);
     RUN(test_agc_and_clipping);
     RUN(test_landing_low_altitude);
+    RUN(test_flare);
+    RUN(test_rmode_switch);
     RUN(test_hw_fault);
     RUN(test_vco_sign);
     RUN(test_background);
