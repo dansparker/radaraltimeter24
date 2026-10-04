@@ -40,8 +40,6 @@
 #define ALT_SNR_MIN_DB     12.0f     /**< SNR of the averaged spectrum */
 #define ALT_SNR_CUR_DB     9.0f      /**< SNR the current frame must confirm */
 #define ALT_RELIABLE_BIN   4.0f      /**< beats below: no Doppler fusion (HP skew, DC) */
-#define ALT_IF_HP_FC_HZ    1130.0f   /**< IF high-pass 300R/470nF (schematic), 0 = off */
-#define ALT_IF_HP_ORDER    3         /**< number of 1st-order high-pass stages */
 #define ALT_MIN_BIN        2u        /**< lowest analysed bin (DC / leakage) */
 #define ALT_MAX_CAND       8u        /**< detections kept per ramp */
 #define ALT_SEL_REL_DB     15.0f     /**< nearest target within X dB of the strongest */
