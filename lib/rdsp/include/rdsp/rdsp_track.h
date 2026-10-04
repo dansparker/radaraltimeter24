@@ -73,4 +73,11 @@ float rdsp_track_gate(const rdsp_track_t *t, float dt);
  */
 int rdsp_track_update(rdsp_track_t *t, int has_z, float z, float vz, float dt);
 
+/**
+ * Like rdsp_track_update() but the rate is NOT adapted (beta = gamma = 0).
+ * Use it for measurements that themselves depend on the predicted rate,
+ * otherwise rate errors are fed back into the measurement (unstable loop).
+ */
+int rdsp_track_update_pos(rdsp_track_t *t, float z, float dt);
+
 #endif /* RDSP_TRACK_H */

@@ -137,3 +137,14 @@ int rdsp_track_update(rdsp_track_t *t, int has_z, float z, float vz, float dt)
     }
     return 0;
 }
+
+int rdsp_track_update_pos(rdsp_track_t *t, float z, float dt)
+{
+    const float beta = t->cfg.beta, gamma = t->cfg.gamma;
+    t->cfg.beta = 0.0f;
+    t->cfg.gamma = 0.0f;
+    const int r = rdsp_track_update(t, 1, z, NAN, dt);
+    t->cfg.beta = beta;
+    t->cfg.gamma = gamma;
+    return r;
+}

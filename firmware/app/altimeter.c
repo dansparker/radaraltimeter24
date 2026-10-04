@@ -25,6 +25,7 @@ typedef struct {
     float closing;      /**< closing speed from Doppler [m/s] */
     float snr_db;
     uint8_t degraded;
+    uint8_t single;     /**< single ramp + predicted Doppler (depends on the track rate) */
 } meas_t;
 
 /* ------------------------------------------------------------------------ */
@@ -316,6 +317,7 @@ static void fill_meas(const altimeter_t *a, meas_t *m, float fr, float fd, float
     m->f_fall = fdn;
     m->snr_db = snr;
     m->degraded = degraded;
+    m->single = 0u;
 }
 
 static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
@@ -382,6 +384,7 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
                             found = 1;
                             fill_meas(a, m, cands[k], fdp, (dir == 0) ? f : NAN, (dir == 1) ? f : NAN,
                                       C[i].snr_db, 1u);
+                            m->single = 1u;
                         }
                     }
                 }
@@ -426,7 +429,11 @@ static int finish_pair(altimeter_t *a)
         (fabsf(vz - a->trk.v) > ALT_V_GATE_MPS)) {
         vz = NAN;                                                /* implausible Doppler */
     }
-    (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, RADAR_PAIR_DT_S);
+    if (have && m.single) {
+        (void)rdsp_track_update_pos(&a->trk, m.range_m, RADAR_PAIR_DT_S);
+    } else {
+        (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, RADAR_PAIR_DT_S);
+    }
     if (!have) {
         st |= ALT_ST_NO_TARGET;
         a->st.no_meas++;
