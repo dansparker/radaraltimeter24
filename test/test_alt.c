@@ -236,7 +236,7 @@ static void test_landing_low_altitude(void)
         if (truth < 25.0) {
             ninv += !valid(o);
             ndeg += (o->status & ALT_ST_DEGRADED) != 0u;
-            if (fabs(o->altitude_m - truth) > 0.4) {
+            if (fabs(o->altitude_m - truth) > 0.6) {
                 printf("    R=%.2f alt=%.2f vs=%.2f st=%04X trk=%u fu=%.1f fd=%.1f\n", truth, o->altitude_m,
                        o->vspeed_mps, o->status, o->track_state, o->f_rise_hz, o->f_fall_hz);
             }

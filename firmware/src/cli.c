@@ -112,6 +112,7 @@ static void cmd_help(void)
         "sweep <MHz>          set RF sweep manually\r\n"
         "bg capture|on|off    background (leakage) capture - antenna to free sky!\r\n"
         "vsign 1|-1           VCO tuning direction\r\n"
+        "rampq <q>            quadratic ramp predistortion (-0.5..0.5)\r\n"
         "range <m>            maximum range\r\n"
         "dacbuf 0|1           DAC output buffer\r\n"
         "can on|off|125|250|500|1000|id <hex>\r\n"
@@ -296,6 +297,12 @@ static void execute(char *l)
         if ((parse_float(a, &v) != 0) || ((v != 1.0f) && (v != -1.0f))) { out("ERR\r\n"); return; }
         c->vco_sign = (int8_t)v;
         config_changed();
+    }
+    else if ((a = match(l, "rampq")) != NULL) {
+        if ((parse_float(a, &v) != 0) || (v < -0.5f) || (v > 0.5f)) { out("ERR -0.5..0.5\r\n"); return; }
+        c->mod[c->module].ramp_q = v;
+        app_restart_frontend();
+        out("OK (not saved - use 'save')\r\n");
     }
     else if ((a = match(l, "range")) != NULL) {
         if ((parse_float(a, &v) != 0) || (v < 5.0f) || (v > 1000.0f)) { out("ERR\r\n"); return; }
