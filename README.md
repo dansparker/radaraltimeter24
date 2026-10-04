@@ -2,8 +2,9 @@
 
 FMCW-Radar-Höhenmesser (Radar Altimeter) für Flugzeuge mit 24-GHz-Radarmodul
 (**RFbeam K-LC1a** oder **InnoSenT IVS-465**) und **STM32F405RGT6**.
-Messbereich ca. 4 m … 250 m (abhängig vom Frequenzhub des Moduls), 61,7 Messungen/s,
-Ausgabe über **UART** und **CAN**.
+Messbereich ca. 4 m … 250 m (abhängig vom Frequenzhub des Moduls), Ausgabe ~60 Hz über
+**UART** und **CAN**. Zwei Rampenmodi: lange Rampe (8,1 ms) für Erfassung und große Höhe,
+**Kurzrampe (2,35 ms) automatisch unter 25 m** für Landung und Abfangbogen.
 
 [![CI](https://github.com/dansparker/radaraltimeter24/actions/workflows/ci.yml/badge.svg)](https://github.com/dansparker/radaraltimeter24/actions/workflows/ci.yml)
 
@@ -20,7 +21,7 @@ docs/                Signalverarbeitung, Hardware, Review/Schwachstellen
 
 ## Signalverarbeitung (Kurzfassung)
 
-Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 8,1 ms):
+Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 8,1 ms bzw. 2,35 ms im Kurzrampen-Modus):
 
 | Schritt | Modul | Zweck |
 |---|---|---|
@@ -62,8 +63,10 @@ make -C test
 
 1. Firmware flashen, UART 115200 8N1 öffnen → `$RALT`-Zeilen.
 2. `module klc1a` bzw. `module ivs465`, dann `info`.
-3. **Kalibrierung** (Frequenzhub der Module unbekannt!): Radar auf ein großes, flaches Ziel
-   in bekanntem Abstand richten, `cal1 <m>`, Abstand ändern (≥ 2 m, besser ≥ 10 m), `cal2 <m>`, `save`.
+3. **Kalibrierung** (Frequenzhub der Module unbekannt!): `rmode long`, Radar auf ein großes,
+   flaches Ziel in bekanntem Abstand richten, `cal1 <m>`, Abstand ändern (≥ 2 m, besser ≥ 10 m),
+   `cal2 <m>`. Optional dasselbe mit `rmode short` (eigener Hub der Kurzrampe, sonst wird der
+   Wert der langen Rampe verwendet). Dann `rmode auto`, `save`.
 4. Optional, eingebaut am Flugzeug: `zero 0` (Anzeige = 0 auf dem Boden), `save`.
 5. Optional: `bg capture` mit Antenne zum freien Himmel (Fahrwerks-/Leckage-Echos), `bg on`, `save`.
 
@@ -89,6 +92,7 @@ Statusbits: `0x0001` gültig, `0x0002` Coasting, `0x0004` kein Ziel, `0x0008` Cl
 `0x0010` Hardwarefehler, `0x0020` nicht kalibriert, `0x0040` Frame-Überlauf,
 `0x0080` degradiert (Einzelrampe/gespiegelt), `0x0100` Kalibrierung/Hintergrund läuft,
 `0x0200` Gain-Wechsel, `0x0400` Taktausfall (läuft auf HSI).
+Der aktuelle Rampenmodus steht in `$RDBG` (Track-Feld) bzw. `info`.
 
 ## Status / Einschränkungen
 

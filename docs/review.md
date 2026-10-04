@@ -20,11 +20,13 @@ führt alle Tests normal und mit Address-/Undefined-Behaviour-Sanitizer aus und 
 | Zielverlust kurz/lang, Wiederaufnahme | Coast ≤ 0,25 s, dann ungültig; Wiederaufnahme nach 1 Paar |
 | Sprung 60 → 45 m | nach 5 Paaren übernommen |
 | Übersteuerung / schwaches Ziel | AGC auf Stufe 0 bzw. 3, keine Fehlmessung bei Clipping |
-| Landung 30 → 4,5 m bei 3 m/s | gültig, max. 0,46 m Fehler im Einzelrampen-Bereich |
+| Landung 30 → 4,5 m bei 3 m/s | gültig, max. 0,24 m (vorher nur lange Rampe: 0,46 m) |
+| Flare 3 → 0,8 m/s zwischen 12 und 5 m | Kurzrampe 0,20 m, nur lange Rampe 0,63 m |
+| Sinken 45 → 12 m, Abfangen, Steigen auf 50 m | Umschalten lang ↔ kurz ohne ungültige Ausgabe, max. 0,03 m |
 | ADC eingefroren | HW_FAULT, ungültig, Erholung |
 | VCO-Richtung invertiert | korrekt mit `vsign -1` |
 | Fahrwerksecho 4,5 m + Boden 35 m | ohne Hintergrundabzug 4,5 m (falsch), mit 35,00 m |
-| 2-Punkt-Kalibrierung (Sollhub 110 MHz, Start 90 MHz) | 110,001 MHz |
+| 2-Punkt-Kalibrierung (Sollhub 110 MHz, Start 90 MHz) | lang 110,001 MHz, kurz 110,004 MHz |
 
 Die Simulator-Ergebnisse sind ein **Bestfall**: VCO-Nichtlinearität, Temperaturdrift,
 Bodenrauigkeit (ausgedehntes Ziel, Speckle) und Fluglage (Neigung/Rollwinkel) sind nicht
@@ -62,10 +64,11 @@ modelliert. Real sind Fehler im Bereich von einigen Zentimetern bis Dezimetern z
    (wahrer Hub / 90 MHz) falsch sein.
 2. **Minimale Höhe ≈ 2 Bins ≈ 4 m bei 90 MHz Hub.** Darunter ist das Ziel von DC/Leckage nicht
    trennbar. Abhilfe: größerer Hub (IVS-465 hat einen größeren Tuning-Bereich), Hintergrundabzug.
-3. **Landung mit wechselnder Sinkrate:** Im Einzelrampen-Bereich (bei 3 m/s etwa 2,6 … 10,5 m)
-   erzeugt jede m/s Fehler der vorhergesagten Sinkrate 2,17 m Höhenfehler (Status `DEGRADED`).
-   **Empfohlene Erweiterung:** ein Kurzrampen-Modus für geringe Höhe (z. B. 2 ms statt 8 ms
-   Rampendauer) verringert diese Kopplung auf ≈ 0,5 m pro m/s und hält die Beats von DC fern.
+3. **Landung mit wechselnder Sinkrate:** Im Einzelrampen-Bereich (Status `DEGRADED`) erzeugt
+   jede m/s Fehler der vorhergesagten Sinkrate einen Höhenfehler: 0,63 m mit der Kurzrampe
+   (unter 25 m automatisch aktiv), 2,17 m mit der langen Rampe. Ungetestet ist, ob der VCO des
+   K-LC1a/IVS-465 und das Sallen-Key-Filter der 2,35-ms-Rampe linear folgen. Prüfen mit
+   `rmode short` + `dump`; falls nötig, eigenen Hub mit `rmode short` + `cal1/cal2` kalibrieren.
 4. **CD4052-Verstärkungsstufen** sind nicht bekannt. Die AGC setzt ein Stufenverhältnis ≤ 4,25
    voraus (sonst `ALT_AGC_LO` verkleinern). Die Höhe hängt nicht von der Verstärkung ab.
 5. **PA11/PA12**: Im Schaltplan als CAN, in der alten Firmware als TM1637-Anzeige genutzt. Die

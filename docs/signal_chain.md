@@ -30,10 +30,34 @@ Messgenauigkeit ist durch die Interpolation (Schritt 6) viel besser als die Aufl
 **kleinste messbare Höhe** liegt bei etwa 2 Bins (≈ 4 m bei 90 MHz): Darunter verschmilzt das
 Ziel mit DC und Antennen-Leckage. Mehr Hub verringert diese Grenze proportional.
 
+## Rampenmodi (lang / kurz)
+
+| | lang | kurz |
+|---|---|---|
+| Samples (Rand + Auswertung + Rand) | 192 + 2048 + 192 = 2432 | 96 + 512 + 96 = 704 |
+| Rampendauer | 8,107 ms | 2,347 ms |
+| Messpaare/s | 61,7 | 213 (Ausgabe auf ~53 Hz dezimiert) |
+| Entfernung pro Bin (90 MHz) | 1,98 m | 2,29 m |
+| Höhenfehler pro m/s Doppler-Fehler | 2,17 m | 0,63 m |
+| Beat bei 5 m (90 MHz) | 370 Hz | 1280 Hz |
+
+Die Kopplung zwischen Doppler und Entfernung ist proportional zur Rampendauer
+(`ΔR = v·T·f0/B`). Bei geringer Höhe und Sinkflug ist sie entscheidend, weil dort eine Rampe
+oft nur mit vorhergesagtem Doppler ausgewertet werden kann. Kurze Rampen schieben außerdem
+die Beat-Frequenzen nach oben, weg von DC, von der Leckage und von den ZF-Hochpässen (~1,1 kHz,
+3. Ordnung: bei 370 Hz −29 dB, bei 1280 Hz nur −4 dB). Die lange Rampe hat 6 dB mehr
+Integrationsgewinn und bleibt deshalb für die Zielerfassung und große Höhen zuständig.
+
+**Automatik (`rmode auto`):** gültige Höhe < 25 m → kurz; gültige Höhe > 35 m oder Track
+verloren → lang (Hysterese 10 m). Beim Wechsel wird das Frontend neu gestartet; der Tracker
+läuft weiter, nur die Spektrenmittelung wird zurückgesetzt. Coasting-Zeiten sind in Sekunden
+definiert und gelten für beide Modi gleich. Während Kalibrierung und Hintergrundaufnahme ist
+der Modus fest.
+
 ## Erfassung (Firmware, `bsp/frontend.c`)
 
 Ein einziger Timer (TIM2, 300 kHz) triggert **DAC und ADC gleichzeitig**. Beide laufen
-per DMA in Endlosschleifen gleicher Länge (2 × 2432 Werte), damit ist Sample *i* fest an
+per DMA in Endlosschleifen gleicher Länge (2 × Rampenlänge), damit ist Sample *i* fest an
 Rampenwert *i* gekoppelt, ohne Software-Timing und ohne Neustart zwischen den Rampen.
 Halb- und Voll-Interrupt markieren das Ende der steigenden bzw. fallenden Rampe.
 

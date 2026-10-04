@@ -33,15 +33,17 @@ Stufe 0 = kleinste Verstärkung.
 |---|---|
 | HSE 8 MHz → PLL 168 MHz | APB1 42 MHz (Timer 84 MHz), APB2 84 MHz; CSS aktiv, bei Quarzausfall automatisch HSI-PLL |
 | TIM2 | 300 kHz TRGO → triggert DAC **und** ADC |
-| DMA1 Stream5 Ch7 | Rampentabelle → DAC (zirkulär, 2×2432) |
-| DMA2 Stream0 Ch0 | ADC → RAM (zirkulär, 2×2432, HT/TC-Interrupt = Rampenende) |
+| DMA1 Stream5 Ch7 | Rampentabelle → DAC (zirkulär, 2×2432 lang / 2×704 kurz) |
+| DMA2 Stream0 Ch0 | ADC → RAM (zirkulär, gleiche Länge, HT/TC-Interrupt = Rampenende) |
 | USART1 + IRQ | Ringpuffer TX 2 kB / RX 256 B |
 | CAN1 | 125/250/500/1000 kbit/s, nur Senden, automatische Bus-Off-Erholung |
 | IWDG | 250 ms; wird nur bedient, solange Rampen ankommen (beim Flash-Löschen 32 s) |
 | Flash Sektor 11 | Konfiguration (CRC32) + Hintergrund-Frames |
 | CCM-RAM | DSP-Arbeitspuffer (48 kB); DMA-Puffer liegen im SRAM |
 
-Rampen: 2432 Samples bei 300 kHz = 8,107 ms; ein Messwert pro Rampenpaar = 61,7 Hz.
+Rampen: lang 2432 Samples = 8,107 ms, kurz 704 Samples = 2,347 ms (300 kHz). Im Kurzrampen-Modus
+muss die Verarbeitung einer Rampe unter 2,3 ms bleiben (geschätzt ~0,5 ms, mit FCT2 messen;
+Überläufe zeigt `stat` bzw. Statusbit `0x0040`).
 
 | Modul | DAC-Bereich | Hub (Startwert, **muss kalibriert werden**) |
 |---|---|---|
@@ -52,7 +54,7 @@ Rampen: 2432 Samples bei 300 kHz = 8,107 ms; ein Messwert pro Rampenpaar = 61,7 
 
 `help`, `info`, `stat`, `out 0|1|2`, `module klc1a|ivs465`, `gain auto|0..3`,
 `cal1 <m>`, `cal2 <m>`, `zero [m]`, `sweep <MHz>`, `rampq <q>`, `bg capture|on|off`,
-`vsign 1|-1`, `range <m>`, `dacbuf 0|1`, `can on|off|<kbps>|id <hex>`, `dump`, `save`,
+`vsign 1|-1`, `rmode auto|long|short`, `range <m>`, `dacbuf 0|1`, `can on|off|<kbps>|id <hex>`, `dump`, `save`,
 `defaults`, `reset`, `abort`.
 
 Änderungen gelten sofort und werden erst mit `save` dauerhaft gespeichert.
@@ -62,11 +64,14 @@ Rampen: 2432 Samples bei 300 kHz = 8,107 ms; ein Messwert pro Rampenpaar = 61,7 
 `cal1 <m>` und `cal2 <m>` mitteln jeweils 256 dopplerfreie Messungen der Beat-Frequenz `f_R`.
 Daraus ergeben sich der wirksame Hub `B` und der Offset `R0` (Laufzeiten, Einbauort).
 Empfehlung: zwei Abstände mit großem Unterschied (z. B. 10 m und 40 m) auf ein großes,
-flaches Ziel (Wand, Boden). `zero` setzt danach nur den Offset (Rad-Boden-Abstand).
+flaches Ziel (Wand, Boden). Kalibriert wird im festen Modus: `rmode long` → Hub + Offset;
+optional `rmode short` → eigener Hub der Kurzrampe (falls das VCO-Ansteuerfilter bei der
+schnelleren Rampe den Hub verändert). `zero` setzt danach nur den Offset (Rad-Boden-Abstand).
 
 ### Hintergrund (Leckage, Fahrwerk)
 
-`bg capture` mittelt je Verstärkung und Rampenrichtung 128 Rampen. Dabei darf **kein Ziel im
+`bg capture` mittelt für beide Rampenmodi je Verstärkung und Rampenrichtung 128 Rampen
+(Gültigkeitsmaske: Bits 0–3 lang, 4–7 kurz). Dabei darf **kein Ziel im
 Messbereich** sein (Antenne zum freien Himmel, oder im Flug über 300 m AGL). Danach `bg on` und
 `save`. Der Abzug verbessert die Messung bei geringer Höhe und unterdrückt feste Echos am Flugzeug.
 
