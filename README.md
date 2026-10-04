@@ -78,7 +78,7 @@ UART (NMEA-ähnlich, XOR-Prüfsumme):
 
 ```
 $RALT,<seq>,<höhe_m>,<vs_m/s>,<snr_dB>,<gain>,<status_hex>*CS
-$RDBG,<seq>,<roh_m>,<f_steigend_Hz>,<f_fallend_Hz>,<f_R_Hz>,<track>*CS   (out 2)
+$RDBG,<seq>,<roh_m>,<f_steigend_Hz>,<f_fallend_Hz>,<f_R_Hz>,<track>,<L|S>*CS   (out 2, L/S = Rampenmodus)
 ```
 
 Höhe und Geschwindigkeit sind leer, wenn ungültig. CAN (Standard-ID `0x3A0`, 500 kbit/s):
@@ -92,7 +92,7 @@ Statusbits: `0x0001` gültig, `0x0002` Coasting, `0x0004` kein Ziel, `0x0008` Cl
 `0x0010` Hardwarefehler, `0x0020` nicht kalibriert, `0x0040` Frame-Überlauf,
 `0x0080` degradiert (Einzelrampe/gespiegelt), `0x0100` Kalibrierung/Hintergrund läuft,
 `0x0200` Gain-Wechsel, `0x0400` Taktausfall (läuft auf HSI).
-Der aktuelle Rampenmodus steht in `$RDBG` (Track-Feld) bzw. `info`.
+Der aktuelle Rampenmodus steht im letzten Feld von `$RDBG` (L lang, S kurz) und in `info`.
 
 ## Status / Einschränkungen
 

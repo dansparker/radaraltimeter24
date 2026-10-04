@@ -4,7 +4,7 @@
  *
  * UART (NMEA-like, XOR checksum over the characters between '$' and '*'):
  *   $RALT,<seq>,<alt_m>,<vs_mps>,<snr_db>,<gain>,<status_hex>*CS\r\n
- *   $RDBG,<seq>,<raw_m>,<f_rise>,<f_fall>,<f_r>,<track_state>*CS\r\n
+ *   $RDBG,<seq>,<raw_m>,<f_rise>,<f_fall>,<f_r>,<track_state>,<L|S ramp>*CS\r\n
  * Empty fields mean "not available".
  *
  * CAN (standard id, DLC 8, little endian):

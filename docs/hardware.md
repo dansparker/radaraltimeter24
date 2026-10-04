@@ -39,7 +39,7 @@ Stufe 0 = kleinste Verstärkung.
 | CAN1 | 125/250/500/1000 kbit/s, nur Senden, automatische Bus-Off-Erholung |
 | IWDG | 250 ms; wird nur bedient, solange Rampen ankommen (beim Flash-Löschen 32 s) |
 | Flash Sektor 11 | Konfiguration (CRC32) + Hintergrund-Frames |
-| CCM-RAM | DSP-Arbeitspuffer (48 kB); DMA-Puffer liegen im SRAM |
+| CCM-RAM | DSP-Arbeitspuffer (52 kB); DMA-Puffer liegen im SRAM |
 
 Rampen: lang 2432 Samples = 8,107 ms, kurz 704 Samples = 2,347 ms (300 kHz). Im Kurzrampen-Modus
 muss die Verarbeitung einer Rampe unter 2,3 ms bleiben (geschätzt ~0,5 ms, mit FCT2 messen;
