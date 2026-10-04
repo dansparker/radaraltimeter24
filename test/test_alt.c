@@ -97,8 +97,7 @@ static void test_descent_and_climb(void)
                 const double truth = sim.tgt[0].range_m - vr[k] * RADAR_PAIR_DT_S;
                 emax = fmax(emax, fabs(o->altitude_m - truth));
                 if (fabs(o->vspeed_mps - vr[k]) > 0.3) {
-                    printf("    i=%d R=%.2f vs=%.2f st=%04X gain=%u fu=%.1f fd=%.1f
-", i, truth,
+                    printf("    i=%d R=%.2f vs=%.2f st=%04X gain=%u fu=%.1f fd=%.1f\n", i, truth,
                            o->vspeed_mps, o->status, o->gain, o->f_rise_hz, o->f_fall_hz);
                 }
                 vmax = fmax(vmax, fabs(o->vspeed_mps - vr[k]));
@@ -238,8 +237,7 @@ static void test_landing_low_altitude(void)
             ninv += !valid(o);
             ndeg += (o->status & ALT_ST_DEGRADED) != 0u;
             if (fabs(o->altitude_m - truth) > 0.4) {
-                printf("    R=%.2f alt=%.2f vs=%.2f st=%04X trk=%u fu=%.1f fd=%.1f
-", truth, o->altitude_m,
+                printf("    R=%.2f alt=%.2f vs=%.2f st=%04X trk=%u fu=%.1f fd=%.1f\n", truth, o->altitude_m,
                        o->vspeed_mps, o->status, o->track_state, o->f_rise_hz, o->f_fall_hz);
             }
             emax = fmax(emax, fabs(o->altitude_m - truth));
