@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit + end-to-end tests
+        run: make -C test
+      - name: Tests with address/undefined sanitizers
+        run: make -C test clean && make -C test SAN=1
+
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM GCC
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+      - name: Fetch CMSIS headers
+        run: sh tools/fetch_cmsis.sh
+      - name: Build
+        run: make -C firmware
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            firmware/build/radar_altimeter.elf
+            firmware/build/radar_altimeter.bin
+            firmware/build/radar_altimeter.hex
