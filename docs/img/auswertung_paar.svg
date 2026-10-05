@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="500" viewBox="0 0 680 500" role="img">
+<title>Auswertung pro Rampenpaar</title>
+<desc>Kandidaten beider Rampen; bei bestätigtem Track Paarung mit drei Hypothesen oder Einzelrampe mit vorhergesagtem Doppler, sonst Erfassung des nächsten starken Ziels; danach Alpha-Beta-Tracker, Ausgabe und Wahl des Rampenmodus.</desc>
+<style>
+.ts{font:12px sans-serif;fill:#5F5E5A}.th{font:500 14px sans-serif;fill:#2C2C2A}
+.arr{stroke:#5F5E5A;stroke-width:1.5;fill:none}
+.box{fill:#F1EFE8;stroke:#888780;stroke-width:0.5}
+.c-gray rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.5}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.5}.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.5}.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="680" height="500" fill="#FFFFFF"/>
+<g class="c-gray"><rect x="130" y="30" width="190" height="56" rx="8"/><text class="th" x="225" y="48" text-anchor="middle" dominant-baseline="central">Kandidaten steigend</text><text class="ts" x="225" y="68" text-anchor="middle" dominant-baseline="central">f_up-Liste</text></g>
+<g class="c-gray"><rect x="360" y="30" width="190" height="56" rx="8"/><text class="th" x="455" y="48" text-anchor="middle" dominant-baseline="central">Kandidaten fallend</text><text class="ts" x="455" y="68" text-anchor="middle" dominant-baseline="central">f_dn-Liste</text></g>
+<path d="M225 86 L225 102 L310 102 L310 118" class="arr" marker-end="url(#a)"/>
+<path d="M455 86 L455 102 L370 102 L370 118" class="arr" marker-end="url(#a)"/>
+<rect x="240" y="120" width="200" height="44" rx="8" class="box"/>
+<text class="th" x="340" y="142" text-anchor="middle" dominant-baseline="central">Track bestätigt?</text>
+<path d="M300 164 L300 186 L130 186 L130 208" class="arr" marker-end="url(#a)"/>
+<path d="M380 164 L380 186 L550 186 L550 208" class="arr" marker-end="url(#a)"/>
+<text class="ts" x="292" y="176" text-anchor="end" dominant-baseline="central">ja</text>
+<text class="ts" x="388" y="176" dominant-baseline="central">nein</text>
+<g class="c-purple"><rect x="40" y="210" width="180" height="56" rx="8"/><text class="th" x="130" y="228" text-anchor="middle" dominant-baseline="central">Paarung</text><text class="ts" x="130" y="248" text-anchor="middle" dominant-baseline="central">3 Hypothesen, Gates</text></g>
+<g class="c-purple"><rect x="250" y="210" width="180" height="56" rx="8"/><text class="th" x="340" y="228" text-anchor="middle" dominant-baseline="central">Einzelrampe</text><text class="ts" x="340" y="248" text-anchor="middle" dominant-baseline="central">falls kein Paar passt</text></g>
+<g class="c-purple"><rect x="460" y="210" width="180" height="56" rx="8"/><text class="th" x="550" y="228" text-anchor="middle" dominant-baseline="central">Erfassung</text><text class="ts" x="550" y="248" text-anchor="middle" dominant-baseline="central">nächstes starkes Ziel</text></g>
+<line x1="220" y1="238" x2="248" y2="238" class="arr" marker-end="url(#a)"/>
+<path d="M130 266 L130 282 L300 282 L300 298" class="arr" marker-end="url(#a)"/>
+<line x1="340" y1="266" x2="340" y2="298" class="arr" marker-end="url(#a)"/>
+<path d="M550 266 L550 282 L380 282 L380 298" class="arr" marker-end="url(#a)"/>
+<g class="c-teal"><rect x="240" y="300" width="200" height="56" rx="8"/><text class="th" x="340" y="318" text-anchor="middle" dominant-baseline="central">α-β-Tracker</text><text class="ts" x="340" y="338" text-anchor="middle" dominant-baseline="central">Gating, Coasting</text></g>
+<path d="M300 356 L300 378 L225 378 L225 398" class="arr" marker-end="url(#a)"/>
+<path d="M380 356 L380 378 L455 378 L455 398" class="arr" marker-end="url(#a)"/>
+<g class="c-teal"><rect x="130" y="400" width="190" height="56" rx="8"/><text class="th" x="225" y="418" text-anchor="middle" dominant-baseline="central">Ausgabe</text><text class="ts" x="225" y="438" text-anchor="middle" dominant-baseline="central">UART, CAN, ~60 Hz</text></g>
+<g class="c-teal"><rect x="360" y="400" width="190" height="56" rx="8"/><text class="th" x="455" y="418" text-anchor="middle" dominant-baseline="central">Rampenmodus</text><text class="ts" x="455" y="438" text-anchor="middle" dominant-baseline="central">&lt; 25 m kurz, &gt; 35 m lang</text></g>
+<text class="ts" x="455" y="476" text-anchor="middle" dominant-baseline="central">↻ nächstes Rampenpaar</text>
+</svg>

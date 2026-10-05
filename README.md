@@ -35,7 +35,9 @@ Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 8,1 ms bzw. 2,35 ms i
 | 7 | `rdsp_fmcw` | Up/Down-Kombination → dopplerfreie Entfernung + Geschwindigkeit |
 | 8 | `rdsp_track` | α-β-Tracker mit Gating, Coasting, Wiederaufnahme |
 
-Details und Begründungen: [docs/signal_chain.md](docs/signal_chain.md).
+![Verarbeitung pro Rampe](docs/img/verarbeitung_rampe.svg)
+
+Details, Begründungen und weitere Diagramme: [docs/signal_chain.md](docs/signal_chain.md).
 
 ## Bauen
 

@@ -21,6 +21,8 @@ Daraus `f_R = (f_up + f_dn)/2` (dopplerfrei) und `f_D = (f_dn − f_up)/2`. Desh
 **Dreieckmodulation** verwendet: Bei 24 GHz erzeugen schon 1 m/s Sinkrate 161 Hz Doppler. Mit
 einer reinen Sägezahnrampe ergäbe das 2,2 m Höhenfehler pro m/s.
 
+![FMCW-Dreieckmodulation: Sendesignal und verzögertes, dopplerverschobenes Echo](img/fmcw_prinzip.svg)
+
 **Taktunabhängigkeit:** `f_R` wird in FFT-Bins gemessen (`bin·fs/N`), die Steigung ist
 `S = B·fs/(L−1)`. Damit kürzt sich `fs` heraus: `R = c0·bin·(L−1)/(2·B·N)`. Die Höhe hängt nicht
 von der Quarzgenauigkeit ab (wichtig für den HSI-Notbetrieb), nur die Geschwindigkeit.
@@ -67,6 +69,16 @@ Halb- und Voll-Interrupt markieren das Ende der steigenden bzw. fallenden Rampe.
 * Das Dreieck ist stetig, es gibt also keinen Rücksprung, der die ZF-Hochpässe anstößt.
 * Verstärkungswechsel werden exakt an Rampengrenzen geschaltet. Die folgende Rampe wird als
   „settling“ markiert und verworfen.
+
+## Überblick der Verarbeitung
+
+Jede Rampe (steigend oder fallend) durchläuft die Schritte 0–6:
+
+![Verarbeitung pro Rampe](img/verarbeitung_rampe.svg)
+
+Nach jeder fallenden Rampe werden beide Rampen zu einer Messung kombiniert (Schritte 7–8):
+
+![Auswertung pro Rampenpaar](img/auswertung_paar.svg)
 
 ## Schritt 0 – AGC (`rdsp_agc`)
 
