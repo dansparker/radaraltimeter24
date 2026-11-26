@@ -85,8 +85,9 @@ Build mit `make -C firmware` (Standard `BOARD=revb`, Rev. A: `BOARD=reva`).
 
 - Gleicher Takt wie Rev. A: 168 MHz aus HSE 8 MHz (keine Over-Drive-Umschaltung nötig), TIM2 300 kHz.
 - Konfiguration in Flash-Sektor 7 (0x08060000).
-- Kein CCM: Alle Puffer liegen im SRAM (≈ 100 KB von 128 KB). Möglich wurde das durch den
-  laufenden Hintergrundabzug statt gespeicherter Hintergründe (−56 KB).
+- Kein CCM: Alle Puffer liegen im SRAM, belegt sind 87 KB von 128 KB (inkl. 8 KB Stack).
+  Möglich wurde das durch den laufenden Hintergrundabzug statt gespeicherter Hintergründe
+  (56 KB → 4 KB).
 - Pins wie in der Tabelle; RF_EN wird erst unmittelbar vor dem Start der Rampe gesetzt.
 - DAC-Standardbereich K-LC1a: 724…3000 (U_tune 0,35…1,45 V um die Leerlauffrequenz).
 - Noch offen: Selbsttest über MON_VTUNE, MON_5VRF, MON_VIN; Polarität der Board-LED PB2 prüfen.
