@@ -15,12 +15,11 @@
 
 #define CLI_LINE   64u
 #define CAL_PAIRS  256u
-#define BG_FRAMES  128u
 
 static char s_line[CLI_LINE];
 static uint32_t s_len;
 
-static enum { OP_NONE = 0, OP_CAL1, OP_CAL2, OP_BG } s_op;
+static enum { OP_NONE = 0, OP_CAL1, OP_CAL2 } s_op;
 static float s_ref1, s_ref2, s_f1;
 static uint8_t s_f1_ok;
 
@@ -110,7 +109,8 @@ static void cmd_help(void)
         "cal1 <m> / cal2 <m>  2-point calibration at two known heights\r\n"
         "zero [m]             set offset so that the current altitude = m (default 0)\r\n"
         "sweep <MHz>          set RF sweep manually\r\n"
-        "bg capture|on|off    background (leakage) capture - antenna to free sky!\r\n"
+        "bg on|off            running background removal (on in flight,\r\n"
+        "                     off for tests with a static target)\r\n"
         "vsign 1|-1           VCO tuning direction\r\n"
         "rampq <q>            quadratic ramp predistortion (-0.5..0.5)\r\n"
         "rmode auto|long|short ramp mode (auto: short below 25 m)\r\n"
@@ -142,8 +142,7 @@ static void cmd_info(void)
     out((g_app.alt.rmode == RADAR_RMODE_SHORT) ? " (now short)\r\n" : " (now long)\r\n");
     out_f("max range ", c->max_range_m, 1u, " m\r\n");
     out_f("gain ", (c->gain_mode == CFG_GAIN_AUTO) ? -1.0f : (float)c->gain_mode, 0u, " (-1 = auto)\r\n");
-    out_f("bg ", (float)c->bg_enable, 0u, "");
-    out_f(" valid mask ", (float)g_app.alt.bg_valid, 0u, "\r\n");
+    out(c->bg_enable ? "bg on (running background removal)\r\n" : "bg off\r\n");
     out_f("can ", (float)c->can_enable, 0u, "");
     out_f(" kbps ", (float)c->can_kbps, 0u, "");
     out_f(" id ", (float)c->can_id, 0u, g_app.can_ok ? " (ok)\r\n" : " (init failed)\r\n");
@@ -299,11 +298,7 @@ static void execute(char *l)
         config_changed();
     }
     else if ((a = match(l, "bg")) != NULL) {
-        if (strcmp(a, "capture") == 0) {
-            alt_bg_start(&g_app.alt, BG_FRAMES);
-            s_op = OP_BG;
-            out("capturing background for 4 gains ...\r\n");
-        } else if (strcmp(a, "on") == 0) { c->bg_enable = 1u; config_changed(); }
+        if (strcmp(a, "on") == 0) { c->bg_enable = 1u; config_changed(); }
         else if (strcmp(a, "off") == 0) { c->bg_enable = 0u; config_changed(); }
         else { out("ERR\r\n"); }
     }
@@ -374,9 +369,5 @@ void cli_poll(void)
 
     if ((s_op == OP_CAL1) || (s_op == OP_CAL2)) {
         finish_cal();
-    } else if ((s_op == OP_BG) && alt_bg_done(&g_app.alt)) {
-        s_op = OP_NONE;
-        out_f("background done, valid mask (bits 0-3 long, 4-7 short) ", (float)g_app.alt.bg_valid, 0u,
-              " - 'bg on' + 'save' to use it\r\n");
     }
 }

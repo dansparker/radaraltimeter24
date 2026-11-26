@@ -1,6 +1,6 @@
 /**
  * @file can.c
- * @brief bxCAN1 on PA11/PA12, transmit only, automatic bus-off recovery.
+ * @brief bxCAN1 (rev A PA11/PA12, rev B PB8/PB9), transmit only, automatic bus-off recovery.
  *
  * Bit timing from PCLK1 = 42 MHz with 14 time quanta (1 + 11 + 2),
  * sample point 85.7 %: BRP = 42 MHz / (14 * bitrate).
@@ -22,8 +22,13 @@ int can_init(uint16_t kbps)
     s_ok = 0u;
     RCC->APB1ENR |= RCC_APB1ENR_CAN1EN;
     (void)RCC->APB1ENR;
+#if defined(BOARD_REVB)
+    gpio_cfg(GPIOB, 8u, 2u, 1u, 9u);     /* RX with pull-up (recessive if no transceiver) */
+    gpio_cfg(GPIOB, 9u, 2u, 0u, 9u);
+#else
     gpio_cfg(GPIOA, 11u, 2u, 1u, 9u);    /* RX with pull-up (recessive if no transceiver) */
     gpio_cfg(GPIOA, 12u, 2u, 0u, 9u);
+#endif
 
     CAN1->MCR &= ~CAN_MCR_SLEEP;
     CAN1->MCR |= CAN_MCR_INRQ;

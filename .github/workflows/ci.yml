@@ -22,12 +22,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
       - name: Fetch CMSIS headers
         run: sh tools/fetch_cmsis.sh
-      - name: Build
-        run: make -C firmware
+      - name: Build rev A (STM32F405)
+        run: make -C firmware BOARD=reva
+      - name: Build rev B (STM32F446)
+        run: make -C firmware BOARD=revb
       - uses: actions/upload-artifact@v4
         with:
           name: firmware
           path: |
-            firmware/build/radar_altimeter.elf
-            firmware/build/radar_altimeter.bin
-            firmware/build/radar_altimeter.hex
+            firmware/build/*/radar_altimeter.elf
+            firmware/build/*/radar_altimeter.bin
+            firmware/build/*/radar_altimeter.hex

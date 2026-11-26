@@ -273,6 +273,74 @@ static void test_frame(void)
     CHECK(rdsp_all_finite(x, 100u) == 0);
 }
 
+/* running background: fixed pattern removed, tone with changing phase kept */
+static void test_bg_track(void)
+{
+    enum { N = 256 };
+    static float bg[N], x[N];
+    memset(bg, 0, sizeof(bg));
+    double rms_fix = 0.0, rms_tone = 0.0;
+    uint32_t r = 1u;
+    for (int k = 0; k < 600; k++) {
+        r = r * 1664525u + 1013904223u;
+        const double ph = 6.283185307 * (double)(r >> 8) / 16777216.0;
+        for (int i = 0; i < N; i++) {
+            x[i] = (float)(100.0 * sin(0.05 * i) + 10.0 * cos(0.9 * i + ph));
+        }
+        const float beta = (k < 1) ? 1.0f : fmaxf(1.0f / (float)(k + 1), 0.01f);
+        rdsp_frame_bg_track(x, bg, N, beta, k >= 16);
+        if (k == 599) {
+            for (int i = 0; i < N; i++) {
+                const double tone = 10.0 * cos(0.9 * i + ph);
+                rms_fix += (x[i] - tone) * (x[i] - tone);
+                rms_tone += tone * tone;
+            }
+        }
+    }
+    rms_fix = sqrt(rms_fix / N);
+    rms_tone = sqrt(rms_tone / N);
+    printf("  residual %.2f (fixed pattern 70.7), tone %.2f\n", rms_fix, rms_tone);
+    CHECK(rms_fix < 2.0);        /* fixed part < -30 dB, tone leakage into estimate small */
+}
+
+/* coherent clutter removal: fixed echo removed, random-phase echo kept,
+ * already right after a short warm-up */
+static void test_clutter(void)
+{
+    enum { NB = 4 };
+    static float m[2 * NB], p[NB], x[2 * NB];
+    memset(m, 0, sizeof(m));
+    memset(p, 0, sizeof(p));
+    uint32_t r = 7u;
+    double e_fix = 0.0, e_mov = 0.0, e_mix = 0.0;
+    int ne = 0;
+    for (int k = 0; k < 400; k++) {
+        r = r * 1664525u + 1013904223u;
+        const float ph = 6.2831853f * (float)(r >> 8) / 16777216.0f;
+        x[0] = 100.0f; x[1] = -50.0f;                          /* bin 0: fixed echo */
+        x[2] = 30.0f * cosf(ph); x[3] = 30.0f * sinf(ph);      /* bin 1: moving echo */
+        x[4] = 100.0f + 30.0f * cosf(ph); x[5] = -50.0f + 30.0f * sinf(ph);   /* bin 2: both */
+        x[6] = x[7] = 0.0f;
+        const float beta = fmaxf(1.0f / (float)(k + 1), 0.01f);
+        rdsp_clutter_update(x, m, p, NB, beta, k >= 8);
+        if (k >= 8) {
+            e_fix += hypotf(x[0], x[1]);
+            e_mov += hypotf(x[2] - 30.0f * cosf(ph), x[3] - 30.0f * sinf(ph));
+            e_mix += hypotf(x[4] - 30.0f * cosf(ph), x[5] - 30.0f * sinf(ph));
+            ne++;
+        }
+    }
+    e_fix /= ne;
+    e_mov /= ne;
+    e_mix /= ne;
+    printf("  fixed echo residual %.2f of 112, moving echo error %.2f of 30, mixed bin error %.2f",
+           e_fix, e_mov, e_mix);
+    putchar(10);
+    CHECK(e_fix < 1.0);
+    CHECK(e_mov < 1.5);          /* moving echo practically untouched */
+    CHECK(e_mix < 10.0);         /* fixed part under-subtracted by A^2/(F^2+A^2): -21 dB */
+}
+
 void test_dsp_all(void)
 {
     RUN(test_fft_vs_dft);
@@ -284,4 +352,6 @@ void test_dsp_all(void)
     RUN(test_tracker);
     RUN(test_agc);
     RUN(test_frame);
+    RUN(test_bg_track);
+    RUN(test_clutter);
 }

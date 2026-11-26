@@ -9,7 +9,7 @@ mkdir -p "$DST/Include" "$DST/Device/ST/STM32F4xx/Include"
 for f in core_cm4.h cmsis_version.h cmsis_compiler.h cmsis_gcc.h mpu_armv7.h; do
   curl -fsSL "$CORE/$f" -o "$DST/Include/$f"
 done
-for f in stm32f4xx.h stm32f405xx.h system_stm32f4xx.h; do
+for f in stm32f4xx.h stm32f405xx.h stm32f446xx.h system_stm32f4xx.h; do
   curl -fsSL "$DEV/$f" -o "$DST/Device/ST/STM32F4xx/Include/$f"
 done
 echo "CMSIS headers in $DST"

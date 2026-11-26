@@ -14,7 +14,6 @@ static config_t cfg;
 static altimeter_t alt;
 static sim_t sim;
 static uint16_t frame[RADAR_FRAME_LEN_MAX];
-static int16_t bg[RADAR_BG_LEN];
 static uint32_t frame_id;
 static uint8_t cur_gain, cur_rmode;
 static float last_dt;   /* pair duration of the last step */
@@ -25,7 +24,7 @@ static void setup(float sweep_true)
 {
     cfg_defaults(&cfg);
     cfg.mod[MOD_KLC1A].calibrated = 1u;
-    alt_init(&alt, &cfg, bg, 0u);
+    alt_init(&alt, &cfg);
     sim_init(&sim, sweep_true);
     frame_id = 0u;
     cur_gain = alt_gain_request(&alt);
@@ -284,8 +283,10 @@ static void test_flare(void)
             }
         }
         printf("  flare, %s ramp: max error %.3f m, invalid %d\n", mode ? "auto (short)" : "long only", emax, ninv);
-        CHECK(ninv == 0);
-        if (mode) { CHECK(emax < 0.5); }
+        /* long ramp only: beats near DC below ~10 m, a few gaps are possible;
+         * this is why AUTO switches to the short ramp */
+        if (mode) { CHECK(ninv == 0); CHECK(emax < 0.5); }
+        else { CHECK(ninv <= 5); }
     }
 }
 
@@ -352,39 +353,69 @@ static void test_vco_sign(void)
 
 static void test_background(void)
 {
-    /* strong static reflection of the landing gear at 4.5 m */
+    /* strong reflection of the landing gear at 4.5 m (fixed relative to the
+     * radar) and the ground at 35 m (phase changes in flight) */
     setup(SWEEP_HZ);
+    cfg.bg_enable = 0u;
+    alt_apply_config(&alt);
     set_target(0, 4.5f, 0.0f, 1500.0f);
-    alt_bg_start(&alt, 32u);
-    int guard = 0;
-    while (!alt_bg_done(&alt) && (guard++ < 2000)) { step_pair(); }
-    CHECK(alt_bg_done(&alt));
-    printf("  background valid mask 0x%X after %d pairs\n", alt.bg_valid, guard);
-    CHECK(alt.bg_valid != 0u);
-
-    CHECK((alt.bg_valid & 0x0Fu) != 0u);    /* long ramp */
-    CHECK((alt.bg_valid & 0xF0u) != 0u);    /* short ramp */
-    /* without subtraction the nearest strong target (gear) is reported */
+    sim.tgt[0].fixed = 1;
     set_target(1, 35.0f, 0.0f, amp_for(35.0f));
     for (int i = 0; i < 100; i++) { step_pair(); }
     printf("  without bg: %.2f m\n", alt.out.altitude_m);
-    CHECK(fabs(alt.out.altitude_m - 35.0) > 5.0);
+    CHECK(fabs(alt.out.altitude_m - 35.0) > 5.0);     /* nearest strong target = gear */
 
     cfg.bg_enable = 1u;
     alt_apply_config(&alt);
-    for (int i = 0; i < 100; i++) { step_pair(); }
-    printf("  with bg: %.2f m\n", alt.out.altitude_m);
+    int first = -1;
+    for (int i = 0; i < 200; i++) {
+        const alt_output_t *o = step_pair();
+        if ((first < 0) && valid(o) && (fabs(o->altitude_m - 35.0) < 0.3)) { first = i; }
+    }
+    printf("  with running bg: %.2f m after %d pairs\n", alt.out.altitude_m, first);
     CHECK(valid(&alt.out));
     CHECK_NEAR(alt.out.altitude_m, 35.0, 0.3);
+    CHECK((first >= 0) && (first < 60));
 
-    /* low altitude: short ramp + its own background */
-    sim.tgt[1].range_m = 15.0f;
-    sim.tgt[1].amp_lsb = amp_for(15.0f);
-    for (int i = 0; i < 300; i++) { step_pair(); }
-    printf("  with bg, short ramp: %.2f m (%s)\n", alt.out.altitude_m, alt.out.rmode ? "short" : "long");
+    /* descent to low altitude: short ramp, the estimate restarts */
+    double emax = 0.0;
+    int ninv = 0;
+    while (sim.tgt[1].range_m > 7.0f) {
+        sim.tgt[1].vr_mps = fmaxf(-3.0f, sim.tgt[1].vr_mps - 1.5f * last_dt);   /* push-over 1.5 m/s^2 */
+        sim.tgt[1].amp_lsb = amp_for(sim.tgt[1].range_m);
+        const float vr = sim.tgt[1].vr_mps;
+        const alt_output_t *o = step_pair();
+        const double truth = sim.tgt[1].range_m - vr * last_dt;
+        ninv += !valid(o);
+        emax = fmax(emax, fabs(o->altitude_m - truth));
+    }
+    printf("  descent 35 -> 7 m with gear echo: max error %.3f m, invalid %d, %s ramp\n",
+           emax, ninv, alt.out.rmode ? "short" : "long");
     CHECK(alt.out.rmode == RADAR_RMODE_SHORT);
+    CHECK(ninv < 5);
+    CHECK(emax < 0.5);
+}
+
+/* A target in the near range (< ALT_BG_MAX_M) that is fixed relative to the
+ * radar is removed by the running background: expected in flight, therefore
+ * 'bg off' for static ground tests. */
+static void test_background_static_target(void)
+{
+    setup(SWEEP_HZ);
+    set_target(0, 4.5f, 0.0f, amp_for(4.5f));
+    sim.tgt[0].fixed = 1;
+    int nvalid = 0;
+    for (int i = 0; i < 400; i++) {
+        const alt_output_t *o = step_pair();
+        if (i >= 300) { nvalid += valid(o); }
+    }
+    printf("  static target with bg on: %d valid of 100 (expected 0)\n", nvalid);
+    CHECK(nvalid == 0);
+    cfg.bg_enable = 0u;
+    alt_apply_config(&alt);
+    for (int i = 0; i < 60; i++) { step_pair(); }
     CHECK(valid(&alt.out));
-    CHECK_NEAR(alt.out.altitude_m, 15.0, 0.3);
+    CHECK_NEAR(alt.out.altitude_m, 4.5, 0.3);
 }
 
 static void test_calibration(void)
@@ -496,5 +527,6 @@ void test_alt_all(void)
     RUN(test_hw_fault);
     RUN(test_vco_sign);
     RUN(test_background);
+    RUN(test_background_static_target);
     RUN(test_calibration);
 }

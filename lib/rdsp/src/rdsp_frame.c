@@ -66,6 +66,15 @@ void rdsp_frame_sub_bg_i16(float *x, const int16_t *bg, uint32_t n, float scale)
     }
 }
 
+void rdsp_frame_bg_track(float *x, float *bg, uint32_t n, float beta, int subtract)
+{
+    for (uint32_t i = 0; i < n; i++) {
+        const float e = x[i] - bg[i];
+        bg[i] += beta * e;
+        if (subtract) { x[i] = e; }
+    }
+}
+
 int rdsp_all_finite(const float *x, uint32_t n)
 {
     for (uint32_t i = 0; i < n; i++) {

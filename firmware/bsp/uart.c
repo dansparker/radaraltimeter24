@@ -1,8 +1,27 @@
 /**
  * @file uart.c
- * @brief USART1 (PA9/PA10) with interrupt driven ring buffers.
+ * @brief UART with interrupt driven ring buffers.
+ *        Rev A: USART1 PA9/PA10 (APB2), rev B: USART2 PA2/PA3 (APB1).
  */
 #include "bsp.h"
+
+#if defined(BOARD_REVB)
+#define UARTx            USART2
+#define UARTx_IRQn       USART2_IRQn
+#define UARTx_IRQHandler USART2_IRQHandler
+#define UARTx_PCLK_HZ    BSP_PCLK1_HZ
+#define UARTx_PORT       GPIOA
+#define UARTx_TX         2u
+#define UARTx_RX         3u
+#else
+#define UARTx            USART1
+#define UARTx_IRQn       USART1_IRQn
+#define UARTx_IRQHandler USART1_IRQHandler
+#define UARTx_PCLK_HZ    BSP_PCLK2_HZ
+#define UARTx_PORT       GPIOA
+#define UARTx_TX         9u
+#define UARTx_RX         10u
+#endif
 
 #define TX_SIZE 2048u   /* power of two */
 #define RX_SIZE 256u
@@ -15,15 +34,20 @@ static volatile uint32_t s_dropped;
 
 void uart_init(uint32_t baud)
 {
+#if defined(BOARD_REVB)
+    RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
+    (void)RCC->APB1ENR;
+#else
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
     (void)RCC->APB2ENR;
-    gpio_cfg(GPIOA, 9u, 2u, 0u, 7u);
-    gpio_cfg(GPIOA, 10u, 2u, 1u, 7u);
-    USART1->CR1 = 0u;
-    USART1->BRR = (BSP_PCLK2_HZ + baud / 2u) / baud;
-    USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE;
-    NVIC_SetPriority(USART1_IRQn, 2u);
-    NVIC_EnableIRQ(USART1_IRQn);
+#endif
+    gpio_cfg(UARTx_PORT, UARTx_TX, 2u, 0u, 7u);
+    gpio_cfg(UARTx_PORT, UARTx_RX, 2u, 1u, 7u);
+    UARTx->CR1 = 0u;
+    UARTx->BRR = (UARTx_PCLK_HZ + baud / 2u) / baud;
+    UARTx->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE;
+    NVIC_SetPriority(UARTx_IRQn, 2u);
+    NVIC_EnableIRQ(UARTx_IRQn);
 }
 
 static uint32_t tx_free(void)
@@ -44,7 +68,7 @@ size_t uart_write(const void *data, size_t len)
         h = (h + 1u) & (TX_SIZE - 1u);
     }
     s_tx_head = h;
-    USART1->CR1 |= USART_CR1_TXEIE;
+    UARTx->CR1 |= USART_CR1_TXEIE;
     return len;
 }
 
@@ -80,23 +104,23 @@ uint32_t uart_dropped(void)
     return s_dropped;
 }
 
-void USART1_IRQHandler(void)
+void UARTx_IRQHandler(void)
 {
-    const uint32_t sr = USART1->SR;
+    const uint32_t sr = UARTx->SR;
     if ((sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) != 0u) {
-        const uint8_t c = (uint8_t)USART1->DR;     /* reading DR clears the flags */
+        const uint8_t c = (uint8_t)UARTx->DR;     /* reading DR clears the flags */
         const uint32_t n = (s_rx_head + 1u) & (RX_SIZE - 1u);
         if (((sr & USART_SR_RXNE) != 0u) && (n != s_rx_tail)) {
             s_rx[s_rx_head] = c;
             s_rx_head = n;
         }
     }
-    if (((USART1->CR1 & USART_CR1_TXEIE) != 0u) && ((sr & USART_SR_TXE) != 0u)) {
+    if (((UARTx->CR1 & USART_CR1_TXEIE) != 0u) && ((sr & USART_SR_TXE) != 0u)) {
         if (s_tx_tail != s_tx_head) {
-            USART1->DR = s_tx[s_tx_tail];
+            UARTx->DR = s_tx[s_tx_tail];
             s_tx_tail = (s_tx_tail + 1u) & (TX_SIZE - 1u);
         } else {
-            USART1->CR1 &= ~USART_CR1_TXEIE;
+            UARTx->CR1 &= ~USART_CR1_TXEIE;
         }
     }
 }

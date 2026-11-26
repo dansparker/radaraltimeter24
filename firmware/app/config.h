@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #define CFG_MAGIC      0x544C4152u   /* "RALT" */
-#define CFG_VERSION    2u
+#define CFG_VERSION    3u
 #define CFG_GAIN_AUTO  0xFFu
 #define CFG_RMODE_AUTO  0u
 #define CFG_RMODE_LONG  1u
@@ -39,7 +39,7 @@ typedef struct {
     uint8_t module;       /**< module_t */
     uint8_t out_mode;     /**< 0 off, 1 $RALT, 2 $RALT + $RDBG */
     uint8_t gain_mode;    /**< 0..3 fixed, CFG_GAIN_AUTO */
-    uint8_t bg_enable;    /**< background subtraction on/off */
+    uint8_t bg_enable;    /**< running background removal (flight); off for static tests */
     uint8_t can_enable;
     uint8_t dac_buffer;   /**< DAC output buffer on/off */
     int8_t vco_sign;      /**< +1: f rises with DAC code, -1: falls */

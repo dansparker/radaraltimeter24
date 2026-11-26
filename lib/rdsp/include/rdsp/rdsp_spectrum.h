@@ -56,4 +56,25 @@ void rdsp_psd_avg_init(rdsp_psd_avg_t *a, float *buf, uint32_t nbins, float alph
 void rdsp_psd_avg_reset(rdsp_psd_avg_t *a);
 void rdsp_psd_avg_update(rdsp_psd_avg_t *a, const float *psd);
 
+/**
+ * Coherent clutter removal on complex bins (re/im interleaved, e.g. a band of
+ * the rdsp_rfft output).
+ *
+ * Per bin the complex mean M and the mean power P of the past frames are kept
+ * (exponential averages, weight beta of a new frame). An echo that is fixed
+ * relative to the radar has a stable phase (|M|^2 / P near 1); a moving echo
+ * has a random phase (|M|^2 / P near beta/2). Subtracting M weighted with this
+ * coherence removes the fixed echoes completely and leaves moving echoes
+ * practically untouched, also while the averages are still short (warm-up
+ * with beta = 1/n). The previous estimate is subtracted, then updated with
+ * the unmodified frame.
+ *
+ * @param x        nbins complex values (in place)
+ * @param m        complex mean, 2*nbins floats (state)
+ * @param p        mean power, nbins floats (state)
+ * @param beta     weight of the new frame, 0 < beta <= 1
+ * @param subtract 0: only update the state
+ */
+void rdsp_clutter_update(float *x, float *m, float *p, uint32_t nbins, float beta, int subtract);
+
 #endif /* RDSP_SPECTRUM_H */

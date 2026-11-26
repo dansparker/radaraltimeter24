@@ -1,6 +1,6 @@
-/* Linker script STM32F405RG: 1 MB flash, 128 KB SRAM, 64 KB CCM
+/* Linker script STM32F405RG (rev A): 1 MB flash, 128 KB SRAM, 64 KB CCM
  * The last flash sector (11, 128 KB @ 0x080E0000) is reserved for the
- * configuration and background data (flash_store.c). */
+ * configuration (iwdg_flash.c). */
 ENTRY(Reset_Handler)
 
 _Min_Stack_Size = 0x2000;

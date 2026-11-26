@@ -17,7 +17,9 @@ static ALT_CCM float s_tw_short[RADAR_NFFT_SHORT];
 static ALT_CCM float s_win_short[RADAR_NFFT_SHORT];
 static ALT_CCM float s_work[RADAR_NFFT_MAX];
 static ALT_CCM float s_avgbuf[2][RADAR_NBINS_MAX];
-static ALT_CCM float s_bgacc[2][RADAR_NFFT_MAX];
+/* running background of bins 1 .. ALT_BG_BINS_MAX-1: complex mean and power */
+static float s_bg_m[RADAR_NMODES][RADAR_NGAIN][2][2u * (ALT_BG_BINS_MAX - 1u)];
+static float s_bg_p[RADAR_NMODES][RADAR_NGAIN][2][ALT_BG_BINS_MAX - 1u];
 
 typedef struct {
     float range_m;
@@ -80,7 +82,12 @@ void alt_apply_config(altimeter_t *a)
         if (bmax > p->nbins - 2u) { bmax = p->nbins - 2u; }
         p->bin_min = (uint16_t)ALT_MIN_BIN;
         p->bin_max = (uint16_t)bmax;
+        float bgb = rdsp_fmcw_beat(&p->fm, ALT_BG_MAX_M) / p->bin_hz + 3.0f;   /* + Hann main lobe */
+        if (!(bgb >= 2.0f)) { bgb = 2.0f; }
+        if (bgb > (float)ALT_BG_BINS_MAX) { bgb = (float)ALT_BG_BINS_MAX; }
+        p->bg_bins = (uint16_t)bgb;
     }
+    memset(a->bg_n, 0, sizeof(a->bg_n));     /* new parameters: rebuild the background */
     a->uncal = (m->calibrated != 0u) ? 0u : 1u;
     a->gain_req = (c->gain_mode == CFG_GAIN_AUTO) ? a->agc.level : c->gain_mode;
     if (c->ramp_mode == CFG_RMODE_SHORT) { a->rmode_req = RADAR_RMODE_SHORT; }
@@ -89,12 +96,10 @@ void alt_apply_config(altimeter_t *a)
     set_rmode(a, a->rmode);
 }
 
-void alt_init(altimeter_t *a, const config_t *cfg, int16_t *bg_storage, uint8_t bg_valid)
+void alt_init(altimeter_t *a, const config_t *cfg)
 {
     memset(a, 0, sizeof(*a));
     a->cfg = cfg;
-    a->bg = bg_storage;
-    a->bg_valid = (bg_storage != NULL) ? bg_valid : 0u;
 
     float *const tw[RADAR_NMODES] = { s_tw_long, s_tw_short };
     float *const win[RADAR_NMODES] = { s_win_long, s_win_short };
@@ -143,75 +148,30 @@ void alt_set_ext_status(altimeter_t *a, uint16_t bits)
     a->ext_status = bits;
 }
 
-/* ---- background capture ------------------------------------------------- */
+/* ---- running background ------------------------------------------------ */
 
-void alt_bg_start(altimeter_t *a, uint16_t frames_per_dir)
+/* Remove the echoes that are fixed relative to the aircraft (leakage,
+ * radome, gear) from the complex spectrum X (packed rfft output) of the near
+ * range, see rdsp_clutter_update(): the mean is subtracted weighted with the
+ * phase coherence, so the moving ground echo stays untouched even when it is
+ * inside the band (final approach) or the estimate is new.
+ * - One estimate per ramp mode / gain / direction: gain and mode changes do
+ *   not restart it.
+ * - Only the near range (ALT_BG_MAX_M) is treated.
+ * - Warm-up: cumulative means over ALT_BG_WARMUP frames before subtracting. */
+static void bg_running(altimeter_t *a, float *X, const alt_frame_info_t *fi)
 {
-    if ((a->bg == NULL) || (frames_per_dir == 0u)) { return; }
-    memset(s_bgacc, 0, sizeof(s_bgacc));
-    a->bg_gain = 0u;
-    a->bg_rmode = RADAR_RMODE_LONG;
-    a->rmode_req = RADAR_RMODE_LONG;
-    a->bg_frames = frames_per_dir;
-    a->bg_cnt[0] = a->bg_cnt[1] = 0u;
-    a->bg_tries = 0u;
-    a->bg_valid = 0u;
-    a->gain_req = 0u;
-    a->mode = ALT_MODE_BG;
-    reset_dynamic(a);
-}
-
-int alt_bg_done(const altimeter_t *a)
-{
-    return (a->mode != ALT_MODE_BG) ? 1 : 0;
-}
-
-static void bg_next_gain(altimeter_t *a)
-{
-    memset(s_bgacc, 0, sizeof(s_bgacc));
-    a->bg_cnt[0] = a->bg_cnt[1] = 0u;
-    a->bg_tries = 0u;
-    if ((++a->bg_gain >= RADAR_NGAIN) && (a->bg_rmode == RADAR_RMODE_LONG)) {
-        a->bg_gain = 0u;
-        a->bg_rmode = RADAR_RMODE_SHORT;
-        a->rmode_req = RADAR_RMODE_SHORT;
-        a->gain_req = 0u;
-    } else if (a->bg_gain >= RADAR_NGAIN) {
-        a->mode = ALT_MODE_RUN;
-        a->rmode_req = RADAR_RMODE_LONG;
-        a->gain_req = (a->cfg->gain_mode == CFG_GAIN_AUTO) ? a->agc.level : a->cfg->gain_mode;
-        reset_dynamic(a);
-    } else {
-        a->gain_req = a->bg_gain;
-    }
-}
-
-/* x = conditioned frame or NULL (frame unusable, e.g. clipped) */
-static void bg_accumulate(altimeter_t *a, const float *x, const alt_frame_info_t *fi)
-{
-    const uint8_t d = fi->dac_dir ? 1u : 0u;
-    const uint32_t n = a->mp[a->rmode].nfft;
-    if ((fi->gain != a->bg_gain) || (a->rmode != a->bg_rmode)) { return; }
-    a->bg_tries++;
-    if ((x != NULL) && (a->bg_cnt[d] < a->bg_frames)) {
-        for (uint32_t i = 0; i < n; i++) { s_bgacc[d][i] += x[i]; }
-        a->bg_cnt[d]++;
-    }
-    if ((a->bg_cnt[0] >= a->bg_frames) && (a->bg_cnt[1] >= a->bg_frames)) {
-        const float k = 1.0f / ((float)a->bg_frames * ALT_BG_SCALE);
-        for (uint32_t dd = 0; dd < 2u; dd++) {
-            int16_t *dst = &a->bg[radar_bg_offset(a->bg_rmode, a->bg_gain, dd)];
-            for (uint32_t i = 0; i < n; i++) {
-                float v = s_bgacc[dd][i] * k;
-                v = (v > 32767.0f) ? 32767.0f : ((v < -32768.0f) ? -32768.0f : v);
-                dst[i] = (int16_t)lrintf(v);
-            }
-        }
-        a->bg_valid |= (uint8_t)(1u << (4u * a->bg_rmode + a->bg_gain));
-        bg_next_gain(a);
-    } else if (a->bg_tries > 8u * a->bg_frames) {
-        bg_next_gain(a);   /* e.g. permanent clipping at this gain: leave it invalid */
-    }
+    const alt_mpar_t *mp = &a->mp[a->rmode];
+    const uint32_t d = fi->dac_dir ? 1u : 0u;
+    const uint32_t g = fi->gain & (RADAR_NGAIN - 1u);
+    uint16_t *n = &a->bg_n[a->rmode][g][d];
+    float beta = 1.0f / (float)(*n + 1u);
+    const float beta_ss = mp->pair_dt / ALT_BG_TAU_S;
+    if (beta < beta_ss) { beta = beta_ss; }
+    /* X[0] = DC, X[1] = Nyquist, then re/im of bin 1, 2, ...; the estimate starts at bin 1 */
+    rdsp_clutter_update(&X[2], s_bg_m[a->rmode][g][d], s_bg_p[a->rmode][g][d], mp->bg_bins - 1u,
+                        beta, *n >= ALT_BG_WARMUP);
+    if (*n < 0xFFFFu) { (*n)++; }
 }
 
 /* ---- calibration -------------------------------------------------------- */
@@ -271,9 +231,7 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
 
     /* gain control; only frames taken with the currently requested gain count */
     const int clipped = (s.n_clip > ALT_CLIP_MAX) ? 1 : 0;
-    if (a->mode == ALT_MODE_BG) {
-        a->gain_req = a->bg_gain;
-    } else if (c->gain_mode == CFG_GAIN_AUTO) {
+    if (c->gain_mode == CFG_GAIN_AUTO) {
         if ((fi->gain == a->agc.level) && rdsp_agc_update(&a->agc, s.peak_frac, clipped)) {
             a->gain_changed = 1u;
             a->st.gain_changes++;
@@ -286,25 +244,15 @@ static void process_spectrum(altimeter_t *a, const uint16_t *frame,
     if (clipped) {
         a->cand_clip[pd] = 1u;
         a->st.clipped++;
-        if (a->mode == ALT_MODE_BG) { bg_accumulate(a, NULL, fi); }
         return;
     }
     if (c->detrend) { rdsp_frame_detrend(x, nfft); }
 
-    if (a->mode == ALT_MODE_BG) {
-        bg_accumulate(a, x, fi);
-        return;
-    }
-
-    const uint8_t g = (uint8_t)(fi->gain & 3u);
-    if (c->bg_enable && (a->bg != NULL) && ((a->bg_valid & (1u << (4u * a->rmode + g))) != 0u)) {
-        const uint32_t dd = fi->dac_dir ? 1u : 0u;
-        rdsp_frame_sub_bg_i16(x, &a->bg[radar_bg_offset(a->rmode, g, dd)], nfft, ALT_BG_SCALE);
-    }
-
     /* spectrum */
     rdsp_window_apply(x, mp->win, nfft);
     rdsp_rfft(&mp->fft, x);
+    /* not during calibration: the reference target is static */
+    if (c->bg_enable && (a->mode == ALT_MODE_RUN)) { bg_running(a, x, fi); }
     rdsp_rfft_power(x, x, nfft);
     rdsp_psd_onesided(x, nb, (float)RADAR_FS_HZ, mp->wi.s2);
     if (!rdsp_all_finite(x, nb)) {
@@ -465,7 +413,7 @@ static int choose_measurement(const altimeter_t *a, int paired, meas_t *m)
 static void decide_rmode(altimeter_t *a, int valid)
 {
     const config_t *c = a->cfg;
-    if (a->mode != ALT_MODE_RUN) { return; }        /* locked during cal / bg */
+    if (a->mode != ALT_MODE_RUN) { return; }        /* locked during calibration */
     if (c->ramp_mode == CFG_RMODE_LONG) { a->rmode_req = RADAR_RMODE_LONG; return; }
     if (c->ramp_mode == CFG_RMODE_SHORT) { a->rmode_req = RADAR_RMODE_SHORT; return; }
     if (a->rmode == RADAR_RMODE_LONG) {
@@ -489,7 +437,7 @@ static int finish_pair(altimeter_t *a)
                                                          : (a->cand_id[1] - a->cand_id[0]);
     const int paired = a->cand_ok[0] && a->cand_ok[1] && (a->cand_gain[0] == a->cand_gain[1]) && (did == 1u);
 
-    if ((a->mode != ALT_MODE_BG) && !a->hw_fault) {
+    if (!a->hw_fault) {
         have = choose_measurement(a, paired, &m);
         if (have && (!isfinite(m.range_m) || (m.range_m > 1.1f * c->max_range_m))) { have = 0; }
     }
@@ -502,6 +450,14 @@ static int finish_pair(altimeter_t *a)
     }
     if (have && m.single) {
         (void)rdsp_track_update_pos(&a->trk, m.range_m, dt);
+    } else if (have && m.degraded) {
+        /* no Doppler: velocity only from the positions. beta is tuned for the
+         * long ramp; per step it would act 3.5x faster on the short ramp and
+         * turn the noise of near-DC beats into velocity errors */
+        const float beta = a->trk.cfg.beta;
+        a->trk.cfg.beta = beta * dt / radar_pair_dt(RADAR_RMODE_LONG);
+        (void)rdsp_track_update(&a->trk, 1, m.range_m, NAN, dt);
+        a->trk.cfg.beta = beta;
     } else {
         (void)rdsp_track_update(&a->trk, have, have ? m.range_m : 0.0f, vz, dt);
     }
@@ -528,7 +484,7 @@ static int finish_pair(altimeter_t *a)
 
     const int trk_ok = (ts == RDSP_TRK_CONFIRMED) ||
                        ((ts == RDSP_TRK_COAST) && (a->trk.misses <= a->coast_valid));
-    if (trk_ok && !a->hw_fault && (a->mode != ALT_MODE_BG) && isfinite(a->trk.x) &&
+    if (trk_ok && !a->hw_fault && isfinite(a->trk.x) &&
         (a->trk.x <= 1.1f * c->max_range_m)) {
         st |= ALT_ST_VALID;
     }
@@ -578,7 +534,6 @@ int alt_process_frame(altimeter_t *a, const uint16_t *frame, const alt_frame_inf
 
     if (fi->settling || fi->overrun || (frame == NULL)) {
         a->cand_ok[pd] = 0u;
-        if ((a->mode == ALT_MODE_BG) && fi->settling) { a->gain_req = a->bg_gain; }
     } else {
         process_spectrum(a, frame, fi, pd);
     }

@@ -39,6 +39,7 @@ void sim_init(sim_t *s, float sweep_hz)
     s->hp_fc_hz = 1100.0f;
     s->hp_order = 3;
     s->rng = 12345u;
+    s->random_phase = 1;
 }
 
 void sim_set_rmode(sim_t *s, unsigned rmode)
@@ -67,6 +68,7 @@ void sim_frame(sim_t *s, int dac_dir, int gain, uint16_t *out)
         const double fd = 2.0 * (-t->vr_mps) / s->lambda_m;          /* closing -> positive */
         fb[k] = rising_f ? (fr - fd) : -(fr + fd);
         ph[k] = 4.0 * 3.14159265358979 * t->range_m / s->lambda_m;   /* carrier phase */
+        if (s->random_phase && !t->fixed) { ph[k] += 2.0 * 3.14159265358979 * urand(s); }
     }
 
     for (uint32_t i = 0; i < s->frame_len; i++) {

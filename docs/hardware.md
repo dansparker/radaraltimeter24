@@ -38,8 +38,8 @@ Stufe 0 = kleinste Verstärkung.
 | USART1 + IRQ | Ringpuffer TX 2 kB / RX 256 B |
 | CAN1 | 125/250/500/1000 kbit/s, nur Senden, automatische Bus-Off-Erholung |
 | IWDG | 250 ms; wird nur bedient, solange Rampen ankommen (beim Flash-Löschen 32 s) |
-| Flash Sektor 11 | Konfiguration (CRC32) + Hintergrund-Frames |
-| CCM-RAM | DSP-Arbeitspuffer (52 kB); DMA-Puffer liegen im SRAM |
+| Flash Sektor 11 (Rev. B: Sektor 7) | Konfiguration (CRC32) |
+| CCM-RAM (nur Rev. A) | DSP-Arbeitspuffer; DMA-Puffer liegen im SRAM |
 
 Rampen: lang 2432 Samples = 8,107 ms, kurz 704 Samples = 2,347 ms (300 kHz). Im Kurzrampen-Modus
 muss die Verarbeitung einer Rampe unter 2,3 ms bleiben (geschätzt ~0,5 ms, mit FCT2 messen;
@@ -53,7 +53,7 @@ muss die Verarbeitung einer Rampe unter 2,3 ms bleiben (geschätzt ~0,5 ms, mit 
 ## Kommandozeile (UART)
 
 `help`, `info`, `stat`, `out 0|1|2`, `module klc1a|ivs465`, `gain auto|0..3`,
-`cal1 <m>`, `cal2 <m>`, `zero [m]`, `sweep <MHz>`, `rampq <q>`, `bg capture|on|off`,
+`cal1 <m>`, `cal2 <m>`, `zero [m]`, `sweep <MHz>`, `rampq <q>`, `bg on|off`,
 `vsign 1|-1`, `rmode auto|long|short`, `range <m>`, `dacbuf 0|1`, `can on|off|<kbps>|id <hex>`, `dump`, `save`,
 `defaults`, `reset`, `abort`.
 
@@ -70,10 +70,14 @@ schnelleren Rampe den Hub verändert). `zero` setzt danach nur den Offset (Rad-B
 
 ### Hintergrund (Leckage, Fahrwerk)
 
-`bg capture` mittelt für beide Rampenmodi je Verstärkung und Rampenrichtung 128 Rampen
-(Gültigkeitsmaske: Bits 0–3 lang, 4–7 kurz). Dabei darf **kein Ziel im
-Messbereich** sein (Antenne zum freien Himmel, oder im Flug über 300 m AGL). Danach `bg on` und
-`save`. Der Abzug verbessert die Messung bei geringer Höhe und unterdrückt feste Echos am Flugzeug.
+Mit `bg on` (Standard) entfernt die Firmware laufend alle Echos im Nahbereich bis 12 m, deren
+Phase sich von Rampe zu Rampe nicht ändert: Leckage, Radom, Fahrwerk. Das bewegte Bodenecho
+bleibt erhalten. Verfahren: [signal_chain.md, Schritt 3a](signal_chain.md). Keine Aufnahme und
+kein Flash-Speicher nötig; Einlaufzeit 8 Rampen, Zeitkonstante 2 s. Während `cal1`/`cal2` ruht
+der Abzug.
+
+**Einschränkung:** Ein Ziel im Nahbereich, das relativ zum Radar ruht, wird ebenfalls entfernt
+(am Boden stehend, Labortest mit festem Reflektor in < 12 m). Für solche Tests `bg off`.
 
 ### Rampe / VCO
 

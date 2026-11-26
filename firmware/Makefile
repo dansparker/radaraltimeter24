@@ -1,6 +1,8 @@
-# STM32F405RG firmware of the 24 GHz radar altimeter
+# Firmware of the 24 GHz radar altimeter
 #
-#   make                       build (needs arm-none-eabi-gcc in PATH)
+#   make                       build for BOARD=revb (STM32F446, WeAct core board)
+#   make BOARD=reva            build for rev A (STM32F405RG)
+#                              (needs arm-none-eabi-gcc in PATH)
 #   make CMSIS=<dir>           CMSIS root with Include/ and Device/ST/STM32F4xx/Include
 #   make flash                 program with st-flash (optional)
 #
@@ -12,7 +14,8 @@ OBJCOPY := $(PREFIX)objcopy
 SIZE    := $(PREFIX)size
 
 CMSIS   ?= ../build/cmsis
-BUILD   ?= build
+BOARD   ?= revb
+BUILD   ?= build/$(BOARD)
 TARGET  := radar_altimeter
 
 RDSP    := ../lib/rdsp
@@ -21,13 +24,21 @@ OBJS    := $(addprefix $(BUILD)/,$(notdir $(SRCS:.c=.o)))
 VPATH   := $(RDSP)/src app bsp src
 
 MCU     := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-DEFS    := -DSTM32F405xx '-DALT_CCM=__attribute__((section(".ccmbss")))'
+ifeq ($(BOARD),reva)
+DEFS    := -DSTM32F405xx -DBOARD_REVA '-DALT_CCM=__attribute__((section(".ccmbss")))'
+LDSCRIPT := bsp/stm32f405rg.ld
+else ifeq ($(BOARD),revb)
+DEFS    := -DSTM32F446xx -DBOARD_REVB
+LDSCRIPT := bsp/stm32f446re.ld
+else
+$(error BOARD must be reva or revb)
+endif
 INCS    := -I$(RDSP)/include -Iapp -Ibsp -Isrc \
            -I$(CMSIS)/Include -I$(CMSIS)/Device/ST/STM32F4xx/Include
 CFLAGS  := $(MCU) $(DEFS) $(INCS) -std=c99 -O2 -g3 -ffunction-sections -fdata-sections \
            -fno-math-errno -Wall -Wextra -Wdouble-promotion -Wshadow -Wno-unused-parameter \
            -MMD -MP
-LDFLAGS := $(MCU) -Tbsp/stm32f405rg.ld --specs=nano.specs --specs=nosys.specs \
+LDFLAGS := $(MCU) -T$(LDSCRIPT) --specs=nano.specs --specs=nosys.specs \
            -Wl,--gc-sections -Wl,-Map=$(BUILD)/$(TARGET).map -Wl,--print-memory-usage
 LDLIBS  := -lm
 
@@ -53,7 +64,7 @@ flash: $(BUILD)/$(TARGET).bin
 	st-flash --reset write $< 0x08000000
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf build
 
 .PHONY: all clean flash
 -include $(OBJS:.o=.d)

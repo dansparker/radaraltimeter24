@@ -62,3 +62,20 @@ void rdsp_psd_avg_update(rdsp_psd_avg_t *a, const float *psd)
         a->acc[i] += w * (psd[i] - a->acc[i]);
     }
 }
+
+void rdsp_clutter_update(float *x, float *m, float *p, uint32_t nbins, float beta, int subtract)
+{
+    for (uint32_t k = 0; k < nbins; k++) {
+        const float xr = x[2u * k], xi = x[2u * k + 1u];
+        float *mr = &m[2u * k], *mi = &m[2u * k + 1u];
+        if (subtract && (p[k] > 0.0f)) {
+            float w = ((*mr) * (*mr) + (*mi) * (*mi)) / p[k];
+            if (w > 1.0f) { w = 1.0f; }
+            x[2u * k] = xr - w * (*mr);
+            x[2u * k + 1u] = xi - w * (*mi);
+        }
+        *mr += beta * (xr - *mr);
+        *mi += beta * (xi - *mi);
+        p[k] += beta * (xr * xr + xi * xi - p[k]);
+    }
+}

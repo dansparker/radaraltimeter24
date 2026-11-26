@@ -1,6 +1,7 @@
 /**
- * @file startup_stm32f405.c
- * @brief Vector table and reset handler for the STM32F405RG (C, no assembler).
+ * @file startup_stm32f4.c
+ * @brief Vector table and reset handler for the STM32F405RG / STM32F446RE
+ *        (C, no assembler).
  */
 #include <stdint.h>
 #include "stm32f4xx.h"
@@ -23,14 +24,21 @@ void PendSV_Handler(void) WEAK;
 void SysTick_Handler(void) WEAK;
 void DMA2_Stream0_IRQHandler(void) WEAK;
 void USART1_IRQHandler(void) WEAK;
+void USART2_IRQHandler(void) WEAK;
+
+#if defined(STM32F446xx)
+#define N_IRQ 97u      /* up to FMPI2C1_ER */
+#else
+#define N_IRQ 82u      /* up to FPU */
+#endif
 
 typedef void (*vec_t)(void);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverride-init"
 __attribute__((section(".isr_vector"), used))
-const vec_t g_vectors[16u + 82u] = {
-    [0 ... 97] = Default_Handler,
+const vec_t g_vectors[16u + N_IRQ] = {
+    [0 ... (15 + N_IRQ)] = Default_Handler,
     [0] = (vec_t)(uintptr_t)&_estack,
     [1] = Reset_Handler,
     [2] = NMI_Handler,
@@ -46,6 +54,7 @@ const vec_t g_vectors[16u + 82u] = {
     [15] = SysTick_Handler,
     [16 + DMA2_Stream0_IRQn] = DMA2_Stream0_IRQHandler,
     [16 + USART1_IRQn] = USART1_IRQHandler,
+    [16 + USART2_IRQn] = USART2_IRQHandler,
 };
 #pragma GCC diagnostic pop
 

@@ -53,8 +53,7 @@ Integrationsgewinn und bleibt deshalb für die Zielerfassung und große Höhen z
 **Automatik (`rmode auto`):** gültige Höhe < 25 m → kurz; gültige Höhe > 35 m oder Track
 verloren → lang (Hysterese 10 m). Beim Wechsel wird das Frontend neu gestartet; der Tracker
 läuft weiter, nur die Spektrenmittelung wird zurückgesetzt. Coasting-Zeiten sind in Sekunden
-definiert und gelten für beide Modi gleich. Während Kalibrierung und Hintergrundaufnahme ist
-der Modus fest.
+definiert und gelten für beide Modi gleich. Während der Kalibrierung ist der Modus fest.
 
 ## Erfassung (Firmware, `bsp/frontend.c`)
 
@@ -96,9 +95,7 @@ aufgenommen wurden, gehen in die Regelung ein; sonst würde wegen der Totzeit do
 * Rampen mit mehr als 3 geclippten Samples werden nicht ausgewertet: Die Oberwellen würden
   Scheinziele erzeugen.
 * Optional linearer Trend-Abzug (Rest der Leckage, die mit der Rampe mitläuft).
-* Optional **Hintergrundabzug**: Für jede Verstärkung und Rampenrichtung wird ein gemittelter
-  Frame ohne Ziel gespeichert (Antenne zum Himmel) und im Zeitbereich abgezogen. Das entfernt
-  feste Echos (Fahrwerk, Radom, Antennenübersprechen) phasenrichtig.
+* **Laufender Hintergrundabzug** (`bg on`, Standard) – nach der FFT, siehe Schritt 3a.
 
 ## Schritt 2 – Fensterung (`rdsp_window`)
 
@@ -113,6 +110,44 @@ Reelle FFT der Länge N über eine komplexe FFT der Länge N/2 plus Split-Schrit
 in place). Das Ausgabeformat ist identisch zu CMSIS `arm_rfft_fast_f32`, sodass bei Bedarf
 getauscht werden kann. Laufzeit auf dem STM32F405 etwa 1 ms. Getestet gegen eine direkte DFT
 (relativer Fehler < 2·10⁻⁵).
+
+## Schritt 3a – Laufender Hintergrundabzug (`rdsp_clutter_update`)
+
+Feste Echos relativ zum Flugzeug (Antennenübersprechen, Radom, Fahrwerk) haben von Rampe zu
+Rampe dieselbe komplexe Amplitude. Das Bodenecho ändert im Flug ständig seine Phase:
+Millimeter Höhenänderung, Vorwärtsflug (Speckle), λ/2 = 6 mm.
+
+Je Bin im Nahbereich (bis `ALT_BG_MAX_M` = 12 m, also wenige Bins) werden zwei exponentielle
+Mittelwerte geführt:
+- der komplexe Mittelwert M,
+- die mittlere Leistung P.
+
+Daraus ergibt sich die Kohärenz |M|²/P:
+
+| Echo | Kohärenz |
+|---|---|
+| festes Echo | ≈ 1 |
+| bewegtes Echo | ≈ β/2 (Gewicht β eines neuen Frames) |
+
+Abgezogen wird M · |M|²/P:
+- Feste Echos verschwinden.
+- Das Bodenecho bleibt praktisch unverändert, auch wenn es im Endanflug selbst im Nahbereich
+  liegt oder die Schätzung gerade erst beginnt.
+
+Ablauf:
+- Zeitkonstante 2 s (`ALT_BG_TAU_S`).
+- Einlaufen über 8 Rampen als kumulativer Mittelwert.
+- Eine Schätzung je Rampenmodus, Verstärkung und Rampenrichtung, deshalb ist nach einem
+  Verstärkungswechsel kein Neustart nötig. Das sind zusammen ≈ 4 KB.
+- Während der Kalibrierung ruht der Abzug.
+
+Grenzen:
+- Ein Ziel, das relativ zum Radar ruht, wird entfernt. Am Boden stehend ist das erwartet,
+  deshalb für Labortests `bg off`.
+- Liegt ein festes und ein bewegtes Echo im selben Bin, bleibt vom festen Echo der Anteil
+  A²/(F²+A²) übrig.
+- Ein sehr starkes festes Echo nahe der Bandgrenze kann einen Nebenzipfel knapp jenseits von
+  12 m hinterlassen. Fahrwerk und Radom liegen weit darunter.
 
 ## Schritt 4 – Leistungsdichte und Welch-Mittelung (`rdsp_spectrum`)
 

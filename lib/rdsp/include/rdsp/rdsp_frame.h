@@ -40,6 +40,26 @@ void rdsp_frame_detrend(float *x, uint32_t n);
 /** x[i] -= bg[i] * scale (background stored as scaled int16). */
 void rdsp_frame_sub_bg_i16(float *x, const int16_t *bg, uint32_t n, float scale);
 
+/**
+ * Running background (clutter) estimate and removal.
+ *
+ * Echoes that are fixed relative to the radar (antenna leakage, radome,
+ * landing gear) repeat identically from ramp to ramp, while the phase of a
+ * moving target changes. An exponential average over the frames therefore
+ * converges to the fixed part only. The operation is linear, so it works on
+ * time samples as well as on (a band of) complex FFT bins, re/im interleaved:
+ *   e = x - bg;  bg += beta * e;  if (subtract) x = e
+ * The previous estimate is subtracted, so the current frame does not cancel
+ * itself. Note: a target that is static relative to the radar is removed too.
+ *
+ * @param x        conditioned frame (in place)
+ * @param bg       background estimate of the same ramp direction / gain
+ * @param n        samples
+ * @param beta     update weight 0 < beta <= 1 (1 = take the frame as estimate)
+ * @param subtract 0: only update the estimate (warm-up)
+ */
+void rdsp_frame_bg_track(float *x, float *bg, uint32_t n, float beta, int subtract);
+
 /** Returns 1 if all values are finite, 0 if a NaN/Inf is found. */
 int rdsp_all_finite(const float *x, uint32_t n);
 

@@ -17,7 +17,7 @@
 
 /* ---- acquisition ---------------------------------------------------------- */
 #define RADAR_FS_HZ        300000u   /**< ADC sample rate = DAC update rate */
-#define RADAR_NGAIN        4u        /**< CD4052 gain levels, 0 = lowest */
+#define RADAR_NGAIN        4u        /**< switched gain levels, 0 = lowest */
 
 #define RADAR_NMODES       2u
 #define RADAR_RMODE_LONG   0u
@@ -30,18 +30,11 @@
 #define RADAR_NFFT_MAX     RADAR_NFFT_LONG
 #define RADAR_NBINS_MAX    (RADAR_NFFT_MAX / 2u)
 #define RADAR_FRAME_LEN_MAX (2u * RADAR_HEAD_LONG + RADAR_NFFT_LONG)
-/** background storage: [mode][gain][dir][nfft(mode)] */
-#define RADAR_BG_LEN       (RADAR_NGAIN * 2u * (RADAR_NFFT_LONG + RADAR_NFFT_SHORT))
 
 static inline uint32_t radar_nfft(uint32_t m) { return (m != 0u) ? RADAR_NFFT_SHORT : RADAR_NFFT_LONG; }
 static inline uint32_t radar_head(uint32_t m) { return (m != 0u) ? RADAR_HEAD_SHORT : RADAR_HEAD_LONG; }
 static inline uint32_t radar_frame_len(uint32_t m) { return 2u * radar_head(m) + radar_nfft(m); }
 static inline float radar_pair_dt(uint32_t m) { return 2.0f * (float)radar_frame_len(m) / (float)RADAR_FS_HZ; }
-static inline uint32_t radar_bg_offset(uint32_t m, uint32_t g, uint32_t d)
-{
-    return (m != 0u) ? (RADAR_NGAIN * 2u * RADAR_NFFT_LONG + (g * 2u + d) * RADAR_NFFT_SHORT)
-                     : ((g * 2u + d) * RADAR_NFFT_LONG);
-}
 
 #define RADAR_F0_HZ        24.125e9f
 #define RADAR_LAMBDA_M     (RDSP_C0_MPS / RADAR_F0_HZ)
@@ -72,7 +65,15 @@ static inline uint32_t radar_bg_offset(uint32_t m, uint32_t g, uint32_t d)
 #define ALT_V_MAX_MPS      25.0f     /**< max. vertical speed (Doppler window) */
 #define ALT_V_GATE_MPS     3.0f      /**< Doppler speed gate around the track */
 #define ALT_CLIP_MAX       3u        /**< clipped samples tolerated per frame */
-#define ALT_BG_SCALE       0.125f    /**< background int16 LSB = 1/8 ADC LSB */
+
+/* running background removal (flight): echoes fixed relative to the aircraft
+ * (leakage, radome, gear) keep their phase from ramp to ramp, the moving
+ * ground echo does not. Coherence weighted mean in the complex spectrum of the
+ * near range, one estimate per ramp mode, gain level and ramp direction. */
+#define ALT_BG_TAU_S       2.0f      /**< time constant of the estimate */
+#define ALT_BG_WARMUP      8u        /**< frames before the first subtraction */
+#define ALT_BG_MAX_M       12.0f     /**< range covered by the estimate */
+#define ALT_BG_BINS_MAX    24u       /**< storage limit [bins] */
 
 /* gain control */
 #define ALT_AGC_HI         0.85f

@@ -3,7 +3,8 @@
 ## Testumfang
 
 `test/` enthält einen Radar-Simulator (Punktziele mit Doppler, Antennen-Leckage, umschaltbare
-Verstärkung, Front-End- und ADC-Rauschen, 3 ZF-Hochpässe, 12-Bit-Quantisierung, Clipping) und
+Verstärkung, Front-End- und ADC-Rauschen, 3 ZF-Hochpässe, 12-Bit-Quantisierung, Clipping,
+zufällige Trägerphase des Bodenechos je Rampe wie im Flug, feste Echos mit konstanter Phase) und
 treibt damit die **unveränderte** Firmware-Pipeline (`altimeter.c` + `rdsp`). Die GitHub-Actions-CI
 führt alle Tests normal und mit Address-/Undefined-Behaviour-Sanitizer aus und baut die Firmware.
 
@@ -12,7 +13,7 @@ führt alle Tests normal und mit Address-/Undefined-Behaviour-Sanitizer aus und 
 | FFT gegen DFT, Fenster, PSD-Skalierung, Welch | rel. Fehler < 2·10⁻⁵, PSD ±5 % |
 | OS-CFAR Falschalarmrate | 0,0096 gemessen (Soll 0,01) |
 | Interpolation Hann | < 10⁻⁴ Bin |
-| Statische Höhen 5 … 240 m | max. Fehler 0,04 m (5 m), sonst ≤ 0,002 m |
+| Konstante Höhen 5 … 240 m | max. Fehler 0,06 m (5 m), sonst ≤ 0,02 m |
 | Sink-/Steigflug −12 … +3 m/s | Höhe ≤ 0,001 m, Geschwindigkeit ≤ 0,005 m/s |
 | Nur Rauschen (1500 Messungen) | 0 gültige Ausgaben |
 | Mehrwegeechos 2R/3R | richtige Höhe |
@@ -20,12 +21,13 @@ führt alle Tests normal und mit Address-/Undefined-Behaviour-Sanitizer aus und 
 | Zielverlust kurz/lang, Wiederaufnahme | Coast ≤ 0,25 s, dann ungültig; Wiederaufnahme nach 1 Paar |
 | Sprung 60 → 45 m | nach 5 Paaren übernommen |
 | Übersteuerung / schwaches Ziel | AGC auf Stufe 0 bzw. 3, keine Fehlmessung bei Clipping |
-| Landung 30 → 4,5 m bei 3 m/s | gültig, max. 0,24 m (vorher nur lange Rampe: 0,46 m) |
-| Flare 3 → 0,8 m/s zwischen 12 und 5 m | Kurzrampe 0,20 m, nur lange Rampe 0,63 m |
-| Sinken 45 → 12 m, Abfangen, Steigen auf 50 m | Umschalten lang ↔ kurz ohne ungültige Ausgabe, max. 0,03 m |
+| Landung 30 → 4,5 m bei 3 m/s | gültig, max. 0,25 m |
+| Flare 3 → 0,8 m/s zwischen 12 und 5 m | Kurzrampe (auto) 0,23 m; nur lange Rampe 1,2 m und 3 Lücken |
+| Sinken 45 → 12 m, Abfangen, Steigen auf 50 m | Umschalten lang ↔ kurz ohne ungültige Ausgabe, max. 0,07 m |
 | ADC eingefroren | HW_FAULT, ungültig, Erholung |
 | VCO-Richtung invertiert | korrekt mit `vsign -1` |
-| Fahrwerksecho 4,5 m + Boden 35 m | ohne Hintergrundabzug 4,5 m (falsch), mit 35,00 m |
+| Fahrwerksecho 4,5 m + Boden 35 m | ohne Hintergrundabzug 4,5 m (falsch), mit laufendem Abzug nach 13 Paaren 35,00 m; Sinkflug bis 7 m max. 0,21 m |
+| Festes Ziel 4,5 m mit `bg on` | wird entfernt (erwartet, am Boden `bg off`) |
 | 2-Punkt-Kalibrierung (Sollhub 110 MHz, Start 90 MHz) | lang 110,001 MHz, kurz 110,004 MHz |
 
 Die Simulator-Ergebnisse sind ein **Bestfall**: VCO-Nichtlinearität, Temperaturdrift,

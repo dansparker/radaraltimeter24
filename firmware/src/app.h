@@ -8,12 +8,9 @@
 #include "altimeter.h"
 #include "config.h"
 
-#define APP_BG_LEN RADAR_BG_LEN
-
 typedef struct {
     config_t cfg;
     altimeter_t alt;
-    int16_t bg[APP_BG_LEN];
     uint8_t can_ok;
     uint32_t fe_restarts;
 } app_t;

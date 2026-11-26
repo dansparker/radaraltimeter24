@@ -4,6 +4,8 @@
  *
  * HSE 8 MHz: PLLM=4 -> 2 MHz, PLLN=168 -> 336 MHz, PLLP=2 -> 168 MHz
  * HSI 16 MHz fallback: PLLM=8 gives the same frequencies.
+ * Both boards (F405, F446 on the WeAct board) have an 8 MHz crystal; the F446
+ * also runs at 168 MHz so that all timings are identical (no over-drive).
  * If the crystal fails at run time the CSS raises an NMI; the handler
  * restarts the PLL from the HSI so all peripheral timings stay valid.
  * Note: the measured range does not depend on the clock accuracy (fs cancels
@@ -23,6 +25,9 @@ static int pll_start(int use_hse)
     RCC->CR &= ~RCC_CR_PLLON;
     while ((RCC->CR & RCC_CR_PLLRDY) != 0u) { }
     RCC->PLLCFGR = m | (168u << 6) | (0u << 16) | (7u << 24) |
+#if defined(RCC_PLLCFGR_PLLR)
+                   (2u << 28) |                     /* F446: PLLR unused, keep valid */
+#endif
                    (use_hse ? RCC_PLLCFGR_PLLSRC_HSE : 0u);
     RCC->CR |= RCC_CR_PLLON;
     for (uint32_t t = 0; (RCC->CR & RCC_CR_PLLRDY) == 0u; t++) {

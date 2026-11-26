@@ -7,6 +7,12 @@ direkt in der Spalte „Ist“ bzw. im Protokoll am Ende festhalten.
 Oszilloskop (2 Kanäle), Multimeter, CAN-Adapter mit Transceiver und 120-Ω-Abschluss,
 Winkelreflektor oder große Metallplatte, Maßband/Laser-Entfernungsmesser.
 
+**Hintergrundabzug:** Die Firmware entfernt im Betrieb laufend alle Echos, die sich relativ zum
+Radar nicht bewegen (`bg on`, Standard). Im Flug ist das gewollt (Leckage, Radom, Fahrwerk), bei
+Tests mit **ruhendem** Ziel verschwindet das Ziel dadurch nach etwa 2 s. Deshalb ab Schritt 6
+bis einschließlich Schritt 11 `bg off` und vor dem Flug wieder `bg on`, `save`.
+Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/bsp/bsp.h`.
+
 ---
 
 ## 1 Versorgung (ohne Radarmodul, ohne Firmware)
@@ -72,6 +78,7 @@ Winkelreflektor oder große Metallplatte, Maßband/Laser-Entfernungsmesser.
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
+| ☐ | `bg off` (ruhendes Ziel, siehe oben) | `info` zeigt `bg off` | |
 | ☐ | `out 2`, Reflektor in ~10 m: `$RDBG` zeigt `f_rise` ≈ `f_fall` (ruhend) | Differenz < 30 Hz | |
 | ☐ | Höhe im `$RALT` vorhanden und stabil (noch unkalibriert) | Streuung < 0,1 m | |
 | ☐ | Reflektor nähert sich langsam → `vs` **negativ**; entfernt sich → positiv. Wenn umgekehrt: `vsign -1` | Vorzeichen korrekt | |
@@ -95,8 +102,9 @@ Winkelreflektor oder große Metallplatte, Maßband/Laser-Entfernungsmesser.
 |---|---|---|---|
 | ☐ | Großes Ziel in > 100 m (Gebäude): `dump`, Spektrum am PC anschauen | schmale Spitze (Hauptkeule ~4 Bins breit) | |
 | ☐ | Bei breiter/verschmierter Spitze: `rampq` schrittweise (±0,05) variieren, schmalste Spitze wählen, `save` | notieren | |
-| ☐ | Antenne zum freien Himmel, `bg capture` → Maske | ideal `255` (alle Stufen beider Modi) | |
-| ☐ | `bg on`, `save`; Kontrollmessungen aus Schritt 7 wiederholen | unverändert oder besser | |
+| ☐ | Kontrolle des laufenden Hintergrunds: Reflektor in ~10 m langsam vor und zurück bewegen (±0,5 m), `bg on` | Höhe bleibt gültig, folgt der Bewegung | |
+| ☐ | Reflektor ruhig halten, `bg on` | wird nach ~2 s ungültig (erwartet) | |
+| ☐ | `bg off` für die weiteren Bodentests | – | |
 
 ## 9 CAN
 
@@ -124,7 +132,7 @@ Winkelreflektor oder große Metallplatte, Maßband/Laser-Entfernungsmesser.
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
 | ☐ | Einbau am Flugzeug, Fahrwerk belastet: `zero 0`, `save` | Anzeige 0,0 m | |
-| ☐ | Fahrwerks-/Strukturechos: `bg capture` im eingebauten Zustand (Flugzeug angehoben oder später im Flug > 300 m AGL) | – | |
+| ☐ | Fahrwerks-/Strukturechos: `bg off`, `out 2` im eingebauten Zustand ohne Bodenecho (z. B. angehoben) → Echos in `$RDBG` notieren | im Flug werden sie vom laufenden Hintergrund entfernt | |
 | ☐ | Gerät nach unten von Brücke/Dach/Kran über Gras, Asphalt, Wasser | Höhe korrekt, kein Dauer-Coasting | |
 | ☐ | Gerät auf Fahrzeug (Antenne nach unten) während der Fahrt: Höhe stabil, keine Sprünge | Streuung < 0,1 m | |
 | ☐ | Neigung ±15° (Längs-/Querlage simulieren): Höhe weiter gültig | gültig | |
@@ -133,6 +141,7 @@ Winkelreflektor oder große Metallplatte, Maßband/Laser-Entfernungsmesser.
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
+| ☐ | Vor dem Flug `bg on`, `save`, `info` prüfen | `bg on` | |
 | ☐ | UART-Log (`out 2`) und Referenz (GPS-Höhe über Boden, Barometer, Video) aufzeichnen | – | |
 | ☐ | Tiefe Überflüge in 10, 30, 100, 200 m über flachem Gelände | Abweichung notieren | |
 | ☐ | Umschaltung `L`/`S` im `$RDBG` bei ~25 m (Sinkflug) bzw. ~35 m (Steigflug), ohne Lücke in der Gültigkeit | ok | |

@@ -27,7 +27,7 @@ void cfg_defaults(config_t *c)
     c->module = MOD_KLC1A;
     c->out_mode = 1u;
     c->gain_mode = CFG_GAIN_AUTO;
-    c->bg_enable = 0u;
+    c->bg_enable = 1u;
     c->can_enable = 1u;
     c->dac_buffer = 1u;
     c->vco_sign = 1;
@@ -39,8 +39,15 @@ void cfg_defaults(config_t *c)
 
     /* Sweep values are START values only (module data unknown); they are
      * estimated from the legacy firmware constants and must be calibrated. */
+#if defined(BOARD_REVB)
+    /* rev B: U_tune = 0.6 * U_DAC; 0.35 ... 1.45 V around the open-pin
+     * frequency (0.9 V), ~90 MHz with -80 MHz/V */
+    c->mod[MOD_KLC1A].dac_lo = 724u;
+    c->mod[MOD_KLC1A].dac_hi = 3000u;
+#else
     c->mod[MOD_KLC1A].dac_lo = 0u;
     c->mod[MOD_KLC1A].dac_hi = 2480u;
+#endif
     c->mod[MOD_KLC1A].sweep_hz = 90.0e6f;
     c->mod[MOD_KLC1A].r_offset_m = 0.0f;
 

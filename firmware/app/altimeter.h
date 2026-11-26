@@ -28,7 +28,7 @@
 #define ALT_ST_UNCAL       0x0020u  /**< module not calibrated */
 #define ALT_ST_OVERRUN     0x0040u  /**< frames lost (processing too slow) */
 #define ALT_ST_DEGRADED    0x0080u  /**< single ramp or mirrored solution */
-#define ALT_ST_BUSY        0x0100u  /**< calibration / background capture */
+#define ALT_ST_BUSY        0x0100u  /**< calibration running */
 #define ALT_ST_GAIN_CHG    0x0200u  /**< gain changed in this cycle */
 #define ALT_ST_CLK_FALLBACK 0x0400u /**< running on HSI (set by the BSP) */
 
@@ -75,7 +75,7 @@ typedef struct {
     uint32_t nonfinite;
 } alt_stats_t;
 
-typedef enum { ALT_MODE_RUN = 0, ALT_MODE_CAL, ALT_MODE_BG } alt_mode_t;
+typedef enum { ALT_MODE_RUN = 0, ALT_MODE_CAL } alt_mode_t;
 
 /** parameters derived for one ramp mode */
 typedef struct {
@@ -89,12 +89,11 @@ typedef struct {
     float pair_dt;
     uint16_t bin_min;
     uint16_t bin_max;
+    uint16_t bg_bins;            /**< bins 1 .. bg_bins-1 get the running background */
 } alt_mpar_t;
 
 typedef struct {
     const config_t *cfg;
-    int16_t *bg;                 /**< RADAR_BG_LEN values, see radar_bg_offset() */
-    uint8_t bg_valid;            /**< bit (4*mode + gain): background valid */
 
     alt_mpar_t mp[RADAR_NMODES];
     uint8_t rmode;               /**< mode of the frames currently processed */
@@ -129,17 +128,15 @@ typedef struct {
     /* calibration accumulation */
     uint16_t cal_target, cal_n;
     double cal_sum, cal_sum2;
-    /* background capture */
-    uint8_t bg_gain;
-    uint8_t bg_rmode;
-    uint16_t bg_frames, bg_cnt[2], bg_tries;
+    /* running background: frames in the estimate [ramp mode][gain][DAC direction] */
+    uint16_t bg_n[RADAR_NMODES][RADAR_NGAIN][2];
 
     alt_output_t out;
     alt_stats_t st;
 } altimeter_t;
 
-/** Initialise; bg_storage must hold RADAR_BG_LEN int16 values (or NULL). */
-void alt_init(altimeter_t *a, const config_t *cfg, int16_t *bg_storage, uint8_t bg_valid);
+/** Initialise with the configuration (kept by reference). */
+void alt_init(altimeter_t *a, const config_t *cfg);
 
 /** Re-derive parameters after a configuration change and restart tracking. */
 void alt_apply_config(altimeter_t *a);
@@ -161,10 +158,6 @@ void alt_cal_start(altimeter_t *a, uint16_t n);
 /** @return 1 when done; mean/std of f_R [Hz] */
 int alt_cal_result(const altimeter_t *a, float *mean_hz, float *std_hz, uint16_t *n);
 void alt_cal_abort(altimeter_t *a);
-
-/** Capture background frames for both ramp modes and all gains, frames_per_dir each. */
-void alt_bg_start(altimeter_t *a, uint16_t frames_per_dir);
-int alt_bg_done(const altimeter_t *a);
 
 /** Set status bits from outside (e.g. clock fallback). */
 void alt_set_ext_status(altimeter_t *a, uint16_t bits);

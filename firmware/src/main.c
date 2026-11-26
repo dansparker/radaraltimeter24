@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief 24 GHz FMCW radar altimeter - STM32F405RG main loop.
+ * @brief 24 GHz FMCW radar altimeter - main loop (rev A STM32F405, rev B STM32F446).
  *
  * Interrupts only move data (DMA, UART). All processing runs in the main
  * loop: fetch frame -> alt_process_frame() -> outputs. The watchdog is only
@@ -28,7 +28,7 @@ int app_save(void)
 {
     cfg_seal(&g_app.cfg);
     frontend_stop();
-    const int rc = fs_save(&g_app.cfg, g_app.bg, APP_BG_LEN, g_app.alt.bg_valid);
+    const int rc = fs_save(&g_app.cfg);
     app_restart_frontend();
     return rc;
 }
@@ -93,8 +93,7 @@ int main(void)
         cfg_defaults(&g_app.cfg);
         uart_puts("\r\n# config: defaults (flash empty or invalid)\r\n");
     }
-    const uint8_t bgm = fs_load_bg(g_app.bg, APP_BG_LEN);
-    alt_init(&g_app.alt, &g_app.cfg, g_app.bg, bgm);
+    alt_init(&g_app.alt, &g_app.cfg);
 
     g_app.can_ok = (uint8_t)(can_init(g_app.cfg.can_kbps) == 0);
     uart_puts("# RADAR ALTIMETER 24GHz FMCW - 'help' for commands\r\n");
@@ -102,6 +101,7 @@ int main(void)
 
     frontend_init();
     frontend_set_gain(alt_gain_request(&g_app.alt));
+    board_rf_enable(1);                 /* radar module on (rev B), ramp starts next */
     app_restart_frontend();
     iwdg_init_ms(250u);
 

@@ -5,7 +5,9 @@
  * Generates ADC frames (uint16, 12 bit) exactly as the STM32 frontend would
  * deliver them: beat tones of point targets incl. Doppler, antenna leakage,
  * switched gain, front-end + ADC noise, IF high-pass filters, quantisation
- * and clipping.
+ * and clipping. In flight the carrier phase of the ground echo changes from
+ * ramp to ramp (mm of height change, speckle); targets therefore get a random
+ * phase per frame unless they are marked fixed (e.g. landing gear).
  */
 #ifndef SIM_H
 #define SIM_H
@@ -18,6 +20,7 @@ typedef struct {
     float range_m;
     float vr_mps;      /**< range rate (climb > 0) */
     float amp_lsb;     /**< beat amplitude at gain level 0 [LSB] */
+    int fixed;         /**< 1: fixed relative to the radar (constant phase) */
 } sim_target_t;
 
 typedef struct {
@@ -37,6 +40,7 @@ typedef struct {
     float hp_fc_hz;          /**< IF high-pass corner (0 = off) */
     int hp_order;
     int stuck;               /**< 1: deliver a constant frame (fault) */
+    int random_phase;        /**< 1: random carrier phase per frame (flight) */
     /* state */
     uint32_t rng;
     double t;

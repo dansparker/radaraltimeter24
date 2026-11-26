@@ -1,7 +1,8 @@
 # radaraltimeter24
 
 FMCW-Radar-Höhenmesser (Radar Altimeter) für Flugzeuge mit 24-GHz-Radarmodul
-(**RFbeam K-LC1a** oder **InnoSenT IVS-465**) und **STM32F405RGT6**.
+(**RFbeam K-LC1a** oder **InnoSenT IVS-465**) und **STM32F405RGT6** (Rev. A) bzw.
+**STM32F446** auf dem WeAct-Core-Board (Rev. B, [Schaltplan](hardware/rev_b_f446/README.md)).
 Messbereich ca. 4 m … 250 m (abhängig vom Frequenzhub des Moduls), Ausgabe ~60 Hz über
 **UART** und **CAN**. Zwei Rampenmodi: lange Rampe (8,1 ms) für Erfassung und große Höhe,
 **Kurzrampe (2,35 ms) automatisch unter 25 m** für Landung und Abfangbogen.
@@ -13,10 +14,11 @@ Messbereich ca. 4 m … 250 m (abhängig vom Frequenzhub des Moduls), Ausgabe ~6
 ```
 lib/rdsp/            portable Radar-DSP-Bibliothek (C99, ohne malloc, wiederverwendbar)
 firmware/app/        Höhenmesser-Pipeline, Konfiguration, Protokolle (hardwareunabhängig)
-firmware/bsp/        STM32F405: Startup, Takt, Frontend (DAC/ADC/DMA), UART, CAN, Flash, IWDG
+firmware/bsp/        STM32F405 (Rev. A) / F446 (Rev. B): Startup, Takt, Frontend (DAC/ADC/DMA), UART, CAN, Flash, IWDG
 firmware/src/        main.c, Kommandozeile
 test/                Radar-Simulator + Unit- und End-to-End-Tests (laufen in GitHub Actions)
 docs/                Signalverarbeitung, Hardware, Review/Schwachstellen
+hardware/rev_b_f446/ Schaltplan Rev. B (STM32F446, TLV9064), Reichweitenabschätzung
 ```
 
 ## Signalverarbeitung (Kurzfassung)
@@ -26,7 +28,7 @@ Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 8,1 ms bzw. 2,35 ms i
 | Schritt | Modul | Zweck |
 |---|---|---|
 | 0 | `rdsp_agc` | Verstärkungsregelung (CD4052, 4 Stufen), schnell ab / langsam auf |
-| 1 | `rdsp_frame` | ADC → float, Statistik, Clipping, DC/Trend-/Hintergrundabzug |
+| 1 | `rdsp_frame` | ADC → float, Statistik, Clipping, DC-/Trendabzug |
 | 2 | `rdsp_window` | Hann-Fenster (+ Skalierungssummen) |
 | 3 | `rdsp_fft` | reelle FFT 2048 Punkte |
 | 4 | `rdsp_spectrum` | Leistungsdichte (PSD), Welch-Mittelung über Rampen |
@@ -48,10 +50,11 @@ sh tools/fetch_cmsis.sh
 ```
 
 ```bash
-make -C firmware
+make -C firmware              # Rev. B (STM32F446), Standard
+make -C firmware BOARD=reva   # Rev. A (STM32F405)
 ```
 
-Ergebnis: `firmware/build/radar_altimeter.{elf,bin,hex}`. Alternativ kann `CMSIS=<pfad>` auf
+Ergebnis: `firmware/build/<board>/radar_altimeter.{elf,bin,hex}`. Alternativ kann `CMSIS=<pfad>` auf
 einen vorhandenen CubeIDE-`Drivers/CMSIS`-Ordner zeigen. Der Code nutzt keine HAL, nur
 CMSIS-Registerdefinitionen.
 
@@ -70,7 +73,8 @@ make -C test
    `cal2 <m>`. Optional dasselbe mit `rmode short` (eigener Hub der Kurzrampe, sonst wird der
    Wert der langen Rampe verwendet). Dann `rmode auto`, `save`.
 4. Optional, eingebaut am Flugzeug: `zero 0` (Anzeige = 0 auf dem Boden), `save`.
-5. Optional: `bg capture` mit Antenne zum freien Himmel (Fahrwerks-/Leckage-Echos), `bg on`, `save`.
+5. Laufender Hintergrundabzug (`bg on`, Standard) entfernt im Flug feste Echos (Leckage, Radom,
+   Fahrwerk). Bei Bodentests mit ruhendem Ziel `bg off`, vor dem Flug wieder `bg on`, `save`.
 
 Alle Kommandos: `help`. Siehe [docs/hardware.md](docs/hardware.md) und die vollständige
 **[Checkliste zur Inbetriebnahme](docs/inbetriebnahme.md)**.
@@ -93,7 +97,7 @@ Höhe und Geschwindigkeit sind leer, wenn ungültig. CAN (Standard-ID `0x3A0`, 5
 
 Statusbits: `0x0001` gültig, `0x0002` Coasting, `0x0004` kein Ziel, `0x0008` Clipping,
 `0x0010` Hardwarefehler, `0x0020` nicht kalibriert, `0x0040` Frame-Überlauf,
-`0x0080` degradiert (Einzelrampe/gespiegelt), `0x0100` Kalibrierung/Hintergrund läuft,
+`0x0080` degradiert (Einzelrampe/gespiegelt), `0x0100` Kalibrierung läuft,
 `0x0200` Gain-Wechsel, `0x0400` Taktausfall (läuft auf HSI).
 Der aktuelle Rampenmodus steht im letzten Feld von `$RDBG` (L lang, S kurz) und in `info`.
 
