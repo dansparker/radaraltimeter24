@@ -62,6 +62,19 @@ modelliert. Real sind Fehler im Bereich von einigen Zentimetern bis Dezimetern z
 
 ## Offene Punkte / Grenzen (bitte beachten)
 
+0. **KRITISCH – Vorwärtsflug (Bodenmodell, `make -C test range`):** Mit der ausgedehnten
+   Bodenfläche (Keule 34° × 80°, Doppler durch die Fluggeschwindigkeit, Speckle, Empfindlichkeit
+   nach Datenblatt) ist das Bodenecho kein Punktziel mehr, sondern ein breiter Hügel im Spektrum.
+   - Bei der langen Rampe und 30 m/s ist er ±13 m breit, bei der Kurzrampe ±4 m.
+   - Zusätzlich liegt er wegen der 80°-Keule hinter der Senkrechten.
+   - Die heutige Detektion (OS-CFAR, nächstes starkes Maximum) liefert dann **gültige Werte mit
+     Metern Fehler**:
+     - Wiese, 30 m/s, Kurzrampe: bis 9 m Fehler (95-%-Quantil) schon zwischen 10 und 30 m;
+     - 60 m/s: über 20 m Fehler;
+     - die Automatik (Erfassung mit der langen Rampe) erfasst schlechter.
+   - Bis zur Überarbeitung (kurze Rampen, viele Rampen mitteln, Vorderkanten-Schätzung auf dem
+     Hügel) ist die Firmware **nicht flugtauglich**.
+
 1. **Frequenzhub unbekannt** → ohne Kalibrierung gilt `UNCAL`; die Höhe kann um den Faktor
    (wahrer Hub / 90 MHz) falsch sein.
 2. **Minimale Höhe ≈ 2 Bins ≈ 4 m bei 90 MHz Hub.** Darunter ist das Ziel von DC/Leckage nicht

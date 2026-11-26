@@ -1,5 +1,6 @@
 # Host tests (gcc or clang):  make            build and run
 #                             make SAN=1      with address/undefined sanitizers
+#                             make range      altitude range against the extended ground model
 CC      ?= gcc
 BUILD   ?= build
 RDSP    := ../lib/rdsp
@@ -21,7 +22,17 @@ $(BUILD)/run_tests: $(SRCS) $(wildcard *.h) $(wildcard $(APP)/*.h) $(wildcard $(
 run: $(BUILD)/run_tests
 	./$(BUILD)/run_tests
 
+RSRCS   := $(wildcard $(RDSP)/src/*.c) $(APP)/altimeter.c $(APP)/config.c $(APP)/ramp.c sim.c range_sim.c
+
+$(BUILD)/range_sim: $(RSRCS) $(wildcard *.h) $(wildcard $(APP)/*.h) $(wildcard $(RDSP)/include/rdsp/*.h)
+	mkdir -p $(BUILD)
+	$(CC) $(CFLAGS) $(RSRCS) -lm -o $@
+
+range: $(BUILD)/range_sim
+	./$(BUILD)/range_sim
+	./$(BUILD)/range_sim short
+
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all run clean
+.PHONY: all run range clean
