@@ -1,0 +1,1118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1910" height="1350" viewBox="0 0 1910 1350" role="img">
+<title>Radar-Höhenmesser Rev. B – Schaltplan</title>
+<desc>STM32F446 WeAct Core Board, K-LC1a, TLV9064: Versorgung, VCO-Ansteuerung, ZF-Kette, CAN/UART, Überwachung.</desc>
+<style>.t{font:12px sans-serif;fill:#1a1a1a}.r{font:11px sans-serif;fill:#1a1a1a}.v{font:10px sans-serif;fill:#555}.n{font:600 10px sans-serif;fill:#0b4f9c}.pn{font:10px sans-serif;fill:#333}.h{font:600 14px sans-serif;fill:#3C3489}.note{font:11px sans-serif;fill:#333}.big{font:600 16px sans-serif;fill:#1a1a1a}.w{stroke:#1a1a1a;stroke-width:1.3;fill:none}.b{stroke:#1a1a1a;stroke-width:1.3;fill:#fff}.p{stroke:#1a1a1a;stroke-width:2}.nl{fill:#E6F0FB;stroke:#0b4f9c;stroke-width:0.8}.ic{fill:#FAF9F5;stroke:#1a1a1a;stroke-width:1.3}.fr{fill:none;stroke:#8a86c9;stroke-width:1;stroke-dasharray:6 4}</style>
+<rect width="1910" height="1350" fill="#fff"/>
+<rect class="fr" x="20" y="40" width="1090" height="385" rx="6"/>
+<text class="h" x="30" y="60" text-anchor="start">1  Versorgung (9–32 V Bordnetz)</text>
+<rect class="ic" x="40" y="110" width="45" height="160" rx="3"/>
+<text class="r" x="62" y="104" text-anchor="middle">J1</text>
+<polyline class="w" points="85,130 100,130"/>
+<text class="pn" x="80" y="134" text-anchor="end">1</text>
+<polyline class="w" points="85,155 100,155"/>
+<text class="pn" x="80" y="159" text-anchor="end">2</text>
+<polyline class="w" points="85,180 100,180"/>
+<text class="pn" x="80" y="184" text-anchor="end">3</text>
+<polyline class="w" points="85,205 100,205"/>
+<text class="pn" x="80" y="209" text-anchor="end">4</text>
+<polyline class="w" points="85,230 100,230"/>
+<text class="pn" x="80" y="234" text-anchor="end">5</text>
+<polyline class="w" points="85,255 100,255"/>
+<text class="pn" x="80" y="259" text-anchor="end">6</text>
+<text class="v" x="62" y="285" text-anchor="middle">6-pol.</text>
+<polyline class="w" points="100,155 110,155"/>
+<polyline class="w" points="110,155 110,161"/>
+<line class="p" x1="101" y1="161" x2="119" y2="161"/>
+<line class="p" x1="104" y1="164" x2="116" y2="164"/>
+<line class="p" x1="107" y1="167" x2="113" y2="167"/>
+<polyline class="w" points="100,180 112,180"/>
+<polygon class="nl" points="112,180 118,172 154,172 154,188 118,188"/>
+<text class="n" x="121" y="184" text-anchor="start">CANH</text>
+<polyline class="w" points="100,205 112,205"/>
+<polygon class="nl" points="112,205 118,197 154,197 154,213 118,213"/>
+<text class="n" x="121" y="209" text-anchor="start">CANL</text>
+<polyline class="w" points="100,230 112,230"/>
+<polygon class="nl" points="112,230 118,222 168,222 168,238 118,238"/>
+<text class="n" x="121" y="234" text-anchor="start">TX_EXT</text>
+<polyline class="w" points="100,255 112,255"/>
+<polygon class="nl" points="112,255 118,247 168,247 168,263 118,263"/>
+<text class="n" x="121" y="259" text-anchor="start">RX_EXT</text>
+<polyline class="w" points="100,130 120,130"/>
+<polyline class="w" points="120,130 130,130"/>
+<polyline class="w" points="160,130 170,130"/>
+<rect class="b" x="130" y="125" width="30" height="10"/>
+<polyline class="w" points="130,130 160,130"/>
+<text class="r" x="145" y="121" text-anchor="middle">F1 0,5 A T</text>
+<polyline class="w" points="170,130 190,130"/>
+<polyline class="w" points="190,130 207,130"/>
+<polyline class="w" points="223,130 240,130"/>
+<polygon class="b" points="207,122 207,138 223,130"/>
+<line class="p" x1="223" y1="122" x2="223" y2="138"/>
+<text class="r" x="215" y="118" text-anchor="middle">D1 SS210</text>
+<polyline class="w" points="240,130 320,130"/>
+<circle cx="260" cy="130" r="2.8" fill="#1a1a1a"/>
+<circle cx="300" cy="130" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="260,130 260,145"/>
+<polyline class="w" points="260,195 260,178"/>
+<polyline class="w" points="260,162 260,145"/>
+<polygon class="b" points="252,178 268,178 260,162"/>
+<line class="p" x1="252" y1="162" x2="268" y2="162"/>
+<text class="r" x="248" y="168" text-anchor="end">D2</text>
+<text class="v" x="248" y="180" text-anchor="end">SMBJ33A</text>
+<polyline class="w" points="260,195 260,201"/>
+<line class="p" x1="251" y1="201" x2="269" y2="201"/>
+<line class="p" x1="254" y1="204" x2="266" y2="204"/>
+<line class="p" x1="257" y1="207" x2="263" y2="207"/>
+<polyline class="w" points="300,130 300,150"/>
+<polyline class="w" points="300,150 300,167"/>
+<polyline class="w" points="300,173 300,190"/>
+<line class="p" x1="290" y1="167" x2="310" y2="167"/>
+<line class="p" x1="290" y1="173" x2="310" y2="173"/>
+<text class="r" x="313" y="168" text-anchor="start">C1</text>
+<text class="v" x="313" y="180" text-anchor="start">4,7µ/100V</text>
+<polyline class="w" points="300,190 300,196"/>
+<line class="p" x1="291" y1="196" x2="309" y2="196"/>
+<line class="p" x1="294" y1="199" x2="306" y2="199"/>
+<line class="p" x1="297" y1="202" x2="303" y2="202"/>
+<polyline class="w" points="320,130 325,130"/>
+<polyline class="w" points="365,130 370,130"/>
+<path class="w" d="M325,130 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0"/>
+<text class="r" x="345" y="120" text-anchor="middle">L1 10µH</text>
+<polyline class="w" points="370,130 460,130"/>
+<circle cx="390" cy="130" r="2.8" fill="#1a1a1a"/>
+<circle cx="440" cy="130" r="2.8" fill="#1a1a1a"/>
+<text class="n" x="415" y="122" text-anchor="middle">VIN_F</text>
+<polyline class="w" points="390,130 390,150"/>
+<polyline class="w" points="390,150 390,167"/>
+<polyline class="w" points="390,173 390,190"/>
+<line class="p" x1="380" y1="167" x2="400" y2="167"/>
+<line class="p" x1="380" y1="173" x2="400" y2="173"/>
+<text class="r" x="403" y="168" text-anchor="start">C2</text>
+<text class="v" x="403" y="180" text-anchor="start">4,7µ/100V</text>
+<polyline class="w" points="390,190 390,196"/>
+<line class="p" x1="381" y1="196" x2="399" y2="196"/>
+<line class="p" x1="384" y1="199" x2="396" y2="199"/>
+<line class="p" x1="387" y1="202" x2="393" y2="202"/>
+<rect class="ic" x="460" y="105" width="120" height="110" rx="3"/>
+<text class="r" x="520.0" y="158.0" text-anchor="middle"></text>
+<text class="r" x="462" y="99" text-anchor="start">U3 LMR16006X</text>
+<polyline class="w" points="460,130 475,130"/>
+<text class="pn" x="478" y="134" text-anchor="start">VIN</text>
+<polyline class="w" points="460,160 475,160"/>
+<text class="pn" x="478" y="164" text-anchor="start">EN</text>
+<polyline class="w" points="520,215 520,200"/>
+<text class="pn" x="520" y="196" text-anchor="middle">GND</text>
+<polyline class="w" points="580,150 565,150"/>
+<text class="pn" x="562" y="154" text-anchor="end">SW</text>
+<polyline class="w" points="580,195 565,195"/>
+<text class="pn" x="562" y="199" text-anchor="end">FB</text>
+<polyline class="w" points="560,105 560,120"/>
+<text class="pn" x="560" y="132" text-anchor="middle">CB</text>
+<polyline class="w" points="460,160 440,160 440,130"/>
+<polyline class="w" points="520,215 520,221"/>
+<line class="p" x1="511" y1="221" x2="529" y2="221"/>
+<line class="p" x1="514" y1="224" x2="526" y2="224"/>
+<line class="p" x1="517" y1="227" x2="523" y2="227"/>
+<polyline class="w" points="560,105 560,88 610,88 610,98"/>
+<polyline class="w" points="610,98 610,115"/>
+<polyline class="w" points="610,121 610,138"/>
+<line class="p" x1="600" y1="115" x2="620" y2="115"/>
+<line class="p" x1="600" y1="121" x2="620" y2="121"/>
+<text class="r" x="623" y="116" text-anchor="start">C3</text>
+<text class="v" x="623" y="128" text-anchor="start">100n</text>
+<polyline class="w" points="610,138 610,150"/>
+<polyline class="w" points="580,150 675,150"/>
+<circle cx="610" cy="150" r="2.8" fill="#1a1a1a"/>
+<circle cx="650" cy="150" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="650,150 650,165"/>
+<polyline class="w" points="650,215 650,198"/>
+<polyline class="w" points="650,182 650,165"/>
+<polygon class="b" points="642,198 658,198 650,182"/>
+<line class="p" x1="642" y1="182" x2="658" y2="182"/>
+<text class="r" x="662" y="188" text-anchor="start">D4</text>
+<text class="v" x="662" y="200" text-anchor="start">B160</text>
+<polyline class="w" points="650,215 650,221"/>
+<line class="p" x1="641" y1="221" x2="659" y2="221"/>
+<line class="p" x1="644" y1="224" x2="656" y2="224"/>
+<line class="p" x1="647" y1="227" x2="653" y2="227"/>
+<polyline class="w" points="580,195 595,195"/>
+<polygon class="nl" points="595,195 601,187 623,187 623,203 601,203"/>
+<text class="n" x="604" y="199" text-anchor="start">FB</text>
+<polyline class="w" points="675,150 680,150"/>
+<polyline class="w" points="720,150 725,150"/>
+<path class="w" d="M680,150 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0"/>
+<text class="r" x="700" y="140" text-anchor="middle">L2 22µH</text>
+<polyline class="w" points="725,150 860,150"/>
+<circle cx="760" cy="150" r="2.8" fill="#1a1a1a"/>
+<circle cx="790" cy="150" r="2.8" fill="#1a1a1a"/>
+<circle cx="835" cy="150" r="2.8" fill="#1a1a1a"/>
+<text class="n" x="760" y="120" text-anchor="middle">V_PRE 6,0 V</text>
+<polyline class="w" points="760,150 760,170"/>
+<polyline class="w" points="760,170 760,187"/>
+<polyline class="w" points="760,193 760,210"/>
+<line class="p" x1="750" y1="187" x2="770" y2="187"/>
+<line class="p" x1="750" y1="193" x2="770" y2="193"/>
+<text class="r" x="747" y="188" text-anchor="end">C4</text>
+<text class="v" x="747" y="200" text-anchor="end">22µ</text>
+<polyline class="w" points="760,210 760,216"/>
+<line class="p" x1="751" y1="216" x2="769" y2="216"/>
+<line class="p" x1="754" y1="219" x2="766" y2="219"/>
+<line class="p" x1="757" y1="222" x2="763" y2="222"/>
+<polyline class="w" points="790,150 790,160"/>
+<polyline class="w" points="790,160 790,170"/>
+<polyline class="w" points="790,200 790,210"/>
+<rect class="b" x="785" y="170" width="10" height="30"/>
+<text class="r" x="799" y="183" text-anchor="start">R1</text>
+<text class="v" x="799" y="195" text-anchor="start">68k</text>
+<polyline class="w" points="790,210 790,235"/>
+<polyline class="w" points="790,235 790,245"/>
+<polyline class="w" points="790,275 790,285"/>
+<rect class="b" x="785" y="245" width="10" height="30"/>
+<text class="r" x="799" y="258" text-anchor="start">R2</text>
+<text class="v" x="799" y="270" text-anchor="start">10k</text>
+<polyline class="w" points="790,285 790,291"/>
+<line class="p" x1="781" y1="291" x2="799" y2="291"/>
+<line class="p" x1="784" y1="294" x2="796" y2="294"/>
+<line class="p" x1="787" y1="297" x2="793" y2="297"/>
+<circle cx="790" cy="222" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="790,222 812,222"/>
+<polygon class="nl" points="812,222 818,214 840,214 840,230 818,230"/>
+<text class="n" x="821" y="226" text-anchor="start">FB</text>
+<text class="v" x="560" y="262" text-anchor="start">Buck 0,7 MHz; U_out = 0,765 V·(1+R1/R2) ≈ 6,0 V</text>
+<rect class="ic" x="870" y="135" width="90" height="60" rx="3"/>
+<text class="r" x="915.0" y="163.0" text-anchor="middle"></text>
+<text class="r" x="872" y="129" text-anchor="start">U4 TLV76750 (5 V)</text>
+<polyline class="w" points="870,150 885,150"/>
+<text class="pn" x="888" y="154" text-anchor="start">IN</text>
+<polyline class="w" points="870,175 885,175"/>
+<text class="pn" x="888" y="179" text-anchor="start">EN</text>
+<polyline class="w" points="915,195 915,180"/>
+<text class="pn" x="915" y="176" text-anchor="middle">GND</text>
+<polyline class="w" points="960,150 945,150"/>
+<text class="pn" x="942" y="154" text-anchor="end">OUT</text>
+<polyline class="w" points="860,150 870,150"/>
+<polyline class="w" points="870,175 855,175 855,150"/>
+<circle cx="855" cy="150" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="915,195 915,201"/>
+<line class="p" x1="906" y1="201" x2="924" y2="201"/>
+<line class="p" x1="909" y1="204" x2="921" y2="204"/>
+<line class="p" x1="912" y1="207" x2="918" y2="207"/>
+<polyline class="w" points="960,150 1045,150"/>
+<circle cx="1000" cy="150" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1000,150 1000,165"/>
+<polyline class="w" points="1000,165 1000,182"/>
+<polyline class="w" points="1000,188 1000,205"/>
+<line class="p" x1="990" y1="182" x2="1010" y2="182"/>
+<line class="p" x1="990" y1="188" x2="1010" y2="188"/>
+<text class="r" x="1013" y="183" text-anchor="start">C5</text>
+<text class="v" x="1013" y="195" text-anchor="start">10µ</text>
+<polyline class="w" points="1000,205 1000,211"/>
+<line class="p" x1="991" y1="211" x2="1009" y2="211"/>
+<line class="p" x1="994" y1="214" x2="1006" y2="214"/>
+<line class="p" x1="997" y1="217" x2="1003" y2="217"/>
+<polygon class="nl" points="1045,150 1051,142 1087,142 1087,158 1051,158"/>
+<text class="n" x="1054" y="154" text-anchor="start">5V_D</text>
+<polyline class="w" points="835,150 835,300 845,300"/>
+<polyline class="w" points="845,300 850,300"/>
+<polyline class="w" points="890,300 895,300"/>
+<path class="w" d="M850,300 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0"/>
+<text class="r" x="870" y="290" text-anchor="middle">FB1 600Ω</text>
+<polyline class="w" points="895,300 935,300"/>
+<circle cx="905" cy="300" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="905,300 905,315"/>
+<polyline class="w" points="905,315 905,332"/>
+<polyline class="w" points="905,338 905,355"/>
+<line class="p" x1="895" y1="332" x2="915" y2="332"/>
+<line class="p" x1="895" y1="338" x2="915" y2="338"/>
+<text class="r" x="892" y="333" text-anchor="end">C6</text>
+<text class="v" x="892" y="345" text-anchor="end">10µ</text>
+<polyline class="w" points="905,355 905,361"/>
+<line class="p" x1="896" y1="361" x2="914" y2="361"/>
+<line class="p" x1="899" y1="364" x2="911" y2="364"/>
+<line class="p" x1="902" y1="367" x2="908" y2="367"/>
+<rect class="ic" x="935" y="285" width="90" height="90" rx="3"/>
+<text class="r" x="980.0" y="328.0" text-anchor="middle"></text>
+<text class="v" x="980.0" y="341.0" text-anchor="middle">rauscharm</text>
+<text class="r" x="937" y="279" text-anchor="start">U5 ADP7142-5.0</text>
+<polyline class="w" points="935,300 950,300"/>
+<text class="pn" x="953" y="304" text-anchor="start">VIN</text>
+<polyline class="w" points="960,375 960,360"/>
+<text class="pn" x="960" y="356" text-anchor="middle">EN</text>
+<polyline class="w" points="1005,375 1005,360"/>
+<text class="pn" x="1005" y="356" text-anchor="middle">GND</text>
+<polyline class="w" points="1025,300 1010,300"/>
+<text class="pn" x="1007" y="304" text-anchor="end">OUT</text>
+<polyline class="w" points="1005,375 1005,381"/>
+<line class="p" x1="996" y1="381" x2="1014" y2="381"/>
+<line class="p" x1="999" y1="384" x2="1011" y2="384"/>
+<line class="p" x1="1002" y1="387" x2="1008" y2="387"/>
+<polyline class="w" points="960,375 960,392"/>
+<polygon class="nl" points="960,392 954,384 911,384 911,400 954,400"/>
+<text class="n" x="951" y="396" text-anchor="end">RF_EN</text>
+<polyline class="w" points="1025,300 1050,300"/>
+<circle cx="1040" cy="300" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1040,300 1040,315"/>
+<polyline class="w" points="1040,315 1040,332"/>
+<polyline class="w" points="1040,338 1040,355"/>
+<line class="p" x1="1030" y1="332" x2="1050" y2="332"/>
+<line class="p" x1="1030" y1="338" x2="1050" y2="338"/>
+<text class="r" x="1053" y="333" text-anchor="start">C7</text>
+<text class="v" x="1053" y="345" text-anchor="start">10µ</text>
+<polyline class="w" points="1040,355 1040,361"/>
+<line class="p" x1="1031" y1="361" x2="1049" y2="361"/>
+<line class="p" x1="1034" y1="364" x2="1046" y2="364"/>
+<line class="p" x1="1037" y1="367" x2="1043" y2="367"/>
+<polygon class="nl" points="1050,300 1056,292 1099,292 1099,308 1056,308"/>
+<text class="n" x="1059" y="304" text-anchor="start">5V_RF</text>
+<text class="v" x="930" y="250" text-anchor="start">Modul-PSRR nur 26 dB →</text>
+<text class="v" x="930" y="262" text-anchor="start">eigener rauscharmer Regler</text>
+<polygon class="nl" points="140,330 134,322 98,322 98,338 134,338"/>
+<text class="n" x="131" y="334" text-anchor="end">5V_D</text>
+<polyline class="w" points="140,330 150,330"/>
+<polyline class="w" points="150,330 155,330"/>
+<polyline class="w" points="195,330 200,330"/>
+<path class="w" d="M155,330 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0 a5,5 0 0 1 10,0"/>
+<text class="r" x="175" y="320" text-anchor="middle">FB2 600Ω</text>
+<polyline class="w" points="200,330 250,330"/>
+<circle cx="220" cy="330" r="2.8" fill="#1a1a1a"/>
+<circle cx="240" cy="330" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="220,330 220,345"/>
+<polyline class="w" points="220,345 220,362"/>
+<polyline class="w" points="220,368 220,385"/>
+<line class="p" x1="210" y1="362" x2="230" y2="362"/>
+<line class="p" x1="210" y1="368" x2="230" y2="368"/>
+<text class="r" x="207" y="363" text-anchor="end">C8</text>
+<text class="v" x="207" y="375" text-anchor="end">1µ</text>
+<polyline class="w" points="220,385 220,391"/>
+<line class="p" x1="211" y1="391" x2="229" y2="391"/>
+<line class="p" x1="214" y1="394" x2="226" y2="394"/>
+<line class="p" x1="217" y1="397" x2="223" y2="397"/>
+<rect class="ic" x="250" y="315" width="80" height="60" rx="3"/>
+<text class="r" x="290.0" y="343.0" text-anchor="middle"></text>
+<text class="r" x="252" y="309" text-anchor="start">U6 LP5907-3.3</text>
+<polyline class="w" points="250,330 265,330"/>
+<text class="pn" x="268" y="334" text-anchor="start">IN</text>
+<polyline class="w" points="250,355 265,355"/>
+<text class="pn" x="268" y="359" text-anchor="start">EN</text>
+<polyline class="w" points="290,375 290,360"/>
+<text class="pn" x="290" y="356" text-anchor="middle">GND</text>
+<polyline class="w" points="330,330 315,330"/>
+<text class="pn" x="312" y="334" text-anchor="end">OUT</text>
+<polyline class="w" points="250,355 240,355 240,330"/>
+<polyline class="w" points="290,375 290,381"/>
+<line class="p" x1="281" y1="381" x2="299" y2="381"/>
+<line class="p" x1="284" y1="384" x2="296" y2="384"/>
+<line class="p" x1="287" y1="387" x2="293" y2="387"/>
+<polyline class="w" points="330,330 420,330"/>
+<circle cx="380" cy="330" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="380,330 380,345"/>
+<polyline class="w" points="380,345 380,362"/>
+<polyline class="w" points="380,368 380,385"/>
+<line class="p" x1="370" y1="362" x2="390" y2="362"/>
+<line class="p" x1="370" y1="368" x2="390" y2="368"/>
+<text class="r" x="393" y="363" text-anchor="start">C9</text>
+<text class="v" x="393" y="375" text-anchor="start">1µ</text>
+<polyline class="w" points="380,385 380,391"/>
+<line class="p" x1="371" y1="391" x2="389" y2="391"/>
+<line class="p" x1="374" y1="394" x2="386" y2="394"/>
+<line class="p" x1="377" y1="397" x2="383" y2="397"/>
+<polygon class="nl" points="420,330 426,322 462,322 462,338 426,338"/>
+<text class="n" x="429" y="334" text-anchor="start">A3V3</text>
+<text class="v" x="440" y="365" text-anchor="start">A3V3: Analogteil (U1, U2, U7, VMID)</text>
+<rect class="fr" x="1130" y="40" width="760" height="385" rx="6"/>
+<text class="h" x="1140" y="60" text-anchor="start">2  Mikrocontroller</text>
+<rect class="ic" x="1380" y="70" width="220" height="340" rx="4"/>
+<text class="r" x="1490" y="88" text-anchor="middle">WeAct STM32F446 Core Board</text>
+<text class="v" x="1490" y="101" text-anchor="middle">STM32F446RET6, 180 MHz</text>
+<polyline class="w" points="1365,120 1380,120"/>
+<text class="pn" x="1383" y="124" text-anchor="start">5V</text>
+<polyline class="w" points="1365,150 1380,150"/>
+<text class="pn" x="1383" y="154" text-anchor="start">GND</text>
+<polyline class="w" points="1365,180 1380,180"/>
+<text class="pn" x="1383" y="184" text-anchor="start">3V3</text>
+<polyline class="w" points="1365,210 1380,210"/>
+<text class="pn" x="1383" y="214" text-anchor="start">PA4  DAC1</text>
+<polyline class="w" points="1365,240 1380,240"/>
+<text class="pn" x="1383" y="244" text-anchor="start">PC4  ADC1_IN14</text>
+<polyline class="w" points="1365,270 1380,270"/>
+<text class="pn" x="1383" y="274" text-anchor="start">PC5  ADC1_IN15</text>
+<polyline class="w" points="1365,300 1380,300"/>
+<text class="pn" x="1383" y="304" text-anchor="start">PB0  ADC1_IN8</text>
+<polyline class="w" points="1365,330 1380,330"/>
+<text class="pn" x="1383" y="334" text-anchor="start">PB1  ADC1_IN9</text>
+<polyline class="w" points="1615,120 1600,120"/>
+<text class="pn" x="1597" y="124" text-anchor="end">PC6</text>
+<polyline class="w" points="1615,150 1600,150"/>
+<text class="pn" x="1597" y="154" text-anchor="end">PC7</text>
+<polyline class="w" points="1615,180 1600,180"/>
+<text class="pn" x="1597" y="184" text-anchor="end">PB9  CAN1_TX</text>
+<polyline class="w" points="1615,210 1600,210"/>
+<text class="pn" x="1597" y="214" text-anchor="end">PB8  CAN1_RX</text>
+<polyline class="w" points="1615,240 1600,240"/>
+<text class="pn" x="1597" y="244" text-anchor="end">PA2  USART2_TX</text>
+<polyline class="w" points="1615,270 1600,270"/>
+<text class="pn" x="1597" y="274" text-anchor="end">PA3  USART2_RX</text>
+<polyline class="w" points="1615,320 1600,320"/>
+<text class="pn" x="1597" y="324" text-anchor="end">PB12</text>
+<text class="v" x="1490" y="358" text-anchor="middle">auf dem Board: USB-C (PA11/12), SWD,</text>
+<text class="v" x="1490" y="371" text-anchor="middle">HSE 8 MHz, LED PB2, Taster PC13,</text>
+<text class="v" x="1490" y="384" text-anchor="middle">µSD (PC8–12, PD2) → nicht belegen</text>
+<polygon class="nl" points="1200,120 1194,112 1158,112 1158,128 1194,128"/>
+<text class="n" x="1191" y="124" text-anchor="end">5V_D</text>
+<polyline class="w" points="1200,120 1215,120"/>
+<polyline class="w" points="1215,120 1232,120"/>
+<polyline class="w" points="1248,120 1265,120"/>
+<polygon class="b" points="1232,112 1232,128 1248,120"/>
+<line class="p" x1="1248" y1="112" x2="1248" y2="128"/>
+<text class="r" x="1240" y="108" text-anchor="middle">D3 SS14</text>
+<polyline class="w" points="1265,120 1365,120"/>
+<polyline class="w" points="1365,150 1340,150"/>
+<polyline class="w" points="1340,150 1340,156"/>
+<line class="p" x1="1331" y1="156" x2="1349" y2="156"/>
+<line class="p" x1="1334" y1="159" x2="1346" y2="159"/>
+<line class="p" x1="1337" y1="162" x2="1343" y2="162"/>
+<polyline class="w" points="1365,180 1340,180"/>
+<polygon class="nl" points="1340,180 1334,172 1305,172 1305,188 1334,188"/>
+<text class="n" x="1331" y="184" text-anchor="end">3V3</text>
+<text class="v" x="1240" y="200" text-anchor="middle">(Ausgang Board-LDO)</text>
+<polyline class="w" points="1365,210 1345,210"/>
+<polygon class="nl" points="1345,210 1339,202 1275,202 1275,218 1339,218"/>
+<text class="n" x="1336" y="214" text-anchor="end">DAC_RAMP</text>
+<polyline class="w" points="1365,240 1345,240"/>
+<polygon class="nl" points="1345,240 1339,232 1289,232 1289,248 1339,248"/>
+<text class="n" x="1336" y="244" text-anchor="end">ADC_IF</text>
+<polyline class="w" points="1365,270 1345,270"/>
+<polygon class="nl" points="1345,270 1339,262 1268,262 1268,278 1339,278"/>
+<text class="n" x="1336" y="274" text-anchor="end">MON_VTUNE</text>
+<polyline class="w" points="1365,300 1345,300"/>
+<polygon class="nl" points="1345,300 1339,292 1275,292 1275,308 1339,308"/>
+<text class="n" x="1336" y="304" text-anchor="end">MON_5VRF</text>
+<polyline class="w" points="1365,330 1345,330"/>
+<polygon class="nl" points="1345,330 1339,322 1282,322 1282,338 1339,338"/>
+<text class="n" x="1336" y="334" text-anchor="end">MON_VIN</text>
+<polyline class="w" points="1615,120 1635,120"/>
+<polygon class="nl" points="1635,120 1641,112 1691,112 1691,128 1641,128"/>
+<text class="n" x="1644" y="124" text-anchor="start">GAIN_A</text>
+<polyline class="w" points="1615,150 1635,150"/>
+<polygon class="nl" points="1635,150 1641,142 1691,142 1691,158 1641,158"/>
+<text class="n" x="1644" y="154" text-anchor="start">GAIN_B</text>
+<polyline class="w" points="1615,180 1635,180"/>
+<polygon class="nl" points="1635,180 1641,172 1691,172 1691,188 1641,188"/>
+<text class="n" x="1644" y="184" text-anchor="start">CAN_TX</text>
+<polyline class="w" points="1615,210 1635,210"/>
+<polygon class="nl" points="1635,210 1641,202 1691,202 1691,218 1641,218"/>
+<text class="n" x="1644" y="214" text-anchor="start">CAN_RX</text>
+<polyline class="w" points="1615,240 1635,240"/>
+<polygon class="nl" points="1635,240 1641,232 1698,232 1698,248 1641,248"/>
+<text class="n" x="1644" y="244" text-anchor="start">UART_TX</text>
+<polyline class="w" points="1615,270 1635,270"/>
+<polygon class="nl" points="1635,270 1641,262 1698,262 1698,278 1641,278"/>
+<text class="n" x="1644" y="274" text-anchor="start">UART_RX</text>
+<polyline class="w" points="1615,320 1700,320"/>
+<circle cx="1660" cy="320" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1660,320 1660,330"/>
+<polyline class="w" points="1660,360 1660,370"/>
+<rect class="b" x="1655" y="330" width="10" height="30"/>
+<text class="r" x="1669" y="343" text-anchor="start">R3</text>
+<text class="v" x="1669" y="355" text-anchor="start">100k</text>
+<polyline class="w" points="1660,370 1660,376"/>
+<line class="p" x1="1651" y1="376" x2="1669" y2="376"/>
+<line class="p" x1="1654" y1="379" x2="1666" y2="379"/>
+<line class="p" x1="1657" y1="382" x2="1663" y2="382"/>
+<polygon class="nl" points="1700,320 1706,312 1749,312 1749,328 1706,328"/>
+<text class="n" x="1709" y="324" text-anchor="start">RF_EN</text>
+<text class="v" x="1700" y="350" text-anchor="start">Reset → Modul aus</text>
+<text class="v" x="1150" y="400" text-anchor="start">TIM2 300 kHz → DAC + ADC per DMA (wie Rev. A)</text>
+<rect class="fr" x="20" y="440" width="690" height="355" rx="6"/>
+<text class="h" x="30" y="460" text-anchor="start">3  VCO-Ansteuerung (Rampe)</text>
+<polygon class="nl" points="70,560 64,552 0,552 0,568 64,568"/>
+<text class="n" x="61" y="564" text-anchor="end">DAC_RAMP</text>
+<polyline class="w" points="70,560 80,560"/>
+<polyline class="w" points="80,560 90,560"/>
+<polyline class="w" points="120,560 130,560"/>
+<rect class="b" x="90" y="555" width="30" height="10"/>
+<text class="r" x="105" y="551" text-anchor="middle">R10 10k</text>
+<polyline class="w" points="130,560 170,560"/>
+<circle cx="150" cy="560" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="150,560 150,575"/>
+<polyline class="w" points="150,575 150,585"/>
+<polyline class="w" points="150,615 150,625"/>
+<rect class="b" x="145" y="585" width="10" height="30"/>
+<text class="r" x="159" y="598" text-anchor="start">R11</text>
+<text class="v" x="159" y="610" text-anchor="start">15k</text>
+<polyline class="w" points="150,625 150,631"/>
+<line class="p" x1="141" y1="631" x2="159" y2="631"/>
+<line class="p" x1="144" y1="634" x2="156" y2="634"/>
+<line class="p" x1="147" y1="637" x2="153" y2="637"/>
+<polyline class="w" points="170,560 180,560"/>
+<polyline class="w" points="210,560 220,560"/>
+<rect class="b" x="180" y="555" width="30" height="10"/>
+<text class="r" x="195" y="551" text-anchor="middle">R12 6,2k</text>
+<polyline class="w" points="220,560 275,560"/>
+<circle cx="240" cy="560" r="2.8" fill="#1a1a1a"/>
+<circle cx="255" cy="560" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="240,560 240,500 310,500"/>
+<polyline class="w" points="310,500 327,500"/>
+<polyline class="w" points="333,500 350,500"/>
+<line class="p" x1="327" y1="490" x2="327" y2="510"/>
+<line class="p" x1="333" y1="490" x2="333" y2="510"/>
+<text class="r" x="330" y="486" text-anchor="middle">C10 2,2n C0G</text>
+<polyline class="w" points="350,500 410,500 410,575"/>
+<polyline class="w" points="255,560 255,580"/>
+<polyline class="w" points="255,580 255,597"/>
+<polyline class="w" points="255,603 255,620"/>
+<line class="p" x1="245" y1="597" x2="265" y2="597"/>
+<line class="p" x1="245" y1="603" x2="265" y2="603"/>
+<text class="r" x="242" y="598" text-anchor="end">C11</text>
+<text class="v" x="242" y="610" text-anchor="end">1n C0G</text>
+<polyline class="w" points="255,620 255,626"/>
+<line class="p" x1="246" y1="626" x2="264" y2="626"/>
+<line class="p" x1="249" y1="629" x2="261" y2="629"/>
+<line class="p" x1="252" y1="632" x2="258" y2="632"/>
+<polygon class="b" points="290,543 290,607 355,575"/>
+<polyline class="w" points="275,560 290,560"/>
+<polyline class="w" points="275,590 290,590"/>
+<polyline class="w" points="355,575 370,575"/>
+<text class="t" x="295" y="564" text-anchor="start">+</text>
+<text class="t" x="295" y="594" text-anchor="start">−</text>
+<text class="r" x="316" y="579" text-anchor="middle">U2A</text>
+<text class="v" x="320" y="621" text-anchor="middle">TLV9064</text>
+<polyline class="w" points="275,590 270,590 270,645 395,645 395,575"/>
+<circle cx="395" cy="575" r="2.8" fill="#1a1a1a"/>
+<circle cx="410" cy="575" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="370,575 430,575"/>
+<polyline class="w" points="430,575 440,575"/>
+<polyline class="w" points="470,575 480,575"/>
+<rect class="b" x="440" y="570" width="30" height="10"/>
+<text class="r" x="455" y="566" text-anchor="middle">R13 47</text>
+<polyline class="w" points="480,575 560,575"/>
+<circle cx="500" cy="575" r="2.8" fill="#1a1a1a"/>
+<circle cx="530" cy="575" r="2.8" fill="#1a1a1a"/>
+<polygon class="nl" points="560,575 566,567 630,567 630,583 566,583"/>
+<text class="n" x="569" y="579" text-anchor="start">VCO_TUNE</text>
+<polyline class="w" points="500,575 500,595"/>
+<polyline class="w" points="500,595 500,612"/>
+<polyline class="w" points="500,618 500,635"/>
+<line class="p" x1="490" y1="612" x2="510" y2="612"/>
+<line class="p" x1="490" y1="618" x2="510" y2="618"/>
+<text class="r" x="487" y="613" text-anchor="end">C12</text>
+<text class="v" x="487" y="625" text-anchor="end">DNP</text>
+<polyline class="w" points="500,635 500,641"/>
+<line class="p" x1="491" y1="641" x2="509" y2="641"/>
+<line class="p" x1="494" y1="644" x2="506" y2="644"/>
+<line class="p" x1="497" y1="647" x2="503" y2="647"/>
+<polyline class="w" points="530,575 530,590"/>
+<polyline class="w" points="530,590 530,600"/>
+<polyline class="w" points="530,630 530,640"/>
+<rect class="b" x="525" y="600" width="10" height="30"/>
+<text class="r" x="539" y="613" text-anchor="start">R14</text>
+<text class="v" x="539" y="625" text-anchor="start">10k</text>
+<polyline class="w" points="530,640 530,665 610,665"/>
+<circle cx="570" cy="665" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="570,665 570,680"/>
+<polyline class="w" points="570,680 570,697"/>
+<polyline class="w" points="570,703 570,720"/>
+<line class="p" x1="560" y1="697" x2="580" y2="697"/>
+<line class="p" x1="560" y1="703" x2="580" y2="703"/>
+<text class="r" x="583" y="698" text-anchor="start">C13</text>
+<text class="v" x="583" y="710" text-anchor="start">1n</text>
+<polyline class="w" points="570,720 570,726"/>
+<line class="p" x1="561" y1="726" x2="579" y2="726"/>
+<line class="p" x1="564" y1="729" x2="576" y2="729"/>
+<line class="p" x1="567" y1="732" x2="573" y2="732"/>
+<polygon class="nl" points="610,665 616,657 687,657 687,673 616,673"/>
+<text class="n" x="619" y="669" text-anchor="start">MON_VTUNE</text>
+<text class="note" x="40" y="690" text-anchor="start">U_tune = 0,6·U_DAC → 0,12…1,86 V</text>
+<text class="note" x="40" y="705" text-anchor="start">(DAC-Puffer an: 0,2…3,1 V)</text>
+<text class="note" x="40" y="725" text-anchor="start">Sallen-Key fc ≈ 18 kHz, Q ≈ 0,74</text>
+<text class="note" x="40" y="740" text-anchor="start">DAC-Treppe bei 300 kHz: −49 dB</text>
+<text class="note" x="40" y="760" text-anchor="start">K-LC1a: −80 MHz/V, 570 Ω gg. ≈0,9 V</text>
+<text class="note" x="40" y="775" text-anchor="start">U2B–D unbenutzt: + an VMID, − an Ausg.</text>
+<text class="v" x="560" y="597" text-anchor="start">→ Modul Pin 5</text>
+<rect class="fr" x="720" y="440" width="400" height="355" rx="6"/>
+<text class="h" x="730" y="460" text-anchor="start">4  Radarmodul</text>
+<rect class="ic" x="880" y="520" width="140" height="170" rx="4"/>
+<text class="big" x="950" y="575" text-anchor="middle">K-LC1a</text>
+<text class="v" x="950" y="592" text-anchor="middle">RFbeam, 24 GHz</text>
+<text class="v" x="950" y="606" text-anchor="middle">15 dBm EIRP</text>
+<text class="v" x="950" y="620" text-anchor="middle">80° × 34°</text>
+<text class="v" x="950" y="650" text-anchor="middle">Pin 1 n.c.</text>
+<polyline class="w" points="950,500 950,515"/>
+<text class="pn" x="950" y="527" text-anchor="middle">VCC 2</text>
+<polyline class="w" points="865,580 880,580"/>
+<text class="pn" x="883" y="584" text-anchor="start">IF 3</text>
+<polyline class="w" points="865,640 880,640"/>
+<text class="pn" x="883" y="644" text-anchor="start">VCO 5</text>
+<polyline class="w" points="950,705 950,690"/>
+<text class="pn" x="950" y="686" text-anchor="middle">GND 4</text>
+<polyline class="w" points="860,480 1085,480"/>
+<polyline class="w" points="950,480 950,500"/>
+<circle cx="950" cy="480" r="2.8" fill="#1a1a1a"/>
+<circle cx="1050" cy="480" r="2.8" fill="#1a1a1a"/>
+<polygon class="nl" points="860,480 854,472 811,472 811,488 854,488"/>
+<text class="n" x="851" y="484" text-anchor="end">5V_RF</text>
+<polyline class="w" points="1050,480 1050,500"/>
+<polyline class="w" points="1050,500 1050,517"/>
+<polyline class="w" points="1050,523 1050,540"/>
+<line class="p" x1="1040" y1="517" x2="1060" y2="517"/>
+<rect x="1040" y="522" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1064" y="514" text-anchor="middle">+</text>
+<text class="r" x="1037" y="518" text-anchor="end">C14</text>
+<text class="v" x="1037" y="530" text-anchor="end">10µ Ta</text>
+<polyline class="w" points="1050,540 1050,546"/>
+<line class="p" x1="1041" y1="546" x2="1059" y2="546"/>
+<line class="p" x1="1044" y1="549" x2="1056" y2="549"/>
+<line class="p" x1="1047" y1="552" x2="1053" y2="552"/>
+<polyline class="w" points="1085,480 1085,500"/>
+<polyline class="w" points="1085,500 1085,517"/>
+<polyline class="w" points="1085,523 1085,540"/>
+<line class="p" x1="1075" y1="517" x2="1095" y2="517"/>
+<line class="p" x1="1075" y1="523" x2="1095" y2="523"/>
+<text class="r" x="1098" y="518" text-anchor="start">C15</text>
+<text class="v" x="1098" y="530" text-anchor="start">100n</text>
+<polyline class="w" points="1085,540 1085,546"/>
+<line class="p" x1="1076" y1="546" x2="1094" y2="546"/>
+<line class="p" x1="1079" y1="549" x2="1091" y2="549"/>
+<line class="p" x1="1082" y1="552" x2="1088" y2="552"/>
+<polyline class="w" points="950,705 950,711"/>
+<line class="p" x1="941" y1="711" x2="959" y2="711"/>
+<line class="p" x1="944" y1="714" x2="956" y2="714"/>
+<line class="p" x1="947" y1="717" x2="953" y2="717"/>
+<polyline class="w" points="865,580 850,580"/>
+<polygon class="nl" points="850,580 844,572 794,572 794,588 844,588"/>
+<text class="n" x="841" y="584" text-anchor="end">IF_RAW</text>
+<polyline class="w" points="865,640 850,640"/>
+<polygon class="nl" points="850,640 844,632 780,632 780,648 844,648"/>
+<text class="n" x="841" y="644" text-anchor="end">VCO_TUNE</text>
+<text class="note" x="740" y="745" text-anchor="start">Modul direkt auf die Platine (kurze ZF-Leitung).</text>
+<text class="note" x="740" y="760" text-anchor="start">Patch-Spalten (34°) in Flugrichtung, 80° quer.</text>
+<text class="note" x="740" y="775" text-anchor="start">ESD-Klasse 0 (&lt; 250 V) – nur geerdet handhaben!</text>
+<rect class="fr" x="1130" y="440" width="760" height="355" rx="6"/>
+<text class="h" x="1140" y="460" text-anchor="start">5  Schnittstellen und Überwachung</text>
+<rect class="ic" x="1290" y="505" width="160" height="120" rx="3"/>
+<text class="r" x="1370.0" y="563.0" text-anchor="middle">U8 TCAN1042V</text>
+<polyline class="w" points="1275,525 1290,525"/>
+<text class="pn" x="1293" y="529" text-anchor="start">TXD</text>
+<polyline class="w" points="1275,555 1290,555"/>
+<text class="pn" x="1293" y="559" text-anchor="start">RXD</text>
+<polyline class="w" points="1275,585 1290,585"/>
+<text class="pn" x="1293" y="589" text-anchor="start">STB</text>
+<polyline class="w" points="1465,525 1450,525"/>
+<text class="pn" x="1447" y="529" text-anchor="end">CANH</text>
+<polyline class="w" points="1465,585 1450,585"/>
+<text class="pn" x="1447" y="589" text-anchor="end">CANL</text>
+<polyline class="w" points="1335,490 1335,505"/>
+<text class="pn" x="1335" y="517" text-anchor="middle">VCC</text>
+<polyline class="w" points="1385,490 1385,505"/>
+<text class="pn" x="1385" y="517" text-anchor="middle">VIO</text>
+<polyline class="w" points="1360,640 1360,625"/>
+<text class="pn" x="1360" y="621" text-anchor="middle">GND</text>
+<polyline class="w" points="1335,490 1335,480"/>
+<line class="p" x1="1325" y1="480" x2="1345" y2="480"/>
+<text class="n" x="1335" y="476" text-anchor="middle">5V_D</text>
+<polyline class="w" points="1385,490 1385,480"/>
+<line class="p" x1="1375" y1="480" x2="1395" y2="480"/>
+<text class="n" x="1385" y="476" text-anchor="middle">3V3</text>
+<polyline class="w" points="1360,640 1360,646"/>
+<line class="p" x1="1351" y1="646" x2="1369" y2="646"/>
+<line class="p" x1="1354" y1="649" x2="1366" y2="649"/>
+<line class="p" x1="1357" y1="652" x2="1363" y2="652"/>
+<polygon class="nl" points="1260,525 1254,517 1204,517 1204,533 1254,533"/>
+<text class="n" x="1251" y="529" text-anchor="end">CAN_TX</text>
+<polyline class="w" points="1260,525 1275,525"/>
+<polygon class="nl" points="1260,555 1254,547 1204,547 1204,563 1254,563"/>
+<text class="n" x="1251" y="559" text-anchor="end">CAN_RX</text>
+<polyline class="w" points="1260,555 1275,555"/>
+<polyline class="w" points="1275,585 1268,585 1268,600"/>
+<polyline class="w" points="1268,600 1268,606"/>
+<line class="p" x1="1259" y1="606" x2="1277" y2="606"/>
+<line class="p" x1="1262" y1="609" x2="1274" y2="609"/>
+<line class="p" x1="1265" y1="612" x2="1271" y2="612"/>
+<polyline class="w" points="1465,525 1720,525"/>
+<polyline class="w" points="1465,585 1470,585 1470,665 1720,665"/>
+<circle cx="1495" cy="525" r="2.8" fill="#1a1a1a"/>
+<circle cx="1525" cy="665" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1495,525 1495,585"/>
+<polyline class="w" points="1525,665 1525,625"/>
+<rect class="ic" x="1480" y="585" width="60" height="40" rx="3"/>
+<text class="r" x="1510" y="602" text-anchor="middle">D5</text>
+<text class="v" x="1510" y="615" text-anchor="middle">NUP2105L</text>
+<polyline class="w" points="1540,605 1560,605"/>
+<polyline class="w" points="1560,605 1560,611"/>
+<line class="p" x1="1551" y1="611" x2="1569" y2="611"/>
+<line class="p" x1="1554" y1="614" x2="1566" y2="614"/>
+<line class="p" x1="1557" y1="617" x2="1563" y2="617"/>
+<circle cx="1610" cy="525" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1610,525 1610,530"/>
+<rect class="b" x="1604" y="530" width="12" height="8"/><rect class="b" x="1604" y="540" width="12" height="8"/>
+<text class="r" x="1622" y="543" text-anchor="start">JP1</text>
+<polyline class="w" points="1610,548 1610,550"/>
+<polyline class="w" points="1610,550 1610,560"/>
+<polyline class="w" points="1610,590 1610,600"/>
+<rect class="b" x="1605" y="560" width="10" height="30"/>
+<text class="r" x="1619" y="573" text-anchor="start">R40</text>
+<text class="v" x="1619" y="585" text-anchor="start">60,4</text>
+<circle cx="1610" cy="600" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1610,600 1610,610"/>
+<polyline class="w" points="1610,640 1610,650"/>
+<rect class="b" x="1605" y="610" width="10" height="30"/>
+<text class="r" x="1619" y="623" text-anchor="start">R41</text>
+<text class="v" x="1619" y="635" text-anchor="start">60,4</text>
+<polyline class="w" points="1610,650 1610,665"/>
+<circle cx="1610" cy="665" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1610,600 1655,600"/>
+<polyline class="w" points="1655,600 1672,600"/>
+<polyline class="w" points="1678,600 1695,600"/>
+<line class="p" x1="1672" y1="590" x2="1672" y2="610"/>
+<line class="p" x1="1678" y1="590" x2="1678" y2="610"/>
+<text class="r" x="1675" y="586" text-anchor="middle">C40 4,7n</text>
+<polyline class="w" points="1695,600 1705,600"/>
+<polyline class="w" points="1705,600 1705,606"/>
+<line class="p" x1="1696" y1="606" x2="1714" y2="606"/>
+<line class="p" x1="1699" y1="609" x2="1711" y2="609"/>
+<line class="p" x1="1702" y1="612" x2="1708" y2="612"/>
+<polygon class="nl" points="1720,525 1726,517 1762,517 1762,533 1726,533"/>
+<text class="n" x="1729" y="529" text-anchor="start">CANH</text>
+<polygon class="nl" points="1720,665 1726,657 1762,657 1762,673 1726,673"/>
+<text class="n" x="1729" y="669" text-anchor="start">CANL</text>
+<text class="v" x="1640" y="470" text-anchor="middle">Split-Abschluss 120 Ω (nur am Busende)</text>
+<polygon class="nl" points="1235,680 1229,672 1172,672 1172,688 1229,688"/>
+<text class="n" x="1226" y="684" text-anchor="end">UART_TX</text>
+<polyline class="w" points="1235,680 1250,680"/>
+<polyline class="w" points="1250,680 1260,680"/>
+<polyline class="w" points="1290,680 1300,680"/>
+<rect class="b" x="1260" y="675" width="30" height="10"/>
+<text class="r" x="1275" y="671" text-anchor="middle">R42 100</text>
+<polyline class="w" points="1300,680 1380,680"/>
+<polygon class="nl" points="1380,680 1386,672 1436,672 1436,688 1386,688"/>
+<text class="n" x="1389" y="684" text-anchor="start">TX_EXT</text>
+<polygon class="nl" points="1235,720 1229,712 1172,712 1172,728 1229,728"/>
+<text class="n" x="1226" y="724" text-anchor="end">UART_RX</text>
+<polyline class="w" points="1235,720 1250,720"/>
+<polyline class="w" points="1250,720 1260,720"/>
+<polyline class="w" points="1290,720 1300,720"/>
+<rect class="b" x="1260" y="715" width="30" height="10"/>
+<text class="r" x="1275" y="711" text-anchor="middle">R43 100</text>
+<polyline class="w" points="1300,720 1380,720"/>
+<polygon class="nl" points="1380,720 1386,712 1436,712 1436,728 1386,728"/>
+<text class="n" x="1389" y="724" text-anchor="start">RX_EXT</text>
+<circle cx="1330" cy="680" r="2.8" fill="#1a1a1a"/>
+<circle cx="1350" cy="720" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1330,680 1330,745"/>
+<polyline class="w" points="1350,720 1350,745"/>
+<rect class="ic" x="1320" y="745" width="40" height="30" rx="3"/>
+<text class="r" x="1340" y="764" text-anchor="middle">D6</text>
+<polyline class="w" points="1360,760 1372,760"/>
+<polyline class="w" points="1372,760 1372,766"/>
+<line class="p" x1="1363" y1="766" x2="1381" y2="766"/>
+<line class="p" x1="1366" y1="769" x2="1378" y2="769"/>
+<line class="p" x1="1369" y1="772" x2="1375" y2="772"/>
+<text class="v" x="1150" y="790" text-anchor="start">UART 3,3 V TTL, 115200 Bd ($RALT/$RDBG)</text>
+<polygon class="nl" points="1500,690 1494,682 1451,682 1451,698 1494,698"/>
+<text class="n" x="1491" y="694" text-anchor="end">VIN_F</text>
+<polyline class="w" points="1500,690 1515,690"/>
+<polyline class="w" points="1515,690 1525,690"/>
+<polyline class="w" points="1555,690 1565,690"/>
+<rect class="b" x="1525" y="685" width="30" height="10"/>
+<text class="r" x="1540" y="681" text-anchor="middle">R44 150k</text>
+<polyline class="w" points="1565,690 1615,690"/>
+<circle cx="1590" cy="690" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1590,690 1590,700"/>
+<polyline class="w" points="1590,700 1590,710"/>
+<polyline class="w" points="1590,740 1590,750"/>
+<rect class="b" x="1585" y="710" width="10" height="30"/>
+<text class="r" x="1599" y="723" text-anchor="start">R45</text>
+<text class="v" x="1599" y="735" text-anchor="start">10k</text>
+<polyline class="w" points="1590,750 1590,756"/>
+<line class="p" x1="1581" y1="756" x2="1599" y2="756"/>
+<line class="p" x1="1584" y1="759" x2="1596" y2="759"/>
+<line class="p" x1="1587" y1="762" x2="1593" y2="762"/>
+<polygon class="nl" points="1615,690 1621,682 1678,682 1678,698 1621,698"/>
+<text class="n" x="1624" y="694" text-anchor="start">MON_VIN</text>
+<polygon class="nl" points="1720,725 1714,717 1671,717 1671,733 1714,733"/>
+<text class="n" x="1711" y="729" text-anchor="end">5V_RF</text>
+<polyline class="w" points="1720,725 1730,725"/>
+<polyline class="w" points="1730,725 1740,725"/>
+<polyline class="w" points="1770,725 1780,725"/>
+<rect class="b" x="1740" y="720" width="30" height="10"/>
+<text class="r" x="1755" y="716" text-anchor="middle">R46 10k</text>
+<polyline class="w" points="1780,725 1810,725"/>
+<circle cx="1795" cy="725" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1795,725 1795,735"/>
+<polyline class="w" points="1795,735 1795,745"/>
+<polyline class="w" points="1795,775 1795,785"/>
+<rect class="b" x="1790" y="745" width="10" height="30"/>
+<text class="r" x="1804" y="758" text-anchor="start">R47</text>
+<text class="v" x="1804" y="770" text-anchor="start">10k</text>
+<polyline class="w" points="1795,785 1795,791"/>
+<line class="p" x1="1786" y1="791" x2="1804" y2="791"/>
+<line class="p" x1="1789" y1="794" x2="1801" y2="794"/>
+<line class="p" x1="1792" y1="797" x2="1798" y2="797"/>
+<polygon class="nl" points="1810,725 1816,717 1880,717 1880,733 1816,733"/>
+<text class="n" x="1819" y="729" text-anchor="start">MON_5VRF</text>
+<text class="v" x="1440" y="780" text-anchor="start">MON_*: je 100 nF an GND</text>
+<rect class="fr" x="20" y="810" width="1870" height="395" rx="6"/>
+<text class="h" x="30" y="830" text-anchor="start">6  ZF-Kette</text>
+<polygon class="nl" points="95,920 89,912 39,912 39,928 89,928"/>
+<text class="n" x="86" y="924" text-anchor="end">IF_RAW</text>
+<polyline class="w" points="95,920 170,920"/>
+<circle cx="110" cy="920" r="2.8" fill="#1a1a1a"/>
+<circle cx="140" cy="920" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="110,920 110,930"/>
+<polyline class="w" points="110,930 110,940"/>
+<polyline class="w" points="110,970 110,980"/>
+<rect class="b" x="105" y="940" width="10" height="30"/>
+<text class="r" x="119" y="953" text-anchor="start">R20</text>
+<text class="v" x="119" y="965" text-anchor="start">1k</text>
+<polyline class="w" points="110,980 110,986"/>
+<line class="p" x1="101" y1="986" x2="119" y2="986"/>
+<line class="p" x1="104" y1="989" x2="116" y2="989"/>
+<line class="p" x1="107" y1="992" x2="113" y2="992"/>
+<polyline class="w" points="140,920 140,935"/>
+<polyline class="w" points="140,935 140,952"/>
+<polyline class="w" points="140,958 140,975"/>
+<line class="p" x1="130" y1="952" x2="150" y2="952"/>
+<line class="p" x1="130" y1="958" x2="150" y2="958"/>
+<text class="r" x="153" y="953" text-anchor="start">C20</text>
+<text class="v" x="153" y="965" text-anchor="start">100p</text>
+<polyline class="w" points="140,975 140,981"/>
+<line class="p" x1="131" y1="981" x2="149" y2="981"/>
+<line class="p" x1="134" y1="984" x2="146" y2="984"/>
+<line class="p" x1="137" y1="987" x2="143" y2="987"/>
+<polyline class="w" points="170,920 187,920"/>
+<polyline class="w" points="193,920 210,920"/>
+<line class="p" x1="187" y1="910" x2="187" y2="930"/>
+<line class="p" x1="193" y1="910" x2="193" y2="930"/>
+<text class="r" x="190" y="906" text-anchor="middle">C21 1µ Folie</text>
+<polyline class="w" points="210,920 255,920"/>
+<circle cx="230" cy="920" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="230,920 230,900"/>
+<polyline class="w" points="230,850 230,860"/>
+<polyline class="w" points="230,890 230,900"/>
+<rect class="b" x="225" y="860" width="10" height="30"/>
+<text class="r" x="239" y="873" text-anchor="start">R21</text>
+<text class="v" x="239" y="885" text-anchor="start">4,7k</text>
+<polyline class="w" points="230,850 230,840"/>
+<line class="p" x1="220" y1="840" x2="240" y2="840"/>
+<text class="n" x="230" y="836" text-anchor="middle">VMID1</text>
+<polygon class="b" points="270,903 270,967 335,935"/>
+<polyline class="w" points="255,920 270,920"/>
+<polyline class="w" points="255,950 270,950"/>
+<polyline class="w" points="335,935 350,935"/>
+<text class="t" x="275" y="924" text-anchor="start">+</text>
+<text class="t" x="275" y="954" text-anchor="start">−</text>
+<text class="r" x="296" y="939" text-anchor="middle">U1A</text>
+<polyline class="w" points="255,950 250,950 250,1000"/>
+<circle cx="250" cy="1000" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="250,1000 280,1000"/>
+<polyline class="w" points="280,1000 290,1000"/>
+<polyline class="w" points="320,1000 330,1000"/>
+<rect class="b" x="290" y="995" width="30" height="10"/>
+<text class="r" x="305" y="991" text-anchor="middle">R22 4,7k</text>
+<polyline class="w" points="330,1000 360,1000 360,935"/>
+<circle cx="360" cy="935" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="250,1000 250,1010"/>
+<polyline class="w" points="250,1040 250,1050"/>
+<rect class="b" x="245" y="1010" width="10" height="30"/>
+<text class="r" x="259" y="1023" text-anchor="start">R23</text>
+<text class="v" x="259" y="1035" text-anchor="start">470</text>
+<polyline class="w" points="250,1050 250,1055"/>
+<polyline class="w" points="250,1055 250,1072"/>
+<polyline class="w" points="250,1078 250,1095"/>
+<line class="p" x1="240" y1="1072" x2="260" y2="1072"/>
+<rect x="240" y="1077" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="264" y="1069" text-anchor="middle">+</text>
+<text class="r" x="237" y="1073" text-anchor="end">C22</text>
+<text class="v" x="237" y="1085" text-anchor="end">22µ Ta</text>
+<polyline class="w" points="250,1095 250,1101"/>
+<line class="p" x1="241" y1="1101" x2="259" y2="1101"/>
+<line class="p" x1="244" y1="1104" x2="256" y2="1104"/>
+<line class="p" x1="247" y1="1107" x2="253" y2="1107"/>
+<polyline class="w" points="350,935 400,935"/>
+<polyline class="w" points="400,935 417,935"/>
+<polyline class="w" points="423,935 440,935"/>
+<line class="p" x1="417" y1="925" x2="417" y2="945"/>
+<line class="p" x1="423" y1="925" x2="423" y2="945"/>
+<text class="r" x="420" y="921" text-anchor="middle">C23 10n C0G</text>
+<polyline class="w" points="440,935 495,935"/>
+<circle cx="460" cy="935" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="460,935 460,920"/>
+<polyline class="w" points="460,870 460,880"/>
+<polyline class="w" points="460,910 460,920"/>
+<rect class="b" x="455" y="880" width="10" height="30"/>
+<text class="r" x="469" y="893" text-anchor="start">R24</text>
+<text class="v" x="469" y="905" text-anchor="start">1k</text>
+<polyline class="w" points="460,870 460,860"/>
+<line class="p" x1="450" y1="860" x2="470" y2="860"/>
+<text class="n" x="460" y="856" text-anchor="middle">VMID</text>
+<polygon class="b" points="510,918 510,982 575,950"/>
+<polyline class="w" points="495,935 510,935"/>
+<polyline class="w" points="495,965 510,965"/>
+<polyline class="w" points="575,950 590,950"/>
+<text class="t" x="515" y="939" text-anchor="start">+</text>
+<text class="t" x="515" y="969" text-anchor="start">−</text>
+<text class="r" x="536" y="954" text-anchor="middle">U1B</text>
+<polyline class="w" points="495,965 490,965 490,1010"/>
+<circle cx="490" cy="1010" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="440,1010 530,1010"/>
+<circle cx="510" cy="1010" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="440,1010 440,1020"/>
+<polyline class="w" points="440,1020 440,1030"/>
+<polyline class="w" points="440,1060 440,1070"/>
+<rect class="b" x="435" y="1030" width="10" height="30"/>
+<text class="r" x="449" y="1043" text-anchor="start">R29</text>
+<text class="v" x="449" y="1055" text-anchor="start">390</text>
+<polyline class="w" points="440,1070 440,1080"/>
+<polyline class="w" points="440,1080 440,1097"/>
+<polyline class="w" points="440,1103 440,1120"/>
+<line class="p" x1="430" y1="1097" x2="450" y2="1097"/>
+<rect x="430" y="1102" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="454" y="1094" text-anchor="middle">+</text>
+<text class="r" x="427" y="1098" text-anchor="end">C24</text>
+<text class="v" x="427" y="1110" text-anchor="end">10µ Ta</text>
+<polyline class="w" points="440,1120 440,1126"/>
+<line class="p" x1="431" y1="1126" x2="449" y2="1126"/>
+<line class="p" x1="434" y1="1129" x2="446" y2="1129"/>
+<line class="p" x1="437" y1="1132" x2="443" y2="1132"/>
+<polyline class="w" points="530,1010 540,1010"/>
+<polyline class="w" points="570,1010 580,1010"/>
+<rect class="b" x="540" y="1005" width="30" height="10"/>
+<text class="r" x="555" y="1001" text-anchor="middle">R25 100k</text>
+<polyline class="w" points="580,1010 620,1010 620,950"/>
+<polyline class="w" points="590,950 760,950"/>
+<circle cx="620" cy="950" r="2.8" fill="#1a1a1a"/>
+<circle cx="730" cy="950" r="2.8" fill="#1a1a1a"/>
+<rect class="ic" x="560" y="1040" width="80" height="140" rx="3"/>
+<text class="r" x="600" y="1196" text-anchor="middle">U7 TS3A5017 (½)</text>
+<polyline class="w" points="510,1010 510,1060 560,1060"/>
+<text class="pn" x="565" y="1064" text-anchor="start">COM</text>
+<text class="pn" x="635" y="1064" text-anchor="end">S1</text>
+<polyline class="w" points="640,1060 655,1060"/>
+<polyline class="w" points="655,1060 665,1060"/>
+<polyline class="w" points="695,1060 705,1060"/>
+<rect class="b" x="665" y="1055" width="30" height="10"/>
+<text class="r" x="680" y="1051" text-anchor="middle">R26 27k</text>
+<polyline class="w" points="705,1060 730,1060"/>
+<text class="v" x="737" y="1064" text-anchor="start">V2 = 55,5</text>
+<text class="pn" x="635" y="1094" text-anchor="end">S2</text>
+<polyline class="w" points="640,1090 655,1090"/>
+<polyline class="w" points="655,1090 665,1090"/>
+<polyline class="w" points="695,1090 705,1090"/>
+<rect class="b" x="665" y="1085" width="30" height="10"/>
+<text class="r" x="680" y="1081" text-anchor="middle">R27 5,6k</text>
+<polyline class="w" points="705,1090 730,1090"/>
+<text class="v" x="737" y="1094" text-anchor="start">V2 = 14,6</text>
+<text class="pn" x="635" y="1124" text-anchor="end">S3</text>
+<polyline class="w" points="640,1120 655,1120"/>
+<polyline class="w" points="655,1120 665,1120"/>
+<polyline class="w" points="695,1120 705,1120"/>
+<rect class="b" x="665" y="1115" width="30" height="10"/>
+<text class="r" x="680" y="1111" text-anchor="middle">R28 1,2k</text>
+<polyline class="w" points="705,1120 730,1120"/>
+<text class="v" x="737" y="1124" text-anchor="start">V2 = 4,04</text>
+<text class="pn" x="635" y="1154" text-anchor="end">S4</text>
+<polyline class="w" points="640,1150 730,1150"/>
+<text class="v" x="685" y="1145" text-anchor="middle">0 Ω</text>
+<text class="v" x="737" y="1154" text-anchor="start">V2 = 1</text>
+<polyline class="w" points="730,950 730,1150"/>
+<circle cx="730" cy="1060" r="2.8" fill="#1a1a1a"/>
+<circle cx="730" cy="1090" r="2.8" fill="#1a1a1a"/>
+<circle cx="730" cy="1120" r="2.8" fill="#1a1a1a"/>
+<polygon class="nl" points="548,1112 542,1104 492,1104 492,1120 542,1120"/>
+<text class="n" x="539" y="1116" text-anchor="end">GAIN_A</text>
+<polyline class="w" points="548,1112 560,1112"/>
+<text class="pn" x="565" y="1116" text-anchor="start">IN1</text>
+<polygon class="nl" points="548,1140 542,1132 492,1132 492,1148 542,1148"/>
+<text class="n" x="539" y="1144" text-anchor="end">GAIN_B</text>
+<polyline class="w" points="548,1140 560,1140"/>
+<text class="pn" x="565" y="1144" text-anchor="start">IN2</text>
+<polyline class="w" points="560,1166 530,1166 530,1172"/>
+<polyline class="w" points="530,1172 530,1178"/>
+<line class="p" x1="521" y1="1178" x2="539" y2="1178"/>
+<line class="p" x1="524" y1="1181" x2="536" y2="1181"/>
+<line class="p" x1="527" y1="1184" x2="533" y2="1184"/>
+<text class="pn" x="565" y="1170" text-anchor="start">EN</text>
+<polyline class="w" points="760,950 770,950"/>
+<polyline class="w" points="800,950 810,950"/>
+<rect class="b" x="770" y="945" width="30" height="10"/>
+<text class="r" x="785" y="941" text-anchor="middle">R30 5,1k</text>
+<polyline class="w" points="810,950 840,950"/>
+<circle cx="825" cy="950" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="825,950 825,890 900,890"/>
+<polyline class="w" points="900,890 917,890"/>
+<polyline class="w" points="923,890 940,890"/>
+<line class="p" x1="917" y1="880" x2="917" y2="900"/>
+<line class="p" x1="923" y1="880" x2="923" y2="900"/>
+<text class="r" x="920" y="876" text-anchor="middle">C25 1,5n C0G</text>
+<polyline class="w" points="940,890 1030,890 1030,1030"/>
+<polyline class="w" points="840,950 850,950"/>
+<polyline class="w" points="880,950 890,950"/>
+<rect class="b" x="850" y="945" width="30" height="10"/>
+<text class="r" x="865" y="941" text-anchor="middle">R31 5,1k</text>
+<polyline class="w" points="890,950 935,950"/>
+<circle cx="910" cy="950" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="910,950 910,970"/>
+<polyline class="w" points="910,970 910,987"/>
+<polyline class="w" points="910,993 910,1010"/>
+<line class="p" x1="900" y1="987" x2="920" y2="987"/>
+<line class="p" x1="900" y1="993" x2="920" y2="993"/>
+<text class="r" x="897" y="988" text-anchor="end">C26</text>
+<text class="v" x="897" y="1000" text-anchor="end">680p C0G</text>
+<polyline class="w" points="910,1010 910,1016"/>
+<line class="p" x1="901" y1="1016" x2="919" y2="1016"/>
+<line class="p" x1="904" y1="1019" x2="916" y2="1019"/>
+<line class="p" x1="907" y1="1022" x2="913" y2="1022"/>
+<polygon class="b" points="950,933 950,997 1015,965"/>
+<polyline class="w" points="935,950 950,950"/>
+<polyline class="w" points="935,980 950,980"/>
+<polyline class="w" points="1015,965 1030,965"/>
+<text class="t" x="955" y="954" text-anchor="start">+</text>
+<text class="t" x="955" y="984" text-anchor="start">−</text>
+<text class="r" x="976" y="969" text-anchor="middle">U1C</text>
+<polyline class="w" points="935,980 930,980 930,1030 1030,1030"/>
+<circle cx="1030" cy="965" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1030,965 1060,965"/>
+<polyline class="w" points="1060,965 1070,965"/>
+<polyline class="w" points="1100,965 1110,965"/>
+<rect class="b" x="1070" y="960" width="30" height="10"/>
+<text class="r" x="1085" y="956" text-anchor="middle">R32 470</text>
+<polyline class="w" points="1110,965 1170,965"/>
+<circle cx="1135" cy="965" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1135,965 1135,980"/>
+<polyline class="w" points="1135,980 1135,997"/>
+<polyline class="w" points="1135,1003 1135,1020"/>
+<line class="p" x1="1125" y1="997" x2="1145" y2="997"/>
+<line class="p" x1="1125" y1="1003" x2="1145" y2="1003"/>
+<text class="r" x="1148" y="998" text-anchor="start">C27</text>
+<text class="v" x="1148" y="1010" text-anchor="start">2,2n C0G</text>
+<polyline class="w" points="1135,1020 1135,1026"/>
+<line class="p" x1="1126" y1="1026" x2="1144" y2="1026"/>
+<line class="p" x1="1129" y1="1029" x2="1141" y2="1029"/>
+<line class="p" x1="1132" y1="1032" x2="1138" y2="1032"/>
+<polygon class="nl" points="1170,965 1176,957 1226,957 1226,973 1176,973"/>
+<text class="n" x="1179" y="969" text-anchor="start">ADC_IF</text>
+<polyline class="w" points="1270,880 1270,870"/>
+<line class="p" x1="1260" y1="870" x2="1280" y2="870"/>
+<text class="n" x="1270" y="866" text-anchor="middle">A3V3</text>
+<polyline class="w" points="1270,880 1270,890"/>
+<polyline class="w" points="1270,920 1270,930"/>
+<rect class="b" x="1265" y="890" width="10" height="30"/>
+<text class="r" x="1279" y="903" text-anchor="start">R33</text>
+<text class="v" x="1279" y="915" text-anchor="start">10k</text>
+<polyline class="w" points="1270,930 1270,950"/>
+<circle cx="1270" cy="940" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1270,950 1270,960"/>
+<polyline class="w" points="1270,990 1270,1000"/>
+<rect class="b" x="1265" y="960" width="10" height="30"/>
+<text class="r" x="1279" y="973" text-anchor="start">R34</text>
+<text class="v" x="1279" y="985" text-anchor="start">10k</text>
+<polyline class="w" points="1270,1000 1270,1006"/>
+<line class="p" x1="1261" y1="1006" x2="1279" y2="1006"/>
+<line class="p" x1="1264" y1="1009" x2="1276" y2="1009"/>
+<line class="p" x1="1267" y1="1012" x2="1273" y2="1012"/>
+<polyline class="w" points="1270,940 1335,940"/>
+<circle cx="1312" cy="940" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1312,940 1312,955"/>
+<polyline class="w" points="1312,955 1312,972"/>
+<polyline class="w" points="1312,978 1312,995"/>
+<line class="p" x1="1302" y1="972" x2="1322" y2="972"/>
+<rect x="1302" y="977" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1298" y="969" text-anchor="middle">+</text>
+<text class="r" x="1325" y="973" text-anchor="start">C28</text>
+<text class="v" x="1325" y="985" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1312,995 1312,1001"/>
+<line class="p" x1="1303" y1="1001" x2="1321" y2="1001"/>
+<line class="p" x1="1306" y1="1004" x2="1318" y2="1004"/>
+<line class="p" x1="1309" y1="1007" x2="1315" y2="1007"/>
+<polygon class="b" points="1350,923 1350,987 1415,955"/>
+<polyline class="w" points="1335,940 1350,940"/>
+<polyline class="w" points="1335,970 1350,970"/>
+<polyline class="w" points="1415,955 1430,955"/>
+<text class="t" x="1355" y="944" text-anchor="start">+</text>
+<text class="t" x="1355" y="974" text-anchor="start">−</text>
+<text class="r" x="1376" y="959" text-anchor="middle">U1D</text>
+<polyline class="w" points="1335,970 1330,970 1330,1030 1430,1030 1430,955"/>
+<circle cx="1430" cy="955" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1440,955 1450,955"/>
+<polyline class="w" points="1480,955 1490,955"/>
+<rect class="b" x="1450" y="950" width="30" height="10"/>
+<text class="r" x="1465" y="946" text-anchor="middle">R35 47</text>
+<polyline class="w" points="1490,955 1600,955"/>
+<circle cx="1510" cy="955" r="2.8" fill="#1a1a1a"/>
+<circle cx="1545" cy="955" r="2.8" fill="#1a1a1a"/>
+<circle cx="1570" cy="955" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1510,955 1510,970"/>
+<polyline class="w" points="1510,970 1510,987"/>
+<polyline class="w" points="1510,993 1510,1010"/>
+<line class="p" x1="1500" y1="987" x2="1520" y2="987"/>
+<rect x="1500" y="992" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1524" y="984" text-anchor="middle">+</text>
+<text class="r" x="1497" y="988" text-anchor="end">C29</text>
+<text class="v" x="1497" y="1000" text-anchor="end">10µ Ta</text>
+<polyline class="w" points="1510,1010 1510,1016"/>
+<line class="p" x1="1501" y1="1016" x2="1519" y2="1016"/>
+<line class="p" x1="1504" y1="1019" x2="1516" y2="1019"/>
+<line class="p" x1="1507" y1="1022" x2="1513" y2="1022"/>
+<polyline class="w" points="1545,955 1545,970"/>
+<polyline class="w" points="1545,970 1545,987"/>
+<polyline class="w" points="1545,993 1545,1010"/>
+<line class="p" x1="1535" y1="987" x2="1555" y2="987"/>
+<line class="p" x1="1535" y1="993" x2="1555" y2="993"/>
+<text class="r" x="1558" y="988" text-anchor="start">C30</text>
+<text class="v" x="1558" y="1000" text-anchor="start">100n</text>
+<polyline class="w" points="1545,1010 1545,1016"/>
+<line class="p" x1="1536" y1="1016" x2="1554" y2="1016"/>
+<line class="p" x1="1539" y1="1019" x2="1551" y2="1019"/>
+<line class="p" x1="1542" y1="1022" x2="1548" y2="1022"/>
+<polyline class="w" points="1570,955 1570,945"/>
+<line class="p" x1="1560" y1="945" x2="1580" y2="945"/>
+<text class="n" x="1570" y="941" text-anchor="middle">VMID</text>
+<polyline class="w" points="1600,955 1610,955"/>
+<polyline class="w" points="1640,955 1650,955"/>
+<rect class="b" x="1610" y="950" width="30" height="10"/>
+<text class="r" x="1625" y="946" text-anchor="middle">R36 1k</text>
+<polyline class="w" points="1650,955 1720,955"/>
+<circle cx="1680" cy="955" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1680,955 1680,970"/>
+<polyline class="w" points="1680,970 1680,987"/>
+<polyline class="w" points="1680,993 1680,1010"/>
+<line class="p" x1="1670" y1="987" x2="1690" y2="987"/>
+<rect x="1670" y="992" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1666" y="984" text-anchor="middle">+</text>
+<text class="r" x="1693" y="988" text-anchor="start">C31</text>
+<text class="v" x="1693" y="1000" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1680,1010 1680,1016"/>
+<line class="p" x1="1671" y1="1016" x2="1689" y2="1016"/>
+<line class="p" x1="1674" y1="1019" x2="1686" y2="1019"/>
+<line class="p" x1="1677" y1="1022" x2="1683" y2="1022"/>
+<polygon class="nl" points="1720,955 1726,947 1769,947 1769,963 1726,963"/>
+<text class="n" x="1729" y="959" text-anchor="start">VMID1</text>
+<text class="note" x="40" y="1135" text-anchor="start">Stufe 1: V1 = 1 + R22/R23 = 11 (21 dB)</text>
+<text class="note" x="40" y="1150" text-anchor="start">Eingangs-HP 34 Hz; R20 = Modul-Last 1 kΩ</text>
+<text class="note" x="40" y="1165" text-anchor="start">C21 Folie, C22/C24 Tantal (nicht mikrofonisch)</text>
+<text class="note" x="800" y="1060" text-anchor="start">V2 = 1 + (R25 ∥ R2x)/R29, Stufen ≤ 4,04</text>
+<text class="note" x="800" y="1075" text-anchor="start">Gesamt 11 … 610 (21 … 56 dB)</text>
+<text class="note" x="800" y="1100" text-anchor="start">C23/R24: Hochpass 16 kHz = R-Kompensation</text>
+<text class="note" x="800" y="1115" text-anchor="start">Bodenecho ~1/R, Schwebung ~R → flacher Pegel;</text>
+<text class="note" x="800" y="1130" text-anchor="start">Eigenmischung (61-Hz-Rampe) −48 dB</text>
+<text class="note" x="1060" y="1060" text-anchor="start">Anti-Alias Sallen-Key fc ≈ 31 kHz, Q ≈ 0,74</text>
+<text class="note" x="1060" y="1075" text-anchor="start">R32/C27: Ladungspuffer ADC (150 kHz)</text>
+<text class="note" x="1060" y="1090" text-anchor="start">Schwebung 74 Hz/m (lang), 256 Hz/m (kurz)</text>
+<text class="note" x="1060" y="1105" text-anchor="start">200 m (lang) ≈ 15 kHz; fs = 300 kHz</text>
+<text class="note" x="1300" y="1060" text-anchor="start">VMID = A3V3/2 gepuffert,</text>
+<text class="note" x="1300" y="1075" text-anchor="start">VMID1 nachgefiltert (nur Stufe 1)</text>
+<text class="note" x="1560" y="1060" text-anchor="start">U1, U2 = TLV9064; U7: V+ = A3V3, je 100 nF</text>
+<text class="note" x="1560" y="1075" text-anchor="start">Ruhepegel ADC_IF 1,65 V ≙ 2048 LSB</text>
+<rect class="fr" x="20" y="1220" width="1290" height="115" rx="6"/>
+<text class="h" x="30" y="1240" text-anchor="start">Hinweise</text>
+<text class="note" x="30" y="1260" text-anchor="start">1  Layout: Massefläche durchgehend; ZF-Teil (U1, U7) weit weg von U3/L2; Schaltfrequenz U3 kein Vielfaches von 300 kHz.</text>
+<text class="note" x="30" y="1276" text-anchor="start">2  Kondensatoren im Signalpfad nur C0G, Folie oder Tantal (X7R/X5R sind piezoelektrisch → Vibration wird zu Störsignal).</text>
+<text class="note" x="30" y="1292" text-anchor="start">3  U_tune hart auf 0,12–1,86 V begrenzt; Rampe per Kalibrierung im ISM-Band 24,05–24,25 GHz halten (Mittenfrequenz ±75 MHz).</text>
+<text class="note" x="30" y="1308" text-anchor="start">4  Core-Board über D3 versorgt; vor gleichzeitigem USB-Betrieb prüfen, ob das Board eine VBUS-Diode hat (sonst Rückspeisung in den PC).</text>
+<text class="note" x="30" y="1324" text-anchor="start">5  Firmware: F446 ohne CCM (128 KB RAM), Config in Sektor 7, CAN1 PB8/PB9, USART2 PA2/PA3, Gain PC6/PC7, RF_EN PB12.</text>
+<rect class="ic" x="1330" y="1220" width="560" height="115" rx="6"/>
+<text class="big" x="1345" y="1245" text-anchor="start">radaraltimeter24 – Hardware Rev. B</text>
+<text class="note" x="1345" y="1266" text-anchor="start">FMCW-Radarhöhenmesser 24 GHz · STM32F446 (WeAct) · K-LC1a · TLV9064</text>
+<text class="note" x="1345" y="1286" text-anchor="start">Blatt 1/1 · Stand 2026-10-11 · Entwurf, nicht aufgebaut/geprüft</text>
+<text class="note" x="1345" y="1306" text-anchor="start">Lizenz MIT · github.com/dansparker/radaraltimeter24</text>
+</svg>
