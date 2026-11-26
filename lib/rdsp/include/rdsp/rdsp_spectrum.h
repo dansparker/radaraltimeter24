@@ -57,6 +57,15 @@ void rdsp_psd_avg_reset(rdsp_psd_avg_t *a);
 void rdsp_psd_avg_update(rdsp_psd_avg_t *a, const float *psd);
 
 /**
+ * Robust exponential average of power spectra: acc += beta * (min(psd, clip*acc) - acc).
+ * Limiting a new value to clip times the average suppresses single strong
+ * outliers (interference, spurious echoes) while a real level increase is
+ * still followed (by up to a factor (1 + beta*(clip-1)) per update).
+ * The limit is not applied while acc is 0 (first frame).
+ */
+void rdsp_psd_avg_robust(float *acc, const float *psd, uint32_t nbins, float beta, float clip);
+
+/**
  * Coherent clutter removal on complex bins (re/im interleaved, e.g. a band of
  * the rdsp_rfft output).
  *

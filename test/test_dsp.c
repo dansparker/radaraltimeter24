@@ -341,6 +341,34 @@ static void test_clutter(void)
     CHECK(e_mix < 10.0);         /* fixed part under-subtracted by A^2/(F^2+A^2): -21 dB */
 }
 
+/* leading edge on a synthetic averaged spectrum */
+static void test_edge(void)
+{
+    enum { NB = 128 };
+    static float p[NB];
+    rdsp_edge_cfg_t c = { 1.5f, 24u, 2u, 8u, 3u, 12u, 0.7f };
+    rdsp_edge_t e;
+    uint32_t r = 3u;
+    /* noise only (5 % fluctuation): no edge */
+    for (int i = 0; i < NB; i++) { r = r * 1664525u + 1013904223u; p[i] = 1.0f + 0.05f * ((float)(r >> 8) / 16777216.0f - 0.5f); }
+    CHECK(rdsp_edge_detect(&c, p, NB, 2u, NB - 2u, 1.0f, &e) == 0);
+    /* echo from 40.3 on: noise 1, plateau 10 decaying, edge smeared over 1 bin */
+    for (int i = 0; i < NB; i++) {
+        const float x = (float)i - 40.3f;
+        const float step = (x < -0.5f) ? 0.0f : ((x > 0.5f) ? 1.0f : x + 0.5f);
+        p[i] += 9.0f * step * expf(-fmaxf(x, 0.0f) / 20.0f);
+    }
+    CHECK(rdsp_edge_detect(&c, p, NB, 2u, NB - 2u, 1.0f, &e) == 1);
+    printf("  edge at %.2f (true 40.3), snr %.1f dB", e.pos, e.snr_db);
+    putchar(10);
+    CHECK_NEAR(e.pos, 40.3, 0.3);
+    /* a falling noise shape towards DC must not trigger an early edge */
+    for (int i = 0; i < 12; i++) { p[i] *= 0.3f + 0.06f * (float)i; }
+    CHECK(rdsp_edge_detect(&c, p, NB, 2u, NB - 2u, 1.0f, &e) == 1);
+    CHECK_NEAR(e.pos, 40.3, 0.3);
+    CHECK_NEAR(rdsp_median(p, 50u, 53u), p[51] < p[50] ? p[51] : p[51], 1e9);   /* runs */
+}
+
 void test_dsp_all(void)
 {
     RUN(test_fft_vs_dft);
@@ -354,4 +382,5 @@ void test_dsp_all(void)
     RUN(test_frame);
     RUN(test_bg_track);
     RUN(test_clutter);
+    RUN(test_edge);
 }

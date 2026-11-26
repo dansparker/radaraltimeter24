@@ -25,7 +25,8 @@ void sim_init(sim_t *s, float sweep_hz)
     memset(s, 0, sizeof(*s));
     s->fs_hz = (float)RADAR_FS_HZ;
     s->sweep_hz = sweep_hz;
-    sim_set_rmode(s, RADAR_RMODE_LONG);
+    s->frame_len = RADAR_FRAME_LEN;
+    s->slope_hz_s = ramp_slope_hz_s(s->sweep_hz, s->frame_len, RADAR_FS_HZ);
     s->lambda_m = RADAR_LAMBDA_M;
     s->vco_sign = 1;
     s->gain_lin[0] = 1.0f;
@@ -40,12 +41,6 @@ void sim_init(sim_t *s, float sweep_hz)
     s->hp_order = 3;
     s->rng = 12345u;
     s->random_phase = 1;
-}
-
-void sim_set_rmode(sim_t *s, unsigned rmode)
-{
-    s->frame_len = radar_frame_len(rmode);
-    s->slope_hz_s = ramp_slope_hz_s(s->sweep_hz, s->frame_len, RADAR_FS_HZ);
 }
 
 /* ---- extended ground ------------------------------------------------------ */
@@ -108,7 +103,7 @@ static void gnd_frame(sim_t *s, int rising_f, double *acc)
     const double dA = 4.0 * X * Y / (double)g->n;
     /* point target SNR (sigma = 1 m^2) in a Hann bin of the long ramp, data sheet
      * based; a Hann bin of N samples gives SNR = a^2 N / (6 sigma_n^2) */
-    const double nfft_l = (double)RADAR_NFFT_LONG;
+    const double nfft_l = 2048.0;          /* reference: Hann bin of 2048 samples */
     const double enbw = 1.5 * s->fs_hz / nfft_l;
     const double r1 = 0.0167 * pow(10.0, 114.0 / 40.0);
     const double sn2 = (double)s->noise_front_lsb * (double)s->noise_front_lsb;
@@ -183,7 +178,7 @@ void sim_frame(sim_t *s, int dac_dir, int gain, uint16_t *out)
         if (s->random_phase && !t->fixed) { ph[k] += 2.0 * 3.14159265358979 * urand(s); }
     }
 
-    static double gacc[RADAR_FRAME_LEN_MAX];
+    static double gacc[RADAR_FRAME_LEN];
     memset(gacc, 0, sizeof(gacc));
     if (s->gnd.enabled) { gnd_frame(s, rising_f, gacc); }
 

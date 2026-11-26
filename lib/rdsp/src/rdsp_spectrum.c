@@ -63,6 +63,16 @@ void rdsp_psd_avg_update(rdsp_psd_avg_t *a, const float *psd)
     }
 }
 
+void rdsp_psd_avg_robust(float *acc, const float *psd, uint32_t nbins, float beta, float clip)
+{
+    for (uint32_t i = 0; i < nbins; i++) {
+        float v = psd[i];
+        const float lim = clip * acc[i];
+        if ((acc[i] > 0.0f) && (v > lim)) { v = lim; }
+        acc[i] += beta * (v - acc[i]);
+    }
+}
+
 void rdsp_clutter_update(float *x, float *m, float *p, uint32_t nbins, float beta, int subtract)
 {
     for (uint32_t k = 0; k < nbins; k++) {

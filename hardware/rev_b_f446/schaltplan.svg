@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1910" height="1350" viewBox="0 0 1910 1350" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="1910" height="1500" viewBox="0 0 1910 1500" role="img">
 <title>Radar-Höhenmesser Rev. B – Schaltplan</title>
 <desc>STM32F446 WeAct Core Board, K-LC1a, TLV9064: Versorgung, VCO-Ansteuerung, ZF-Kette, CAN/UART, Überwachung.</desc>
 <style>.t{font:12px sans-serif;fill:#1a1a1a}.r{font:11px sans-serif;fill:#1a1a1a}.v{font:10px sans-serif;fill:#555}.n{font:600 10px sans-serif;fill:#0b4f9c}.pn{font:10px sans-serif;fill:#333}.h{font:600 14px sans-serif;fill:#3C3489}.note{font:11px sans-serif;fill:#333}.big{font:600 16px sans-serif;fill:#1a1a1a}.w{stroke:#1a1a1a;stroke-width:1.3;fill:none}.b{stroke:#1a1a1a;stroke-width:1.3;fill:#fff}.p{stroke:#1a1a1a;stroke-width:2}.nl{fill:#E6F0FB;stroke:#0b4f9c;stroke-width:0.8}.ic{fill:#FAF9F5;stroke:#1a1a1a;stroke-width:1.3}.fr{fill:none;stroke:#8a86c9;stroke-width:1;stroke-dasharray:6 4}</style>
-<rect width="1910" height="1350" fill="#fff"/>
+<rect width="1910" height="1500" fill="#fff"/>
 <rect class="fr" x="20" y="40" width="1090" height="385" rx="6"/>
 <text class="h" x="30" y="60" text-anchor="start">1  Versorgung (9–32 V Bordnetz)</text>
 <rect class="ic" x="40" y="110" width="45" height="160" rx="3"/>
@@ -94,7 +94,6 @@
 <line class="p" x1="384" y1="199" x2="396" y2="199"/>
 <line class="p" x1="387" y1="202" x2="393" y2="202"/>
 <rect class="ic" x="460" y="105" width="120" height="110" rx="3"/>
-<text class="r" x="520.0" y="158.0" text-anchor="middle"></text>
 <text class="r" x="462" y="99" text-anchor="start">U3 LMR16006X</text>
 <polyline class="w" points="460,130 475,130"/>
 <text class="pn" x="478" y="134" text-anchor="start">VIN</text>
@@ -180,7 +179,6 @@
 <text class="n" x="821" y="226" text-anchor="start">FB</text>
 <text class="v" x="560" y="262" text-anchor="start">Buck 0,7 MHz; U_out = 0,765 V·(1+R1/R2) ≈ 6,0 V</text>
 <rect class="ic" x="870" y="135" width="90" height="60" rx="3"/>
-<text class="r" x="915.0" y="163.0" text-anchor="middle"></text>
 <text class="r" x="872" y="129" text-anchor="start">U4 TLV76750 (5 V)</text>
 <polyline class="w" points="870,150 885,150"/>
 <text class="pn" x="888" y="154" text-anchor="start">IN</text>
@@ -231,7 +229,6 @@
 <line class="p" x1="899" y1="364" x2="911" y2="364"/>
 <line class="p" x1="902" y1="367" x2="908" y2="367"/>
 <rect class="ic" x="935" y="285" width="90" height="90" rx="3"/>
-<text class="r" x="980.0" y="328.0" text-anchor="middle"></text>
 <text class="v" x="980.0" y="341.0" text-anchor="middle">rauscharm</text>
 <text class="r" x="937" y="279" text-anchor="start">U5 ADP7142-5.0</text>
 <polyline class="w" points="935,300 950,300"/>
@@ -288,7 +285,6 @@
 <line class="p" x1="214" y1="394" x2="226" y2="394"/>
 <line class="p" x1="217" y1="397" x2="223" y2="397"/>
 <rect class="ic" x="250" y="315" width="80" height="60" rx="3"/>
-<text class="r" x="290.0" y="343.0" text-anchor="middle"></text>
 <text class="r" x="252" y="309" text-anchor="start">U6 LP5907-3.3</text>
 <polyline class="w" points="250,330 265,330"/>
 <text class="pn" x="268" y="334" text-anchor="start">IN</text>
@@ -323,7 +319,7 @@
 <text class="h" x="1140" y="60" text-anchor="start">2  Mikrocontroller</text>
 <rect class="ic" x="1380" y="70" width="220" height="340" rx="4"/>
 <text class="r" x="1490" y="88" text-anchor="middle">WeAct STM32F446 Core Board</text>
-<text class="v" x="1490" y="101" text-anchor="middle">STM32F446RET6, 180 MHz</text>
+<text class="v" x="1490" y="101" text-anchor="middle">STM32F446RET6, 168 MHz</text>
 <polyline class="w" points="1365,120 1380,120"/>
 <text class="pn" x="1383" y="124" text-anchor="start">5V</text>
 <polyline class="w" points="1365,150 1380,150"/>
@@ -422,7 +418,7 @@
 <polygon class="nl" points="1700,320 1706,312 1749,312 1749,328 1706,328"/>
 <text class="n" x="1709" y="324" text-anchor="start">RF_EN</text>
 <text class="v" x="1700" y="350" text-anchor="start">Reset → Modul aus</text>
-<text class="v" x="1150" y="400" text-anchor="start">TIM2 300 kHz → DAC + ADC per DMA (wie Rev. A)</text>
+<text class="v" x="1150" y="400" text-anchor="start">TIM2 300 kHz → DAC + ADC per DMA, Rampe 1,17 ms (352 Samples)</text>
 <rect class="fr" x="20" y="440" width="690" height="355" rx="6"/>
 <text class="h" x="30" y="460" text-anchor="start">3  VCO-Ansteuerung (Rampe)</text>
 <polygon class="nl" points="70,560 64,552 0,552 0,568 64,568"/>
@@ -525,9 +521,9 @@
 <text class="note" x="40" y="690" text-anchor="start">U_tune = 0,6·U_DAC → 0,12…1,86 V</text>
 <text class="note" x="40" y="705" text-anchor="start">(DAC-Puffer an: 0,2…3,1 V)</text>
 <text class="note" x="40" y="725" text-anchor="start">Sallen-Key fc ≈ 18 kHz, Q ≈ 0,74</text>
-<text class="note" x="40" y="740" text-anchor="start">DAC-Treppe bei 300 kHz: −49 dB</text>
+<text class="note" x="40" y="740" text-anchor="start">Rampe 1,17 ms: Ecken nach ~30 µs eingeschwungen</text>
 <text class="note" x="40" y="760" text-anchor="start">K-LC1a: −80 MHz/V, 570 Ω gg. ≈0,9 V</text>
-<text class="note" x="40" y="775" text-anchor="start">U2B–D unbenutzt: + an VMID, − an Ausg.</text>
+<text class="note" x="40" y="775" text-anchor="start">U2C/D unbenutzt: + an VMID, − an Ausg.</text>
 <text class="v" x="560" y="597" text-anchor="start">→ Modul Pin 5</text>
 <rect class="fr" x="720" y="440" width="400" height="355" rx="6"/>
 <text class="h" x="730" y="460" text-anchor="start">4  Radarmodul</text>
@@ -751,7 +747,7 @@
 <polygon class="nl" points="1810,725 1816,717 1880,717 1880,733 1816,733"/>
 <text class="n" x="1819" y="729" text-anchor="start">MON_5VRF</text>
 <text class="v" x="1440" y="780" text-anchor="start">MON_*: je 100 nF an GND</text>
-<rect class="fr" x="20" y="810" width="1870" height="395" rx="6"/>
+<rect class="fr" x="20" y="810" width="1870" height="545" rx="6"/>
 <text class="h" x="30" y="830" text-anchor="start">6  ZF-Kette</text>
 <polygon class="nl" points="95,920 89,912 39,912 39,928 89,928"/>
 <text class="n" x="86" y="924" text-anchor="end">IF_RAW</text>
@@ -833,7 +829,7 @@
 <polyline class="w" points="423,935 440,935"/>
 <line class="p" x1="417" y1="925" x2="417" y2="945"/>
 <line class="p" x1="423" y1="925" x2="423" y2="945"/>
-<text class="r" x="420" y="921" text-anchor="middle">C23 10n C0G</text>
+<text class="r" x="420" y="921" text-anchor="middle">C23 1,5n C0G</text>
 <polyline class="w" points="440,935 495,935"/>
 <circle cx="460" cy="935" r="2.8" fill="#1a1a1a"/>
 <polyline class="w" points="460,935 460,920"/>
@@ -935,7 +931,7 @@
 <polyline class="w" points="760,950 770,950"/>
 <polyline class="w" points="800,950 810,950"/>
 <rect class="b" x="770" y="945" width="30" height="10"/>
-<text class="r" x="785" y="941" text-anchor="middle">R30 5,1k</text>
+<text class="r" x="785" y="941" text-anchor="middle">R30 1,5k</text>
 <polyline class="w" points="810,950 840,950"/>
 <circle cx="825" cy="950" r="2.8" fill="#1a1a1a"/>
 <polyline class="w" points="825,950 825,890 900,890"/>
@@ -943,12 +939,12 @@
 <polyline class="w" points="923,890 940,890"/>
 <line class="p" x1="917" y1="880" x2="917" y2="900"/>
 <line class="p" x1="923" y1="880" x2="923" y2="900"/>
-<text class="r" x="920" y="876" text-anchor="middle">C25 1,5n C0G</text>
-<polyline class="w" points="940,890 1030,890 1030,1030"/>
+<text class="r" x="920" y="876" text-anchor="middle">C25 1n C0G</text>
+<polyline class="w" points="940,890 1030,890 1030,1015"/>
 <polyline class="w" points="840,950 850,950"/>
 <polyline class="w" points="880,950 890,950"/>
 <rect class="b" x="850" y="945" width="30" height="10"/>
-<text class="r" x="865" y="941" text-anchor="middle">R31 5,1k</text>
+<text class="r" x="865" y="941" text-anchor="middle">R31 1,5k</text>
 <polyline class="w" points="890,950 935,950"/>
 <circle cx="910" cy="950" r="2.8" fill="#1a1a1a"/>
 <polyline class="w" points="910,950 910,970"/>
@@ -957,7 +953,7 @@
 <line class="p" x1="900" y1="987" x2="920" y2="987"/>
 <line class="p" x1="900" y1="993" x2="920" y2="993"/>
 <text class="r" x="897" y="988" text-anchor="end">C26</text>
-<text class="v" x="897" y="1000" text-anchor="end">680p C0G</text>
+<text class="v" x="897" y="1000" text-anchor="end">820p C0G</text>
 <polyline class="w" points="910,1010 910,1016"/>
 <line class="p" x1="901" y1="1016" x2="919" y2="1016"/>
 <line class="p" x1="904" y1="1019" x2="916" y2="1019"/>
@@ -969,150 +965,188 @@
 <text class="t" x="955" y="954" text-anchor="start">+</text>
 <text class="t" x="955" y="984" text-anchor="start">−</text>
 <text class="r" x="976" y="969" text-anchor="middle">U1C</text>
-<polyline class="w" points="935,980 930,980 930,1030 1030,1030"/>
+<polyline class="w" points="935,980 930,980 930,1015 1030,1015"/>
 <circle cx="1030" cy="965" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1030,965 1060,965"/>
-<polyline class="w" points="1060,965 1070,965"/>
-<polyline class="w" points="1100,965 1110,965"/>
-<rect class="b" x="1070" y="960" width="30" height="10"/>
-<text class="r" x="1085" y="956" text-anchor="middle">R32 470</text>
-<polyline class="w" points="1110,965 1170,965"/>
-<circle cx="1135" cy="965" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1135,965 1135,980"/>
-<polyline class="w" points="1135,980 1135,997"/>
-<polyline class="w" points="1135,1003 1135,1020"/>
-<line class="p" x1="1125" y1="997" x2="1145" y2="997"/>
-<line class="p" x1="1125" y1="1003" x2="1145" y2="1003"/>
-<text class="r" x="1148" y="998" text-anchor="start">C27</text>
-<text class="v" x="1148" y="1010" text-anchor="start">2,2n C0G</text>
-<polyline class="w" points="1135,1020 1135,1026"/>
-<line class="p" x1="1126" y1="1026" x2="1144" y2="1026"/>
-<line class="p" x1="1129" y1="1029" x2="1141" y2="1029"/>
-<line class="p" x1="1132" y1="1032" x2="1138" y2="1032"/>
-<polygon class="nl" points="1170,965 1176,957 1226,957 1226,973 1176,973"/>
-<text class="n" x="1179" y="969" text-anchor="start">ADC_IF</text>
-<polyline class="w" points="1270,880 1270,870"/>
-<line class="p" x1="1260" y1="870" x2="1280" y2="870"/>
-<text class="n" x="1270" y="866" text-anchor="middle">A3V3</text>
-<polyline class="w" points="1270,880 1270,890"/>
-<polyline class="w" points="1270,920 1270,930"/>
-<rect class="b" x="1265" y="890" width="10" height="30"/>
-<text class="r" x="1279" y="903" text-anchor="start">R33</text>
-<text class="v" x="1279" y="915" text-anchor="start">10k</text>
-<polyline class="w" points="1270,930 1270,950"/>
-<circle cx="1270" cy="940" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1270,950 1270,960"/>
-<polyline class="w" points="1270,990 1270,1000"/>
-<rect class="b" x="1265" y="960" width="10" height="30"/>
-<text class="r" x="1279" y="973" text-anchor="start">R34</text>
-<text class="v" x="1279" y="985" text-anchor="start">10k</text>
-<polyline class="w" points="1270,1000 1270,1006"/>
-<line class="p" x1="1261" y1="1006" x2="1279" y2="1006"/>
-<line class="p" x1="1264" y1="1009" x2="1276" y2="1009"/>
-<line class="p" x1="1267" y1="1012" x2="1273" y2="1012"/>
-<polyline class="w" points="1270,940 1335,940"/>
-<circle cx="1312" cy="940" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1312,940 1312,955"/>
-<polyline class="w" points="1312,955 1312,972"/>
-<polyline class="w" points="1312,978 1312,995"/>
-<line class="p" x1="1302" y1="972" x2="1322" y2="972"/>
-<rect x="1302" y="977" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1298" y="969" text-anchor="middle">+</text>
-<text class="r" x="1325" y="973" text-anchor="start">C28</text>
-<text class="v" x="1325" y="985" text-anchor="start">10µ Ta</text>
-<polyline class="w" points="1312,995 1312,1001"/>
-<line class="p" x1="1303" y1="1001" x2="1321" y2="1001"/>
-<line class="p" x1="1306" y1="1004" x2="1318" y2="1004"/>
-<line class="p" x1="1309" y1="1007" x2="1315" y2="1007"/>
-<polygon class="b" points="1350,923 1350,987 1415,955"/>
-<polyline class="w" points="1335,940 1350,940"/>
-<polyline class="w" points="1335,970 1350,970"/>
-<polyline class="w" points="1415,955 1430,955"/>
-<text class="t" x="1355" y="944" text-anchor="start">+</text>
-<text class="t" x="1355" y="974" text-anchor="start">−</text>
-<text class="r" x="1376" y="959" text-anchor="middle">U1D</text>
-<polyline class="w" points="1335,970 1330,970 1330,1030 1430,1030 1430,955"/>
-<circle cx="1430" cy="955" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1440,955 1450,955"/>
-<polyline class="w" points="1480,955 1490,955"/>
-<rect class="b" x="1450" y="950" width="30" height="10"/>
-<text class="r" x="1465" y="946" text-anchor="middle">R35 47</text>
-<polyline class="w" points="1490,955 1600,955"/>
-<circle cx="1510" cy="955" r="2.8" fill="#1a1a1a"/>
-<circle cx="1545" cy="955" r="2.8" fill="#1a1a1a"/>
-<circle cx="1570" cy="955" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1510,955 1510,970"/>
-<polyline class="w" points="1510,970 1510,987"/>
-<polyline class="w" points="1510,993 1510,1010"/>
-<line class="p" x1="1500" y1="987" x2="1520" y2="987"/>
-<rect x="1500" y="992" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1524" y="984" text-anchor="middle">+</text>
-<text class="r" x="1497" y="988" text-anchor="end">C29</text>
-<text class="v" x="1497" y="1000" text-anchor="end">10µ Ta</text>
-<polyline class="w" points="1510,1010 1510,1016"/>
-<line class="p" x1="1501" y1="1016" x2="1519" y2="1016"/>
-<line class="p" x1="1504" y1="1019" x2="1516" y2="1019"/>
-<line class="p" x1="1507" y1="1022" x2="1513" y2="1022"/>
-<polyline class="w" points="1545,955 1545,970"/>
-<polyline class="w" points="1545,970 1545,987"/>
-<polyline class="w" points="1545,993 1545,1010"/>
-<line class="p" x1="1535" y1="987" x2="1555" y2="987"/>
-<line class="p" x1="1535" y1="993" x2="1555" y2="993"/>
-<text class="r" x="1558" y="988" text-anchor="start">C30</text>
-<text class="v" x="1558" y="1000" text-anchor="start">100n</text>
-<polyline class="w" points="1545,1010 1545,1016"/>
-<line class="p" x1="1536" y1="1016" x2="1554" y2="1016"/>
-<line class="p" x1="1539" y1="1019" x2="1551" y2="1019"/>
-<line class="p" x1="1542" y1="1022" x2="1548" y2="1022"/>
-<polyline class="w" points="1570,955 1570,945"/>
-<line class="p" x1="1560" y1="945" x2="1580" y2="945"/>
-<text class="n" x="1570" y="941" text-anchor="middle">VMID</text>
-<polyline class="w" points="1600,955 1610,955"/>
-<polyline class="w" points="1640,955 1650,955"/>
-<rect class="b" x="1610" y="950" width="30" height="10"/>
-<text class="r" x="1625" y="946" text-anchor="middle">R36 1k</text>
-<polyline class="w" points="1650,955 1720,955"/>
-<circle cx="1680" cy="955" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1680,955 1680,970"/>
-<polyline class="w" points="1680,970 1680,987"/>
-<polyline class="w" points="1680,993 1680,1010"/>
-<line class="p" x1="1670" y1="987" x2="1690" y2="987"/>
-<rect x="1670" y="992" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1666" y="984" text-anchor="middle">+</text>
-<text class="r" x="1693" y="988" text-anchor="start">C31</text>
-<text class="v" x="1693" y="1000" text-anchor="start">10µ Ta</text>
-<polyline class="w" points="1680,1010 1680,1016"/>
-<line class="p" x1="1671" y1="1016" x2="1689" y2="1016"/>
-<line class="p" x1="1674" y1="1019" x2="1686" y2="1019"/>
-<line class="p" x1="1677" y1="1022" x2="1683" y2="1022"/>
-<polygon class="nl" points="1720,955 1726,947 1769,947 1769,963 1726,963"/>
-<text class="n" x="1729" y="959" text-anchor="start">VMID1</text>
+<polyline class="w" points="1030,950 1040,950"/>
+<polyline class="w" points="1070,950 1080,950"/>
+<rect class="b" x="1040" y="945" width="30" height="10"/>
+<text class="r" x="1055" y="941" text-anchor="middle">R37 1,5k</text>
+<polyline class="w" points="1080,950 1110,950"/>
+<circle cx="1095" cy="950" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1095,950 1095,890 1170,890"/>
+<polyline class="w" points="1170,890 1187,890"/>
+<polyline class="w" points="1193,890 1210,890"/>
+<line class="p" x1="1187" y1="880" x2="1187" y2="900"/>
+<line class="p" x1="1193" y1="880" x2="1193" y2="900"/>
+<text class="r" x="1190" y="876" text-anchor="middle">C32 2,2n C0G</text>
+<polyline class="w" points="1210,890 1300,890 1300,1015"/>
+<polyline class="w" points="1110,950 1120,950"/>
+<polyline class="w" points="1150,950 1160,950"/>
+<rect class="b" x="1120" y="945" width="30" height="10"/>
+<text class="r" x="1135" y="941" text-anchor="middle">R38 1,5k</text>
+<polyline class="w" points="1160,950 1205,950"/>
+<circle cx="1180" cy="950" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1180,950 1180,970"/>
+<polyline class="w" points="1180,970 1180,987"/>
+<polyline class="w" points="1180,993 1180,1010"/>
+<line class="p" x1="1170" y1="987" x2="1190" y2="987"/>
+<line class="p" x1="1170" y1="993" x2="1190" y2="993"/>
+<text class="r" x="1167" y="988" text-anchor="end">C33</text>
+<text class="v" x="1167" y="1000" text-anchor="end">330p C0G</text>
+<polyline class="w" points="1180,1010 1180,1016"/>
+<line class="p" x1="1171" y1="1016" x2="1189" y2="1016"/>
+<line class="p" x1="1174" y1="1019" x2="1186" y2="1019"/>
+<line class="p" x1="1177" y1="1022" x2="1183" y2="1022"/>
+<polygon class="b" points="1220,933 1220,997 1285,965"/>
+<polyline class="w" points="1205,950 1220,950"/>
+<polyline class="w" points="1205,980 1220,980"/>
+<polyline class="w" points="1285,965 1300,965"/>
+<text class="t" x="1225" y="954" text-anchor="start">+</text>
+<text class="t" x="1225" y="984" text-anchor="start">−</text>
+<text class="r" x="1246" y="969" text-anchor="middle">U2B</text>
+<polyline class="w" points="1205,980 1200,980 1200,1015 1300,1015"/>
+<circle cx="1300" cy="965" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1300,965 1330,965"/>
+<polyline class="w" points="1330,965 1340,965"/>
+<polyline class="w" points="1370,965 1380,965"/>
+<rect class="b" x="1340" y="960" width="30" height="10"/>
+<text class="r" x="1355" y="956" text-anchor="middle">R32 470</text>
+<polyline class="w" points="1380,965 1440,965"/>
+<circle cx="1405" cy="965" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1405,965 1405,980"/>
+<polyline class="w" points="1405,980 1405,997"/>
+<polyline class="w" points="1405,1003 1405,1020"/>
+<line class="p" x1="1395" y1="997" x2="1415" y2="997"/>
+<line class="p" x1="1395" y1="1003" x2="1415" y2="1003"/>
+<text class="r" x="1418" y="998" text-anchor="start">C27</text>
+<text class="v" x="1418" y="1010" text-anchor="start">2,2n C0G</text>
+<polyline class="w" points="1405,1020 1405,1026"/>
+<line class="p" x1="1396" y1="1026" x2="1414" y2="1026"/>
+<line class="p" x1="1399" y1="1029" x2="1411" y2="1029"/>
+<line class="p" x1="1402" y1="1032" x2="1408" y2="1032"/>
+<polygon class="nl" points="1440,965 1446,957 1496,957 1496,973 1446,973"/>
+<text class="n" x="1449" y="969" text-anchor="start">ADC_IF</text>
+<polyline class="w" points="1270,1110 1270,1100"/>
+<line class="p" x1="1260" y1="1100" x2="1280" y2="1100"/>
+<text class="n" x="1270" y="1096" text-anchor="middle">A3V3</text>
+<polyline class="w" points="1270,1110 1270,1120"/>
+<polyline class="w" points="1270,1150 1270,1160"/>
+<rect class="b" x="1265" y="1120" width="10" height="30"/>
+<text class="r" x="1279" y="1133" text-anchor="start">R33</text>
+<text class="v" x="1279" y="1145" text-anchor="start">10k</text>
+<polyline class="w" points="1270,1160 1270,1180"/>
+<circle cx="1270" cy="1170" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1270,1180 1270,1190"/>
+<polyline class="w" points="1270,1220 1270,1230"/>
+<rect class="b" x="1265" y="1190" width="10" height="30"/>
+<text class="r" x="1279" y="1203" text-anchor="start">R34</text>
+<text class="v" x="1279" y="1215" text-anchor="start">10k</text>
+<polyline class="w" points="1270,1230 1270,1236"/>
+<line class="p" x1="1261" y1="1236" x2="1279" y2="1236"/>
+<line class="p" x1="1264" y1="1239" x2="1276" y2="1239"/>
+<line class="p" x1="1267" y1="1242" x2="1273" y2="1242"/>
+<polyline class="w" points="1270,1170 1335,1170"/>
+<circle cx="1312" cy="1170" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1312,1170 1312,1185"/>
+<polyline class="w" points="1312,1185 1312,1202"/>
+<polyline class="w" points="1312,1208 1312,1225"/>
+<line class="p" x1="1302" y1="1202" x2="1322" y2="1202"/>
+<rect x="1302" y="1207" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1298" y="1199" text-anchor="middle">+</text>
+<text class="r" x="1325" y="1203" text-anchor="start">C28</text>
+<text class="v" x="1325" y="1215" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1312,1225 1312,1231"/>
+<line class="p" x1="1303" y1="1231" x2="1321" y2="1231"/>
+<line class="p" x1="1306" y1="1234" x2="1318" y2="1234"/>
+<line class="p" x1="1309" y1="1237" x2="1315" y2="1237"/>
+<polygon class="b" points="1350,1153 1350,1217 1415,1185"/>
+<polyline class="w" points="1335,1170 1350,1170"/>
+<polyline class="w" points="1335,1200 1350,1200"/>
+<polyline class="w" points="1415,1185 1430,1185"/>
+<text class="t" x="1355" y="1174" text-anchor="start">+</text>
+<text class="t" x="1355" y="1204" text-anchor="start">−</text>
+<text class="r" x="1376" y="1189" text-anchor="middle">U1D</text>
+<polyline class="w" points="1335,1200 1330,1200 1330,1260 1430,1260 1430,1185"/>
+<circle cx="1430" cy="1185" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1440,1185 1450,1185"/>
+<polyline class="w" points="1480,1185 1490,1185"/>
+<rect class="b" x="1450" y="1180" width="30" height="10"/>
+<text class="r" x="1465" y="1176" text-anchor="middle">R35 47</text>
+<polyline class="w" points="1490,1185 1600,1185"/>
+<circle cx="1510" cy="1185" r="2.8" fill="#1a1a1a"/>
+<circle cx="1545" cy="1185" r="2.8" fill="#1a1a1a"/>
+<circle cx="1570" cy="1185" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1510,1185 1510,1200"/>
+<polyline class="w" points="1510,1200 1510,1217"/>
+<polyline class="w" points="1510,1223 1510,1240"/>
+<line class="p" x1="1500" y1="1217" x2="1520" y2="1217"/>
+<rect x="1500" y="1222" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1524" y="1214" text-anchor="middle">+</text>
+<text class="r" x="1497" y="1218" text-anchor="end">C29</text>
+<text class="v" x="1497" y="1230" text-anchor="end">10µ Ta</text>
+<polyline class="w" points="1510,1240 1510,1246"/>
+<line class="p" x1="1501" y1="1246" x2="1519" y2="1246"/>
+<line class="p" x1="1504" y1="1249" x2="1516" y2="1249"/>
+<line class="p" x1="1507" y1="1252" x2="1513" y2="1252"/>
+<polyline class="w" points="1545,1185 1545,1200"/>
+<polyline class="w" points="1545,1200 1545,1217"/>
+<polyline class="w" points="1545,1223 1545,1240"/>
+<line class="p" x1="1535" y1="1217" x2="1555" y2="1217"/>
+<line class="p" x1="1535" y1="1223" x2="1555" y2="1223"/>
+<text class="r" x="1558" y="1218" text-anchor="start">C30</text>
+<text class="v" x="1558" y="1230" text-anchor="start">100n</text>
+<polyline class="w" points="1545,1240 1545,1246"/>
+<line class="p" x1="1536" y1="1246" x2="1554" y2="1246"/>
+<line class="p" x1="1539" y1="1249" x2="1551" y2="1249"/>
+<line class="p" x1="1542" y1="1252" x2="1548" y2="1252"/>
+<polyline class="w" points="1570,1185 1570,1175"/>
+<line class="p" x1="1560" y1="1175" x2="1580" y2="1175"/>
+<text class="n" x="1570" y="1171" text-anchor="middle">VMID</text>
+<polyline class="w" points="1600,1185 1610,1185"/>
+<polyline class="w" points="1640,1185 1650,1185"/>
+<rect class="b" x="1610" y="1180" width="30" height="10"/>
+<text class="r" x="1625" y="1176" text-anchor="middle">R36 1k</text>
+<polyline class="w" points="1650,1185 1720,1185"/>
+<circle cx="1680" cy="1185" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1680,1185 1680,1200"/>
+<polyline class="w" points="1680,1200 1680,1217"/>
+<polyline class="w" points="1680,1223 1680,1240"/>
+<line class="p" x1="1670" y1="1217" x2="1690" y2="1217"/>
+<rect x="1670" y="1222" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1666" y="1214" text-anchor="middle">+</text>
+<text class="r" x="1693" y="1218" text-anchor="start">C31</text>
+<text class="v" x="1693" y="1230" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1680,1240 1680,1246"/>
+<line class="p" x1="1671" y1="1246" x2="1689" y2="1246"/>
+<line class="p" x1="1674" y1="1249" x2="1686" y2="1249"/>
+<line class="p" x1="1677" y1="1252" x2="1683" y2="1252"/>
+<polygon class="nl" points="1720,1185 1726,1177 1769,1177 1769,1193 1726,1193"/>
+<text class="n" x="1729" y="1189" text-anchor="start">VMID1</text>
 <text class="note" x="40" y="1135" text-anchor="start">Stufe 1: V1 = 1 + R22/R23 = 11 (21 dB)</text>
 <text class="note" x="40" y="1150" text-anchor="start">Eingangs-HP 34 Hz; R20 = Modul-Last 1 kΩ</text>
 <text class="note" x="40" y="1165" text-anchor="start">C21 Folie, C22/C24 Tantal (nicht mikrofonisch)</text>
 <text class="note" x="800" y="1060" text-anchor="start">V2 = 1 + (R25 ∥ R2x)/R29, Stufen ≤ 4,04</text>
 <text class="note" x="800" y="1075" text-anchor="start">Gesamt 11 … 610 (21 … 56 dB)</text>
-<text class="note" x="800" y="1100" text-anchor="start">C23/R24: Hochpass 16 kHz = R-Kompensation</text>
+<text class="note" x="800" y="1100" text-anchor="start">C23/R24: Hochpass 106 kHz = R-Kompensation</text>
 <text class="note" x="800" y="1115" text-anchor="start">Bodenecho ~1/R, Schwebung ~R → flacher Pegel;</text>
-<text class="note" x="800" y="1130" text-anchor="start">Eigenmischung (61-Hz-Rampe) −48 dB</text>
-<text class="note" x="1060" y="1060" text-anchor="start">Anti-Alias Sallen-Key fc ≈ 31 kHz, Q ≈ 0,74</text>
-<text class="note" x="1060" y="1075" text-anchor="start">R32/C27: Ladungspuffer ADC (150 kHz)</text>
-<text class="note" x="1060" y="1090" text-anchor="start">Schwebung 74 Hz/m (lang), 256 Hz/m (kurz)</text>
-<text class="note" x="1060" y="1105" text-anchor="start">200 m (lang) ≈ 15 kHz; fs = 300 kHz</text>
-<text class="note" x="1300" y="1060" text-anchor="start">VMID = A3V3/2 gepuffert,</text>
-<text class="note" x="1300" y="1075" text-anchor="start">VMID1 nachgefiltert (nur Stufe 1)</text>
-<text class="note" x="1560" y="1060" text-anchor="start">U1, U2 = TLV9064; U7: V+ = A3V3, je 100 nF</text>
-<text class="note" x="1560" y="1075" text-anchor="start">Ruhepegel ADC_IF 1,65 V ≙ 2048 LSB</text>
-<rect class="fr" x="20" y="1220" width="1290" height="115" rx="6"/>
-<text class="h" x="30" y="1240" text-anchor="start">Hinweise</text>
-<text class="note" x="30" y="1260" text-anchor="start">1  Layout: Massefläche durchgehend; ZF-Teil (U1, U7) weit weg von U3/L2; Schaltfrequenz U3 kein Vielfaches von 300 kHz.</text>
-<text class="note" x="30" y="1276" text-anchor="start">2  Kondensatoren im Signalpfad nur C0G, Folie oder Tantal (X7R/X5R sind piezoelektrisch → Vibration wird zu Störsignal).</text>
-<text class="note" x="30" y="1292" text-anchor="start">3  U_tune hart auf 0,12–1,86 V begrenzt; Rampe per Kalibrierung im ISM-Band 24,05–24,25 GHz halten (Mittenfrequenz ±75 MHz).</text>
-<text class="note" x="30" y="1308" text-anchor="start">4  Core-Board über D3 versorgt; vor gleichzeitigem USB-Betrieb prüfen, ob das Board eine VBUS-Diode hat (sonst Rückspeisung in den PC).</text>
-<text class="note" x="30" y="1324" text-anchor="start">5  Firmware: F446 ohne CCM (128 KB RAM), Config in Sektor 7, CAN1 PB8/PB9, USART2 PA2/PA3, Gain PC6/PC7, RF_EN PB12.</text>
-<rect class="ic" x="1330" y="1220" width="560" height="115" rx="6"/>
-<text class="big" x="1345" y="1245" text-anchor="start">radaraltimeter24 – Hardware Rev. B</text>
-<text class="note" x="1345" y="1266" text-anchor="start">FMCW-Radarhöhenmesser 24 GHz · STM32F446 (WeAct) · K-LC1a · TLV9064</text>
-<text class="note" x="1345" y="1286" text-anchor="start">Blatt 1/1 · Stand 2026-10-11 · Entwurf, nicht aufgebaut/geprüft</text>
-<text class="note" x="1345" y="1306" text-anchor="start">Lizenz MIT · github.com/dansparker/radaraltimeter24</text>
+<text class="note" x="800" y="1130" text-anchor="start">Eigenmischung (426-Hz-Rampe) −48 dB</text>
+<text class="note" x="1060" y="1060" text-anchor="start">Anti-Alias: Butterworth 4. Ordnung, 120 kHz</text>
+<text class="note" x="1060" y="1075" text-anchor="start">U1C: Q 0,55 / U2B: Q 1,29 (Sallen-Key)</text>
+<text class="note" x="1060" y="1090" text-anchor="start">R32/C27: Ladungspuffer ADC</text>
+<text class="note" x="1060" y="1105" text-anchor="start">Schwebung 513 Hz/m: 200 m ≈ 103 kHz, fs = 300 kHz</text>
+<text class="note" x="40" y="1250" text-anchor="start">VMID = A3V3/2 gepuffert, VMID1 nachgefiltert (nur Stufe 1)</text>
+<text class="note" x="40" y="1265" text-anchor="start">U1, U2 = TLV9064; U7: V+ = A3V3, je 100 nF</text>
+<text class="note" x="40" y="1280" text-anchor="start">Ruhepegel ADC_IF 1,65 V ≙ 2048 LSB</text>
+<rect class="fr" x="20" y="1370" width="1290" height="115" rx="6"/>
+<text class="h" x="30" y="1390" text-anchor="start">Hinweise</text>
+<text class="note" x="30" y="1410" text-anchor="start">1  Layout: Massefläche durchgehend; ZF-Teil (U1, U2, U7) weit weg von U3/L2; Schaltfrequenz U3 kein Vielfaches von 300 kHz.</text>
+<text class="note" x="30" y="1426" text-anchor="start">2  Kondensatoren im Signalpfad nur C0G, Folie oder Tantal (X7R/X5R sind piezoelektrisch → Vibration wird zu Störsignal).</text>
+<text class="note" x="30" y="1442" text-anchor="start">3  U_tune hart auf 0,12–1,86 V begrenzt; Rampe per Kalibrierung im ISM-Band 24,05–24,25 GHz halten (Mittenfrequenz ±75 MHz).</text>
+<text class="note" x="30" y="1458" text-anchor="start">4  Core-Board über D3 versorgt; vor gleichzeitigem USB-Betrieb prüfen, ob das Board eine VBUS-Diode hat (sonst Rückspeisung in den PC).</text>
+<text class="note" x="30" y="1474" text-anchor="start">5  Firmware: make -C firmware (BOARD=revb): CAN1 PB8/PB9, USART2 PA2/PA3, Gain PC6/PC7, RF_EN PB12, Config Sektor 7.</text>
+<rect class="ic" x="1330" y="1370" width="560" height="115" rx="6"/>
+<text class="big" x="1345" y="1395" text-anchor="start">radaraltimeter24 – Hardware Rev. B</text>
+<text class="note" x="1345" y="1416" text-anchor="start">FMCW-Radarhöhenmesser 24 GHz · STM32F446 (WeAct) · K-LC1a · TLV9064</text>
+<text class="note" x="1345" y="1436" text-anchor="start">Blatt 1/1 · Stand 2026-11-27 · Entwurf, nicht aufgebaut/geprüft</text>
+<text class="note" x="1345" y="1456" text-anchor="start">Lizenz MIT · github.com/dansparker/radaraltimeter24</text>
 </svg>

@@ -113,7 +113,6 @@ static void cmd_help(void)
         "                     off for tests with a static target)\r\n"
         "vsign 1|-1           VCO tuning direction\r\n"
         "rampq <q>            quadratic ramp predistortion (-0.5..0.5)\r\n"
-        "rmode auto|long|short ramp mode (auto: short below 25 m)\r\n"
         "range <m>            maximum range\r\n"
         "dacbuf 0|1           DAC output buffer\r\n"
         "can on|off|125|250|500|1000|id <hex>\r\n"
@@ -131,15 +130,10 @@ static void cmd_info(void)
     out_f("sweep ", m->sweep_hz * 1.0e-6f, 3u, " MHz");
     out(m->calibrated ? " (calibrated)\r\n" : " (NOT calibrated - default value)\r\n");
     out_f("offset ", m->r_offset_m, 3u, " m\r\n");
-    if (m->sweep_short_hz > 0.0f) { out_f("sweep short ", m->sweep_short_hz * 1.0e-6f, 3u, " MHz\r\n"); }
-    for (unsigned k = 0; k < RADAR_NMODES; k++) {
-        out(k ? "short ramp: " : "long ramp:  ");
-        out_f("", 1000.0f * (float)radar_frame_len(k) / (float)RADAR_FS_HZ, 3u, " ms, ");
-        out_f("", RDSP_C0_MPS * (float)(radar_frame_len(k) - 1u) /
-              (2.0f * cfg_sweep_hz(m, k) * (float)radar_nfft(k)), 3u, " m/bin\r\n");
-    }
-    out((c->ramp_mode == CFG_RMODE_AUTO) ? "ramp mode auto" : ((c->ramp_mode == CFG_RMODE_LONG) ? "ramp mode long" : "ramp mode short"));
-    out((g_app.alt.rmode == RADAR_RMODE_SHORT) ? " (now short)\r\n" : " (now long)\r\n");
+    out_f("ramp ", 1000.0f * RADAR_FRAME_DT_S, 3u, " ms, ");
+    out_f("", RDSP_C0_MPS * (float)(RADAR_FRAME_LEN - 1u) / (2.0f * m->sweep_hz * (float)RADAR_NSAMP), 3u,
+          " m/bin\r\n");
+    out_f("averaging ", 1000.0f * g_app.alt.tau, 0u, " ms\r\n");
     out_f("max range ", c->max_range_m, 1u, " m\r\n");
     out_f("gain ", (c->gain_mode == CFG_GAIN_AUTO) ? -1.0f : (float)c->gain_mode, 0u, " (-1 = auto)\r\n");
     out(c->bg_enable ? "bg on (running background removal)\r\n" : "bg off\r\n");
@@ -174,7 +168,6 @@ static void start_cal(const char *arg, int point)
         out("ERR height in m (0.5..300)\r\n");
         return;
     }
-    if (g_app.cfg.ramp_mode == CFG_RMODE_AUTO) { out("ERR set 'rmode long' or 'rmode short' first\r\n"); return; }
     if ((point == 2) && !s_f1_ok) { out("ERR run cal1 first\r\n"); return; }
     if (point == 1) { s_ref1 = r; s_op = OP_CAL1; } else { s_ref2 = r; s_op = OP_CAL2; }
     alt_cal_start(&g_app.alt, CAL_PAIRS);
@@ -198,20 +191,15 @@ static void finish_cal(void)
             out("ERR calibration points not usable\r\n");
         } else {
             const float slope = RDSP_C0_MPS * df / (2.0f * dr);                 /* Hz/s */
-            const unsigned rm = (g_app.cfg.ramp_mode == CFG_RMODE_SHORT) ? RADAR_RMODE_SHORT : RADAR_RMODE_LONG;
-            const float sweep = slope * (float)(radar_frame_len(rm) - 1u) / (float)RADAR_FS_HZ;
+            const float sweep = slope * (float)(RADAR_FRAME_LEN - 1u) / (float)RADAR_FS_HZ;
             const float off = s_ref1 - RDSP_C0_MPS * s_f1 / (2.0f * slope);
             if ((sweep < 1.0e6f) || (sweep > 5.0e9f) || (fabsf(off) > 50.0f)) {
                 out("ERR result implausible\r\n");
             } else {
                 cfg_module_t *m = &g_app.cfg.mod[g_app.cfg.module];
-                if (rm == RADAR_RMODE_SHORT) {
-                    m->sweep_short_hz = sweep;     /* offset is taken from the long ramp */
-                } else {
-                    m->sweep_hz = sweep;
-                    m->r_offset_m = off;
-                    m->calibrated = 1u;
-                }
+                m->sweep_hz = sweep;
+                m->r_offset_m = off;
+                m->calibrated = 1u;
                 out_f("sweep ", sweep * 1.0e-6f, 3u, " MHz");
                 out_f(", offset ", off, 3u, " m\r\n");
                 config_changed();
@@ -312,13 +300,6 @@ static void execute(char *l)
         c->mod[c->module].ramp_q = v;
         app_restart_frontend();
         out("OK (not saved - use 'save')\r\n");
-    }
-    else if ((a = match(l, "rmode")) != NULL) {
-        if (strcmp(a, "auto") == 0) { c->ramp_mode = CFG_RMODE_AUTO; }
-        else if (strcmp(a, "long") == 0) { c->ramp_mode = CFG_RMODE_LONG; }
-        else if (strcmp(a, "short") == 0) { c->ramp_mode = CFG_RMODE_SHORT; }
-        else { out("ERR auto|long|short\r\n"); return; }
-        config_changed();
     }
     else if ((a = match(l, "range")) != NULL) {
         if ((parse_float(a, &v) != 0) || (v < 5.0f) || (v > 1000.0f)) { out("ERR\r\n"); return; }

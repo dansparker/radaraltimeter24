@@ -81,8 +81,6 @@ typedef struct {
 } sim_t;
 
 void sim_init(sim_t *s, float sweep_hz);
-/** Select the ramp mode (frame length and slope). */
-void sim_set_rmode(sim_t *s, unsigned rmode);
 /** Generate one frame for the given DAC direction and gain level. */
 void sim_frame(sim_t *s, int dac_dir, int gain, uint16_t *out);
 /** Move all targets by their range rate over dt. */

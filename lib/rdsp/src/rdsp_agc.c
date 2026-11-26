@@ -13,6 +13,8 @@ void rdsp_agc_init(rdsp_agc_t *a, uint8_t n_levels, uint8_t start_level,
     a->lo_frac = lo_frac;
     a->up_frames = up_frames;
     a->lo_count = 0u;
+    a->attack_frames = 1u;
+    a->hi_count = 0u;
 }
 
 int rdsp_agc_update(rdsp_agc_t *a, float peak_frac, int clipped)
@@ -20,8 +22,14 @@ int rdsp_agc_update(rdsp_agc_t *a, float peak_frac, int clipped)
     const uint8_t old = a->level;
     if (clipped || !(peak_frac <= a->hi_frac)) {          /* NaN -> reduce gain */
         a->lo_count = 0u;
-        if (a->level > 0u) { a->level--; }
-    } else if (peak_frac < a->lo_frac) {
+        if (++a->hi_count >= a->attack_frames) {
+            a->hi_count = 0u;
+            if (a->level > 0u) { a->level--; }
+        }
+        return (a->level != old) ? 1 : 0;
+    }
+    a->hi_count = 0u;
+    if (peak_frac < a->lo_frac) {
         if (++a->lo_count >= a->up_frames) {
             a->lo_count = 0u;
             if (a->level + 1u < a->n_levels) { a->level++; }

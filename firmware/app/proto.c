@@ -122,7 +122,7 @@ size_t proto_rdbg(char *buf, size_t cap, const alt_output_t *o)
     w_str(&w, ",");
     w_u32(&w, o->track_state);
     w_str(&w, ",");
-    w_str(&w, (o->rmode != 0u) ? "S" : "L");
+    w_u32(&w, (uint32_t)lrintf(1000.0f * o->tau_s));     /* averaging time [ms] */
     return w_finish(&w);
 }
 
