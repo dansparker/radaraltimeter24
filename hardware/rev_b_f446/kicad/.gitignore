@@ -5,3 +5,4 @@ _autosave-*
 *.lck
 __pycache__/
 generator/build/
+logs/
