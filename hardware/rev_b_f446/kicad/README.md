@@ -8,7 +8,7 @@ geordnet nach den sechs Blöcken des SVG-Plans.
 |---|---|
 | `radaraltimeter_revb.kicad_pro / .kicad_sch / .kicad_pcb` | Projekt, Schaltplan, Platine |
 | `radar_revb.kicad_sym`, `radar_revb.pretty/` | Projektbibliothek: WeAct-Board, K-LC1a, TS3A5017 (TSSOP), PESD3V3S2UT |
-| `radaraltimeter_revb_schaltplan.pdf`, `radaraltimeter_revb_platine.pdf` | Export zum Ansehen ohne KiCad |
+| `radaraltimeter_revb_schaltplan.pdf`, `_platine.pdf`, `_bestueckung.pdf` | Export zum Ansehen ohne KiCad (Bestückungsplan mit allen Referenzen) |
 | `generator/` | Skripte, aus denen alles erzeugt wurde (`design.py` = Netzliste) |
 
 ## Stand
@@ -23,14 +23,16 @@ geordnet nach den sechs Blöcken des SVG-Plans.
     freien Platz, Abblockkondensatoren an ihren Versorgungspin, R32/C27 an PC4.
   - Restliche Gruppen gepackt, Zweipoler per Tausch/Drehung auf kurze Netze optimiert.
   - **Mit Freerouting geroutet** (F.Cu 1,2 m, In2 0,23 m, B.Cu 0,15 m; In1 bleibt ungeteilte
-    Masselage). DRC mit Schaltplan-Parität: 0 Fehler, 0 offene Verbindungen; übrig sind nur
-    Überlappungen im Bestückungsdruck.
+    Masselage). DRC mit Schaltplan-Parität: **0 Verstöße**, 0 offene Verbindungen.
   - Analoge Netze, alle auf F.Cu über der Masselage und ohne Via: IF_RAW 8 mm, IF_AC 6 mm,
     IF_FB1 6 mm, IF1 4 mm, IF_HP 13 mm, IF_FB2 12 mm, ADC_IF 5 mm, VCO_DRV 10 mm.
     VCO_TUNE 24 mm mit einem Via. Die langen Wege tragen niederohmige Signale
     (AA1/AA2-Ausgänge, DAC, Steuerleitungen).
-  - Vor der Bestellung trotzdem in KiCad ansehen: Bestückungsdruck aufräumen, Leiterbahnen
-    glätten, Kabelaustritt J1 prüfen.
+  - Bestückungsdruck aufgeräumt (`generator/silk.py`): Referenzen auf freien Plätzen, weg von
+    Pads, Vias, anderem Druck und der Kante; bei ICs auf dem Gehäuse. Wo im dichten ZF-Feld kein
+    Platz ist (21 Kleinteile, TP1, D6), steht die Referenz nur auf F.Fab, also im Bestückungsplan
+    `radaraltimeter_revb_bestueckung.pdf`. Library-Footprints bleiben unverändert.
+  - Vor der Bestellung trotzdem in KiCad ansehen: Leiterbahnen glätten, Kabelaustritt J1 prüfen.
 - Netzklasse `Power` (0,5 mm) für VIN*, BUCK_SW, V_PRE*, 5V_* und GND.
 
 Anordnung (oben gesehen):
@@ -46,6 +48,7 @@ Anordnung (oben gesehen):
 python generator/mklib.py && python generator/gen_sch.py
 "D:/Program Files/KiCad/9.0/bin/python.exe" generator/gen_pcb.py
 "D:/Program Files/KiCad/9.0/bin/python.exe" generator/route.py
+"D:/Program Files/KiCad/9.0/bin/python.exe" generator/silk.py
 ```
 
 `gen_pcb.py` und `route.py` brauchen das Python von KiCad (Modul `pcbnew`), `route.py` zusätzlich
