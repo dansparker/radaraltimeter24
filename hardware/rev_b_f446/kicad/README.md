@@ -17,13 +17,20 @@ geordnet nach den sechs Blöcken des SVG-Plans.
 - **Platine:**
   - 4 Lagen, 86 × 64 mm, 4 × M3 an GND.
   - GND-Fläche auf In1 (durchgehend) und B.Cu; jedes SMD-GND-Pad hat ein eigenes Via auf In1.
-  - Bauteile nach Gruppen platziert, Zweipoler per Tausch/Drehung auf kurze Netze optimiert.
-  - **Mit Freerouting automatisch geroutet** (F.Cu, In2, B.Cu): DRC mit Schaltplan-Parität
-    0 Fehler, 0 offene Verbindungen; übrig sind nur Überlappungen im Bestückungsdruck.
-  - **Erster Stand, nicht bestellreif:** Der Autorouter kennt die Analog-Prioritäten nicht.
-    Die empfindlichen ZF-Netze sind zu lang (IF_RAW 27 mm, IF_FB1 27 mm, IF_FB2 44 mm,
-    ADC_IF 45 mm) und laufen teils über Vias und In2. Vor der Bestellung die ZF-Kette um U1/U7
-    von Hand dichter platzieren und diese Netze kurz auf F.Cu über der GND-Lage führen.
+  - ZF-Kette und VCO-Ansteuerung von Hand verankert (`generator/place_if.py`): U1 um 180° gedreht,
+    die Stufen 1 und 2 zeigen zum Modulpin. C21 sitzt direkt zwischen Modulpin 3 und dem U1-Eingang,
+    U7 mit 1D neben U1 Pin 6. Die übrigen Teile setzt das Skript in Signalrichtung auf den nächsten
+    freien Platz, Abblockkondensatoren an ihren Versorgungspin, R32/C27 an PC4.
+  - Restliche Gruppen gepackt, Zweipoler per Tausch/Drehung auf kurze Netze optimiert.
+  - **Mit Freerouting geroutet** (F.Cu 1,2 m, In2 0,23 m, B.Cu 0,15 m; In1 bleibt ungeteilte
+    Masselage). DRC mit Schaltplan-Parität: 0 Fehler, 0 offene Verbindungen; übrig sind nur
+    Überlappungen im Bestückungsdruck.
+  - Analoge Netze, alle auf F.Cu über der Masselage und ohne Via: IF_RAW 8 mm, IF_AC 6 mm,
+    IF_FB1 6 mm, IF1 4 mm, IF_HP 13 mm, IF_FB2 12 mm, ADC_IF 5 mm, VCO_DRV 10 mm.
+    VCO_TUNE 24 mm mit einem Via. Die langen Wege tragen niederohmige Signale
+    (AA1/AA2-Ausgänge, DAC, Steuerleitungen).
+  - Vor der Bestellung trotzdem in KiCad ansehen: Bestückungsdruck aufräumen, Leiterbahnen
+    glätten, Kabelaustritt J1 prüfen.
 - Netzklasse `Power` (0,5 mm) für VIN*, BUCK_SW, V_PRE*, 5V_* und GND.
 
 Anordnung (oben gesehen):

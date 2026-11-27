@@ -196,6 +196,10 @@ for ref, (fp, c) in FPS.items():
     if ref in SIZE:
         fp.SetPosition(P.VECTOR2I(mm(POS[ref][0]), mm(POS[ref][1]))); fp.SetOrientationDegrees(180 if ROT[ref] else 0)
 
+# ------------------------------------------------------------ ZF-Kette und VCO-Ansteuerung von Hand
+import place_if
+place_if.run(FPS, V, OX, OY)
+
 # ------------------------------------------------------------ GND-Flaechen In1 (durchgehend) und B.Cu
 for layer in (P.In1_Cu, P.B_Cu):
     z = P.ZONE(board); z.SetLayer(layer); z.SetNet(net('GND'))

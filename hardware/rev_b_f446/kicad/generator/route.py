@@ -28,6 +28,7 @@ for z in bzones:
 # ---------------------------------------------------------------- GND-Vias
 VIA_D, VIA_DR, CLR = 0.6, 0.3, 0.2
 obst = []          # (x0, y0, x1, y1, net)
+vias = []
 for pad in b.GetPads():
     bb = pad.GetBoundingBox()
     obst.append((tomm(bb.GetLeft()), tomm(bb.GetTop()), tomm(bb.GetRight()), tomm(bb.GetBottom()), pad.GetNetname()))
@@ -38,6 +39,9 @@ EX0, EY0, EX1, EY1 = tomm(edge.GetLeft()), tomm(edge.GetTop()), tomm(edge.GetRig
 def free(x, y, r):
     if not (EX0 + r + 0.5 < x < EX1 - r - 0.5 and EY0 + r + 0.5 < y < EY1 - r - 0.5):
         return False
+    for (vx, vy) in vias:
+        if (vx - x) ** 2 + (vy - y) ** 2 < (VIA_D + 0.3) ** 2:
+            return False
     for (x0, y0, x1, y1, n) in obst:
         if n == 'GND':
             continue
@@ -49,7 +53,7 @@ def free(x, y, r):
 
 def add_via(x, y):
     v = P.PCB_VIA(b); v.SetPosition(P.VECTOR2I(mm(x), mm(y))); v.SetWidth(mm(VIA_D)); v.SetDrill(mm(VIA_DR))
-    v.SetNet(gnd); b.Add(v)
+    v.SetNet(gnd); b.Add(v); vias.append((x, y))
     obst.append((x - VIA_D / 2, y - VIA_D / 2, x + VIA_D / 2, y + VIA_D / 2, 'GND'))
 
 
@@ -91,12 +95,19 @@ t.SetLayer(P.F_Cu); t.SetNet(p57.GetNet()); b.Add(t)
 
 # ---------------------------------------------------------------- Freerouting
 dsn, ses = os.path.join(TMP, 'board.dsn'), os.path.join(TMP, 'board.ses')
-assert P.ExportSpecctraDSN(b, dsn)
-r = subprocess.run(['java', '-jar', JAR, '-de', dsn, '-do', ses, '-mp', str(PASSES), '-l', 'en'],
-                   capture_output=True, text=True, timeout=3600)
-print('\n'.join(l for l in r.stdout.splitlines()[-6:]))
-assert os.path.exists(ses), r.stderr[-2000:]
-assert P.ImportSpecctraSES(b, ses)
+for attempt in range(4):
+    assert P.ExportSpecctraDSN(b, dsn)
+    if os.path.exists(ses):
+        os.remove(ses)
+    r = subprocess.run(['java', '-jar', JAR, '-de', dsn, '-do', ses, '-mp', str(PASSES), '-l', 'en'],
+                       capture_output=True, text=True, timeout=3600)
+    assert os.path.exists(ses), r.stderr[-2000:]
+    assert P.ImportSpecctraSES(b, ses)
+    b.BuildConnectivity()
+    left = b.GetConnectivity().GetUnconnectedCount(False)
+    print('Durchlauf %d: offene Verbindungen %d' % (attempt + 1, left))
+    if left == 0:
+        break
 
 # ---------------------------------------------------------------- Flaechen, speichern
 for pts in outline:
