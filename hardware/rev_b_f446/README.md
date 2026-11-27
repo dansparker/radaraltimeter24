@@ -6,6 +6,9 @@
 > (HSE 8 MHz, LED PB2, µSD an PC8–PC12/PD2, USB an PA11/PA12) stammt aus der
 > Zephyr-Boardbeschreibung und muss vor dem Layout am Board-Schaltplan geprüft werden.
 
+**KiCad-Projekt (KiCad 9):** [`kicad/`](kicad/README.md) – Schaltplan, vorplatzierte 4-Lagen-Platine
+86 × 64 mm (noch nicht geroutet), Projektbibliothek für WeAct-Board und K-LC1a.
+
 ## Auslegung
 
 ### VCO-Ansteuerung (Block 3)
@@ -142,12 +145,13 @@ Die frühere Abschätzung nur aus der Radargleichung steht in
 | M1 | RFbeam K-LC1a (5 V, mit FM-Eingang) | Radar |
 | U1, U2 | TLV9064IPWR | ZF-Kette, VCO-Treiber, 2. Anti-Alias-Stufe |
 | U3 | LMR16006XDDCR | Buck 6 V, 4…60 V Eingang |
-| U4 | TLV76750DCYR | LDO 5 V digital |
+| U4 | TLV76750DRVR (WSON-6) | LDO 5 V digital |
 | U5 | ADP7142ARDZ-5.0 | LDO 5 V Radar, rauscharm |
 | U6 | LP5907MFX-3.3 | LDO 3,3 V analog |
 | U7 | TS3A5017PWR | Verstärkungsumschaltung |
 | U8 | TCAN1042VDRQ1 | CAN mit VIO 3,3 V |
-| D1 / D2 / D4 | SS210 / SMBJ33A / B160 | Verpolung / TVS / Freilauf |
+| D1 / D2 / D4 | SS210 / SMBJ33CA / B160 | Verpolung / TVS (bidirektional) / Freilauf |
+| J1 | JST GH SM06B-GHS-TB | Stecker 6-pol. (VIN, GND, CANH, CANL, TX, RX), verriegelnd |
 | D5 / D6 | NUP2105L / PESD3V3S2UT | ESD CAN / UART |
 | C21 | 1 µF Folie (PPS/PET) | ZF-Kopplung |
 | C23, C25, C26, C32, C33 | C0G 1,5n / 1n / 820p / 2,2n / 330p | Entfernungs-Hochpass, Anti-Alias |

@@ -58,7 +58,7 @@
 <polygon class="b" points="252,178 268,178 260,162"/>
 <line class="p" x1="252" y1="162" x2="268" y2="162"/>
 <text class="r" x="248" y="168" text-anchor="end">D2</text>
-<text class="v" x="248" y="180" text-anchor="end">SMBJ33A</text>
+<text class="v" x="248" y="180" text-anchor="end">SMBJ33CA</text>
 <polyline class="w" points="260,195 260,201"/>
 <line class="p" x1="251" y1="201" x2="269" y2="201"/>
 <line class="p" x1="254" y1="204" x2="266" y2="204"/>
@@ -445,9 +445,9 @@
 <rect class="b" x="180" y="555" width="30" height="10"/>
 <text class="r" x="195" y="551" text-anchor="middle">R12 6,2k</text>
 <polyline class="w" points="220,560 275,560"/>
-<circle cx="240" cy="560" r="2.8" fill="#1a1a1a"/>
 <circle cx="255" cy="560" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="240,560 240,500 310,500"/>
+<circle cx="160" cy="560" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="160,560 160,500 310,500"/>
 <polyline class="w" points="310,500 327,500"/>
 <polyline class="w" points="333,500 350,500"/>
 <line class="p" x1="327" y1="490" x2="327" y2="510"/>
