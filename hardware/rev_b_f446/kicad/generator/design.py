@@ -97,7 +97,7 @@ C('C37', '100n', 'A3V3', 'GND', B)
 
 # ------------------------------------------------------------ 4 Radarmodul (Unterseite, Antenne nach unten)
 B = 'RF'
-add('M1', 'radar_revb', 'K-LC1a', 'K-LC1a', 'radar_revb:RFbeam_K-LC1a',
+add('M1', 'radar_revb', 'K-LC1a', 'K-LC1a', 'radar_revb:RFbeam_K-LC1a_Bottom',
     {'1': NC, '2': '5V_RF', '3': 'IF_RAW', '4': 'GND', '5': 'VCO_TUNE'}, B, 'M1')
 CP('C14', '10µ Ta', '5V_RF', 'GND', B, 'IF')
 C('C15', '100n', '5V_RF', 'GND', B, grp='IF')

@@ -126,4 +126,17 @@ for i in range(5):
 open(os.path.join(PRETTY, 'RFbeam_K-LC1a.kicad_mod'), 'w', newline='\n').write(footprint(
     'RFbeam_K-LC1a', 'RFbeam K-LC1a 25x25 mm, 5 Pins 2,54 mm; Pins nach hinten -> auf die Unterseite setzen (Antenne nach aussen)',
     b, (X0 + 12.5, Y0 - 1.5), (X0 + 12.5, Y0 + 14)))
+# Variante fuer die Unterseite ohne Flip (KiCad-9-DSN-Export verliert sonst die Innenlagen der Pads):
+# Grafik gespiegelt auf B.*-Lagen, Pads durchgehend; oben gesehen liegt die Pinreihe am rechten Modulrand
+XB0, XB1 = -X0 - 25, -X0
+b = rect(XB0, Y0, XB1, Y0 + 25, 'B.Fab') + rect(XB0 - 0.25, Y0 - 0.25, XB1 + 0.25, Y0 + 25.25, 'B.CrtYd', 0.05)
+b += rect(XB0 - 0.12, Y0 - 0.12, XB1 + 0.12, Y0 + 25.12, 'B.SilkS', 0.12)
+b += text('K-LC1a unten, Antenne nach unten', (XB0 + XB1) / 2, Y0 + 12.5, 'B.Fab', 0.8).replace('))))', ')) (justify mirror)))')
+for i in range(5):
+    b += tht(i + 1, 0, 2.54 * i, i == 0, 1.6, 1.0)
+fpb = footprint('RFbeam_K-LC1a_Bottom', 'RFbeam K-LC1a auf der Platinenunterseite (Grafik auf B.*), Antenne nach unten; Pins 2,54 mm',
+                b, ((XB0 + XB1) / 2, Y0 - 1.5), ((XB0 + XB1) / 2, Y0 + 14))
+fpb = fpb.replace('(layer "F.SilkS") (effects (font (size 1 1) (thickness 0.15))))', '(layer "B.SilkS") (effects (font (size 1 1) (thickness 0.15)) (justify mirror)))', 1)
+fpb = fpb.replace('(layer "F.Fab") (effects (font (size 1 1) (thickness 0.15))))', '(layer "B.Fab") (effects (font (size 1 1) (thickness 0.15)) (justify mirror)))', 1)
+open(os.path.join(PRETTY, 'RFbeam_K-LC1a_Bottom.kicad_mod'), 'w', newline=chr(10)).write(fpb)
 print('Bibliothek ok')

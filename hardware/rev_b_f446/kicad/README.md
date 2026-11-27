@@ -16,9 +16,14 @@ geordnet nach den sechs Blöcken des SVG-Plans.
 - **Schaltplan:** ERC 0 Fehler, 0 Warnungen.
 - **Platine:**
   - 4 Lagen, 86 × 64 mm, 4 × M3 an GND.
-  - GND-Fläche auf In1 (durchgehend) und B.Cu.
-  - Alle Bauteile sind nach Gruppen **vorplatziert**, aber **nicht geroutet**.
-  - DRC mit Schaltplan-Parität: keine Fehler außer den offenen Verbindungen (Ratsnest) und Bestückungsdruck-Überlappungen.
+  - GND-Fläche auf In1 (durchgehend) und B.Cu; jedes SMD-GND-Pad hat ein eigenes Via auf In1.
+  - Bauteile nach Gruppen platziert, Zweipoler per Tausch/Drehung auf kurze Netze optimiert.
+  - **Mit Freerouting automatisch geroutet** (F.Cu, In2, B.Cu): DRC mit Schaltplan-Parität
+    0 Fehler, 0 offene Verbindungen; übrig sind nur Überlappungen im Bestückungsdruck.
+  - **Erster Stand, nicht bestellreif:** Der Autorouter kennt die Analog-Prioritäten nicht.
+    Die empfindlichen ZF-Netze sind zu lang (IF_RAW 27 mm, IF_FB1 27 mm, IF_FB2 44 mm,
+    ADC_IF 45 mm) und laufen teils über Vias und In2. Vor der Bestellung die ZF-Kette um U1/U7
+    von Hand dichter platzieren und diese Netze kurz auf F.Cu über der GND-Lage führen.
 - Netzklasse `Power` (0,5 mm) für VIN*, BUCK_SW, V_PRE*, 5V_* und GND.
 
 Anordnung (oben gesehen):
@@ -33,9 +38,13 @@ Anordnung (oben gesehen):
 ```bash
 python generator/mklib.py && python generator/gen_sch.py
 "D:/Program Files/KiCad/9.0/bin/python.exe" generator/gen_pcb.py
+"D:/Program Files/KiCad/9.0/bin/python.exe" generator/route.py
 ```
 
-`gen_pcb.py` braucht das Python von KiCad (Modul `pcbnew`). **Achtung:** Neu erzeugen
+`gen_pcb.py` und `route.py` brauchen das Python von KiCad (Modul `pcbnew`), `route.py` zusätzlich
+Java und Freerouting (Pfad über `FREEROUTING`, Standard `~/AppData/Local/freerouting/freerouting-1.9.0.jar`).
+Der K-LC1a hat einen eigenen Unterseiten-Footprint statt eines gespiegelten Teils, weil der
+DSN-Export von KiCad 9 gespiegelten Durchsteck-Pads die Innenlagen nimmt. **Achtung:** Neu erzeugen
 überschreibt die Platine samt Routing. Sobald in KiCad geroutet wird, Änderungen nur noch in
 KiCad machen (Schaltplan → Platine mit F8).
 
