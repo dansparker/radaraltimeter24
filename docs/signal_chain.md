@@ -18,211 +18,205 @@ fallende Rampe:   f_dn = |f_R + f_D|
 ```
 
 Daraus `f_R = (f_up + f_dn)/2` (dopplerfrei) und `f_D = (f_dn − f_up)/2`. Deshalb wird eine
-**Dreieckmodulation** verwendet: Bei 24 GHz erzeugen schon 1 m/s Sinkrate 161 Hz Doppler. Mit
-einer reinen Sägezahnrampe ergäbe das 2,2 m Höhenfehler pro m/s.
+**Dreieckmodulation** verwendet: Bei 24 GHz erzeugen schon 1 m/s Sinkrate 161 Hz Doppler.
 
 ![FMCW-Dreieckmodulation: Sendesignal und verzögertes, dopplerverschobenes Echo](img/fmcw_prinzip.svg)
 
 **Taktunabhängigkeit:** `f_R` wird in FFT-Bins gemessen (`bin·fs/N`), die Steigung ist
-`S = B·fs/(L−1)`. Damit kürzt sich `fs` heraus: `R = c0·bin·(L−1)/(2·B·N)`. Die Höhe hängt nicht
-von der Quarzgenauigkeit ab (wichtig für den HSI-Notbetrieb), nur die Geschwindigkeit.
+`S = B·fs/(L−1)`. Damit kürzt sich `fs` heraus. Die Höhe hängt nicht von der
+Quarzgenauigkeit ab (wichtig für den HSI-Notbetrieb), nur die Geschwindigkeit.
 
-**Auflösung:** `ΔR = c0 / (2·B_ausgewertet)`. Mit 90 MHz Hub sind das etwa 2 m pro Bin. Die
-Messgenauigkeit ist durch die Interpolation (Schritt 6) viel besser als die Auflösung. Die
-**kleinste messbare Höhe** liegt bei etwa 2 Bins (≈ 4 m bei 90 MHz): Darunter verschmilzt das
-Ziel mit DC und Antennen-Leckage. Mehr Hub verringert diese Grenze proportional.
+## Der Boden ist kein Punktziel
 
-## Rampenmodi (lang / kurz)
+Aus dem Flugzeug gesehen beleuchtet die Keule (K-LC1a: 34° × 80°) eine Fläche. Daraus folgt:
 
-| | lang | kurz |
-|---|---|---|
-| Samples (Rand + Auswertung + Rand) | 192 + 2048 + 192 = 2432 | 96 + 512 + 96 = 704 |
-| Rampendauer | 8,107 ms | 2,347 ms |
-| Messpaare/s | 61,7 | 213 (Ausgabe auf ~53 Hz dezimiert) |
-| Entfernung pro Bin (90 MHz) | 1,98 m | 2,29 m |
-| Höhenfehler pro m/s Doppler-Fehler | 2,17 m | 0,63 m |
-| Beat bei 5 m (90 MHz) | 370 Hz | 1280 Hz |
+- **Entfernungsspreizung:** Das Echo beginnt bei der Senkrechten (Höhe h) und reicht bis zu
+  den Rändern der Keule (bei 80° quer bis ≈ 1,3·h).
+- **Doppler-Spreizung:** Mit der Fluggeschwindigkeit v_h haben Streupunkte vor und hinter
+  dem Flugzeug ±2·v_h·sin θ/λ Doppler. Bei 30 m/s und ±12° (Keule) sind das ±1 kHz.
+- **Speckle:** Die vielen Streupunkte überlagern sich mit zufälliger Phase, die Amplitude
+  schwankt von Rampe zu Rampe.
 
-Die Kopplung zwischen Doppler und Entfernung ist proportional zur Rampendauer
-(`ΔR = v·T·f0/B`). Bei geringer Höhe und Sinkflug ist sie entscheidend, weil dort eine Rampe
-oft nur mit vorhergesagtem Doppler ausgewertet werden kann. Kurze Rampen schieben außerdem
-die Beat-Frequenzen nach oben, weg von DC, von der Leckage und von den ZF-Hochpässen (~1,1 kHz,
-3. Ordnung: bei 370 Hz −29 dB, bei 1280 Hz nur −4 dB). Die lange Rampe hat 6 dB mehr
-Integrationsgewinn und bleibt deshalb für die Zielerfassung und große Höhen zuständig.
+Im Spektrum ist das Bodenecho deshalb ein **breiter Hügel**. Die Höhe ist sein **Anfang**
+(Vorderkante), nicht sein Maximum. Die Verschmierung durch Doppler in Metern ist proportional
+zur Rampendauer: `ΔR = f_D·c0·T/(2·B)`. Mit einer 8-ms-Rampe wäre der Hügel bei 30 m/s ±13 m
+breit, mit der verwendeten 1,17-ms-Rampe etwa ±2 m.
 
-**Automatik (`rmode auto`):** gültige Höhe < 25 m → kurz; gültige Höhe > 35 m oder Track
-verloren → lang (Hysterese 10 m). Beim Wechsel wird das Frontend neu gestartet; der Tracker
-läuft weiter, nur die Spektrenmittelung wird zurückgesetzt. Coasting-Zeiten sind in Sekunden
-definiert und gelten für beide Modi gleich. Während der Kalibrierung ist der Modus fest.
+Diese Kette wurde gegen das Bodenmodell des Simulators entwickelt (`test/sim.c`,
+`sim_ground()`): 512 Streupunkte in der Keule, Empfindlichkeit nach dem Datenblatt des K-LC1a
+(−114 dBc / 500 Hz, 1/f-Rauschen des Mischers, TLV9064), Fluggeschwindigkeit, Speckle.
 
-## Erfassung (Firmware, `bsp/frontend.c`)
+## Wellenform und Erfassung (`bsp/frontend.c`)
 
-Ein einziger Timer (TIM2, 300 kHz) triggert **DAC und ADC gleichzeitig**. Beide laufen
-per DMA in Endlosschleifen gleicher Länge (2 × Rampenlänge), damit ist Sample *i* fest an
-Rampenwert *i* gekoppelt, ohne Software-Timing und ohne Neustart zwischen den Rampen.
-Halb- und Voll-Interrupt markieren das Ende der steigenden bzw. fallenden Rampe.
+| | |
+|---|---|
+| Rampe (Rand + Auswertung + Rand) | 48 + 256 + 48 = 352 Samples = 1,173 ms |
+| Messpaare (steigend + fallend) | 426 pro Sekunde |
+| FFT | 512 Punkte (256 Samples, 2× Nullauffüllung) |
+| Entfernung pro FFT-Bin (90 MHz) | 1,14 m (Auflösung 2,29 m) |
+| Schwebung | 513 Hz/m, 200 m ≈ 103 kHz (fs = 300 kHz) |
+| Messzyklus / Ausgabe | 7 Paare = 16,4 ms (≈ 61 Hz) |
 
-* Rampe: 2432 Samples = 8,107 ms; ausgewertet werden die mittleren 2048. Die ersten und letzten
-  192 Samples (0,64 ms) enthalten den Umkehrpunkt: Einschwingen von Sallen-Key-Filter, VCO und
-  ZF-Hochpässen, außerdem die DAC-Begrenzung nahe 0 V.
-* Das Dreieck ist stetig, es gibt also keinen Rücksprung, der die ZF-Hochpässe anstößt.
-* Verstärkungswechsel werden exakt an Rampengrenzen geschaltet. Die folgende Rampe wird als
-  „settling“ markiert und verworfen.
+Kurze Rampen haben pro Rampe etwa dieselbe Empfindlichkeit wie lange: Die Schwebung liegt
+7-mal höher, wo das 1/f-Rauschen des Mischers kleiner ist. Dafür gibt es 7-mal mehr Rampen
+zum Mitteln.
+
+Ein einziger Timer (TIM2, 300 kHz) triggert **DAC und ADC gleichzeitig**. Beide laufen per DMA
+in Endlosschleifen gleicher Länge (2 × 352), Sample *i* ist damit fest an Rampenwert *i*
+gekoppelt. Halb- und Voll-Interrupt markieren das Ende der steigenden bzw. fallenden Rampe.
+Die ersten und letzten 48 Samples (160 µs) enthalten den Umkehrpunkt und werden verworfen.
+Verstärkungswechsel werden an Rampengrenzen geschaltet, die folgende Rampe wird verworfen.
 
 ## Überblick der Verarbeitung
 
-Jede Rampe (steigend oder fallend) durchläuft die Schritte 0–6:
+Jede Rampe durchläuft die Schritte 0–4, jeder Messzyklus die Schritte 5–8:
 
 ![Verarbeitung pro Rampe](img/verarbeitung_rampe.svg)
 
-Nach jeder fallenden Rampe werden beide Rampen zu einer Messung kombiniert (Schritte 7–8):
-
-![Auswertung pro Rampenpaar](img/auswertung_paar.svg)
+![Auswertung pro Messzyklus](img/auswertung_paar.svg)
 
 ## Schritt 0 – AGC (`rdsp_agc`)
 
-Eingang: Spitzenauslenkung relativ zum verfügbaren Aussteuerbereich (`peak_frac`) und Clipping.
-Bei Clipping oder `peak_frac > 0,85` wird sofort eine Stufe zurückgeschaltet. Erst nach 20
-Rampen mit `peak_frac < 0,2` wird eine Stufe hochgeschaltet. Bedingung gegen Pendeln:
-`lo·Stufenverhältnis < hi`. Nur Rampen, die schon mit der aktuell angeforderten Verstärkung
-aufgenommen wurden, gehen in die Regelung ein; sonst würde wegen der Totzeit doppelt geschaltet.
+Eingang: Spitzenauslenkung relativ zum Aussteuerbereich (`peak_frac`) und Clipping.
+- Zurückgeschaltet wird nach **3 übersteuerten Rampen in Folge** (`attack_frames`). Ein
+  einzelner Störpuls schaltet also nicht; jeder Verstärkungswechsel startet die Mittelung neu.
+- Hochgeschaltet wird nach 0,3 s mit `peak_frac < 0,2`.
+- Bedingung gegen Pendeln: `lo·Stufenverhältnis < hi`.
 
 ## Schritt 1 – Frame-Aufbereitung (`rdsp_frame`)
 
-* `uint16` → `float`, Mittelwert abziehen; Statistik: Mittelwert, RMS, Min/Max, Clipping-Zähler.
-* **Gesundheitsprüfung:** RMS < 0,05 LSB (eingefrorene Daten) oder Mittelwert außerhalb
-  200…3895 LSB (Arbeitspunkt weggelaufen) über 20 Rampen ergibt `HW_FAULT`.
-* Rampen mit mehr als 3 geclippten Samples werden nicht ausgewertet: Die Oberwellen würden
-  Scheinziele erzeugen.
-* Optional linearer Trend-Abzug (Rest der Leckage, die mit der Rampe mitläuft).
-* **Laufender Hintergrundabzug** (`bg on`, Standard) – nach der FFT, siehe Schritt 3a.
+* `uint16` → `float`, Mittelwert abziehen; Statistik: Mittelwert, RMS, Min/Max, Clipping.
+* **Gesundheitsprüfung:** RMS < 0,05 LSB oder Mittelwert außerhalb 200…3895 LSB über 40
+  Rampen ergibt `HW_FAULT`.
+* Rampen mit mehr als 3 geclippten Samples werden nicht ausgewertet.
+* Linearer Trend-Abzug (Rest der Leckage, die mit der Rampe mitläuft).
 
 ## Schritt 2 – Fensterung (`rdsp_window`)
 
-Periodisches **Hann-Fenster**: −31 dB Nebenkeulen, die mit 18 dB/Oktave abfallen, 1,5 Bin
-Rauschbandbreite. Das ist ein guter Kompromiss zwischen Trennschärfe gegenüber der starken
-Leckage bei DC und der Auflösung. Für extrem starke Störer gibt es Blackman-Harris (−92 dB).
-Die Summen `s1 = Σw`, `s2 = Σw²` werden für die korrekte Skalierung mitgeliefert.
+Periodisches **Hann-Fenster** über die 256 Samples (−31 dB Nebenkeulen, 18 dB/Oktave),
+danach Nullauffüllung auf 512. Die Nullauffüllung tastet die Vorderkante doppelt so fein ab;
+ohne sie schwankte die Kantenlage je nach Lage im Bin um ±0,3 m.
 
 ## Schritt 3 – FFT (`rdsp_fft`)
 
-Reelle FFT der Länge N über eine komplexe FFT der Länge N/2 plus Split-Schritt (Radix-2,
-in place). Das Ausgabeformat ist identisch zu CMSIS `arm_rfft_fast_f32`, sodass bei Bedarf
-getauscht werden kann. Laufzeit auf dem STM32F405 etwa 1 ms. Getestet gegen eine direkte DFT
-(relativer Fehler < 2·10⁻⁵).
+Reelle FFT über eine komplexe FFT der Länge N/2 plus Split-Schritt (Radix-2, in place).
+Ausgabeformat identisch zu CMSIS `arm_rfft_fast_f32`. Getestet gegen eine direkte DFT.
 
 ## Schritt 3a – Laufender Hintergrundabzug (`rdsp_clutter_update`)
 
 Feste Echos relativ zum Flugzeug (Antennenübersprechen, Radom, Fahrwerk) haben von Rampe zu
-Rampe dieselbe komplexe Amplitude. Das Bodenecho ändert im Flug ständig seine Phase:
-Millimeter Höhenänderung, Vorwärtsflug (Speckle), λ/2 = 6 mm.
+Rampe dieselbe komplexe Amplitude, das Bodenecho nicht (λ/2 = 6 mm, Vorwärtsflug).
 
-Je Bin im Nahbereich (bis `ALT_BG_MAX_M` = 12 m, also wenige Bins) werden zwei exponentielle
-Mittelwerte geführt:
-- der komplexe Mittelwert M,
-- die mittlere Leistung P.
+Je Bin bis `ALT_BG_MAX_M` = 25 m werden der komplexe Mittelwert M und die mittlere Leistung P
+geführt. Abgezogen wird M · |M|²/P (Kohärenzgewicht):
 
-Daraus ergibt sich die Kohärenz |M|²/P:
+| Echo | Kohärenz \|M\|²/P | Wirkung |
+|---|---|---|
+| festes Echo | ≈ 1 | verschwindet |
+| bewegtes Echo | ≈ β/2 | bleibt praktisch unverändert |
 
-| Echo | Kohärenz |
-|---|---|
-| festes Echo | ≈ 1 |
-| bewegtes Echo | ≈ β/2 (Gewicht β eines neuen Frames) |
-
-Abgezogen wird M · |M|²/P:
-- Feste Echos verschwinden.
-- Das Bodenecho bleibt praktisch unverändert, auch wenn es im Endanflug selbst im Nahbereich
-  liegt oder die Schätzung gerade erst beginnt.
-
-Ablauf:
-- Zeitkonstante 2 s (`ALT_BG_TAU_S`).
-- Einlaufen über 8 Rampen als kumulativer Mittelwert.
-- Eine Schätzung je Rampenmodus, Verstärkung und Rampenrichtung, deshalb ist nach einem
-  Verstärkungswechsel kein Neustart nötig. Das sind zusammen ≈ 4 KB.
+- Zeitkonstante 2 s, Einlaufen über 8 Rampen. Rampen aus der Einlaufzeit gehen nicht in die
+  Spektrenmittelung ein (sie enthalten das feste Echo noch).
+- Eine Schätzung je Verstärkung und Rampenrichtung (≈ 6 KB), kein Neustart bei
+  Verstärkungswechsel.
+- Das Band reicht bis 25 m, damit die Nebenzipfel eines starken Fahrwerksechos (bei 2–5 m)
+  innerhalb enden; sonst entstünde an der Bandgrenze eine künstliche Kante.
 - Während der Kalibrierung ruht der Abzug.
 
-Grenzen:
-- Ein Ziel, das relativ zum Radar ruht, wird entfernt. Am Boden stehend ist das erwartet,
-  deshalb für Labortests `bg off`.
-- Liegt ein festes und ein bewegtes Echo im selben Bin, bleibt vom festen Echo der Anteil
-  A²/(F²+A²) übrig.
-- Ein sehr starkes festes Echo nahe der Bandgrenze kann einen Nebenzipfel knapp jenseits von
-  12 m hinterlassen. Fahrwerk und Radom liegen weit darunter.
+**Grenze:** Ein Ziel unter 25 m, das relativ zum Radar ruht, wird entfernt. Am Boden stehend
+ist das erwartet, für Labortests deshalb `bg off`.
 
-## Schritt 4 – Leistungsdichte und Welch-Mittelung (`rdsp_spectrum`)
+## Schritt 4 – Leistungsdichte und robuste Mittelung (`rdsp_spectrum`)
 
-`PSD[k] = c_k·|X[k]|² / (fs·s2)` (einseitig, `c_0 = 1`, sonst 2), Einheit LSB²/Hz.
+`PSD[k] = c_k·|X[k]|² / (fs·s2)` (einseitig). Gemittelt wird **über aufeinanderfolgende Rampen
+gleicher Richtung** (`rdsp_psd_avg_robust`):
 
-**Welch:** Die klassische Methode (Segmente mit Überlappung innerhalb eines Datensatzes,
-`rdsp_welch()`) ist enthalten. Für FMCW wäre sie innerhalb einer Rampe aber schädlich:
-Jedes Segment überstreicht nur einen Teil des Hubs, die Entfernungsauflösung sinkt. Für den
-Höhenmesser wird deshalb **über aufeinanderfolgende Rampen gleicher Richtung** gemittelt
-(`rdsp_psd_avg_*`). Anfangs ist das ein laufender Mittelwert, danach exponentiell mit α = 0,5.
-Das senkt die Varianz des Rauschbodens und stabilisiert CFAR, ohne Auflösung zu kosten.
+- anfangs kumulativer Mittelwert, dann exponentiell mit der Zeitkonstante τ;
+- **τ adaptiv:** 40 ms + 1 ms je Meter Höhe, höchstens 250 ms; bei schwachem Echo (unter 8 dB)
+  immer 250 ms;
+- ein neuer Wert wird auf das 10-fache des Mittelwerts begrenzt: Ein einzelnes starkes
+  Störecho verfälscht den Mittelwert kaum, eine echte Pegeländerung wird trotzdem in einigen
+  Rampen übernommen;
+- Spektren verschiedener Verstärkung werden nie gemischt.
 
-Bei Verstärkungswechsel wird die Mittelung zurückgesetzt, Spektren unterschiedlicher
-Verstärkung werden nie gemischt.
+## Schritt 5 – Vorderkante (`rdsp_edge`)
 
-## Schritt 5 – CFAR-Detektion (`rdsp_cfar`)
+Beim Höhenmesser kann nichts näher sein als der Boden. Die Bins vor der Kante enthalten also
+nur Rauschen. Der Detektor schaut deshalb nur **zurück** (kürzere Entfernungen):
 
-Für jede Zelle wird der Rauschpegel aus 12 Trainingszellen je Seite geschätzt, mit 3
-Schutzzellen neben dem Kandidaten (Hann-Hauptkeule ±2 Bins). Verwendet wird **OS-CFAR**
-(Rang 18 von 24): robust bei mehreren Zielen (Mehrwegeecho) und an Störkanten (Leckage nahe DC).
-Der Schwellfaktor α folgt aus der Falschalarmrate (Pfa = 10⁻⁴) und wird beim Start numerisch
-berechnet; im Test wurde Pfa = 0,0096 gemessen (Soll 0,01). Gemeldet werden nur lokale Maxima,
-also genau eine Detektion pro Spektrallinie, zusätzlich muss SNR ≥ 12 dB gelten.
+```
+noise(b) = max( Median der 24 Bins vor b (2 Bins Abstand),
+                log-linearer Trend dieses Fensters, extrapoliert auf b,
+                0,7 · globales Rauschen )
+Kante    = erstes b mit p[b..b+2] > thr · noise(b)
+           thr = max(1,4 ; 1 + 5/sqrt(gemittelte Rampen))
+Plateau  = Maximum der 12 Bins danach
+Lage     = 50-%-Punkt zwischen Rauschen und Plateau, interpoliert
+```
 
-**Bestätigung im aktuellen Frame:** Detektiert wird im gemittelten Spektrum (stabil). Die
-Spitze muss aber auch in der aktuellen Rampe ≥ 9 dB über dem Rauschen liegen, und die
-Frequenz wird aus der **aktuellen** Rampe geschätzt. Das hat der Test erzwungen. Ohne diese
-Regel hinkt die Mittelung bewegten Zielen hinterher (0,2 m bei 12 m/s), und ein
-verschwundenes Ziel bleibt noch ~13 Rampen als „Geist“ sichtbar.
+- Der **Trend** verhindert Fehlalarme, wenn die Rauschdichte mit der Frequenz steigt (Hochpässe
+  im ZF-Zweig, auf Rev. B bis 106 kHz): Ein ansteigendes Rauschen sähe sonst selbst wie eine
+  Vorderkante aus.
+- Die **Untergrenze** verhindert dasselbe, wenn das Rauschen zu DC hin abfällt.
+- Ein Hügel, der schon im untersten Bin beginnt (DC, Leckage, Nachschwingen der Hochpässe),
+  hat keine verwertbare Kante und wird übersprungen; gesucht wird dahinter weiter.
+- Verlangt werden außerdem 3 dB Plateau über dem Rauschen.
 
-## Schritt 6 – Interpolation (`rdsp_peak`)
+**Kalibrierung der Kantenlage:** Bei geringer Höhe ist der Hügel schmal (fast ein Punktziel),
+sein 50-%-Punkt liegt dann 0,7 Bin vor der Mitte; bei großer Höhe ist er breit. Die Korrektur
+in Abhängigkeit von der Höhe steht in `ALT_EDGE_CORR_*` (1,7 m bei 0 m bis −1,75 m bei 300 m).
+Sie stammt aus dem Bodenmodell (`test/range_sim.c b`) und muss mit Flugdaten geprüft werden.
 
-Aus Spitzen-Bin und Nachbarn wird die Lage `k + δ` bestimmt. Für Hann gibt es eine exakte
-Formel (Grandke): `a = |X[k±1]|/|X[k]|` (größerer Nachbar), `δ = ±(2a−1)/(a+1)`. Der Fehler
-im Test liegt unter 10⁻⁴ Bin; die log-parabolische Variante kommt auf 0,016 Bin.
+Für die **Kalibrierung** (`cal1`/`cal2`) mit einem Reflektor (Punktziel) wird stattdessen das
+Maximum mit log-parabolischer Interpolation verwendet (`rdsp_peak`).
 
-## Schritt 7 – Zielauswahl und Up/Down-Paarung (`rdsp_fmcw`, `altimeter.c`)
+## Schritt 6 – Auf-/Ab-Kombination und Verzögerungsausgleich (`altimeter.c`)
 
-* **Ohne Track:** In jeder Rampe wird das *nächstgelegene* Ziel gewählt, dessen Leistung
-  höchstens 15 dB unter dem stärksten liegt. Der Boden ist das erste starke Echo; Mehrwegeechos
-  bei 2R, 3R sind schwächer und weiter entfernt. Gepaart wird nur, wenn |f_D| zur maximalen
-  Vertikalgeschwindigkeit (25 m/s) passt.
-* **Mit Track:** Alle Paare und drei Hypothesen (normal, Up-Rampe gespiegelt, Down-Rampe
-  gespiegelt) werden gegen Vorhersage geprüft: Entfernungs-Gate und Doppler-Gate (±3 m/s).
-  Gewählt wird die Kombination mit minimalen Kosten. Die gespiegelten Fälle treten bei
-  geringer Höhe und großer Sinkrate auf (`f_D > f_R`, z. B. unter 6,5 m bei 3 m/s).
-* **Einzelrampe:** Liegt eine Beat-Frequenz zu nahe an DC (Landung, `f_R ≈ f_D`), wird die
-  andere Rampe mit dem vorhergesagten Doppler verwendet (Status `DEGRADED`).
-* Doppler aus Beat-Frequenzen unter 4 Bins (Leckage-Rest, Spiegelanteil) gilt als unzuverlässig
-  und geht nicht in die Geschwindigkeit ein.
+- Beide Kanten vorhanden: `f_R = (f_up + f_dn)/2`, `f_D = (f_dn − f_up)/2`; |f_D| muss zur
+  maximalen Vertikalgeschwindigkeit (25 m/s) passen. Kanten unter 4 Bins (≈ 4,6 m) gelten als
+  unsicher (Status `DEGRADED`, Doppler nicht verwendet).
+- Nur eine Kante: Höhe mit dem vorhergesagten Doppler (`DEGRADED`). Eine solche Messung darf
+  den Track nur verfeinern: Liegt sie außerhalb des Gates, wird sie verworfen. Sie kann den
+  Track also nie starten oder versetzen.
+- **Verzögerung der Mittelung:** Das gemittelte Spektrum zeigt den Zustand von vor etwa
+  0,69·τ. Die Höhe wird mit einer **geglätteten Doppler-Geschwindigkeit** (0,5 s) auf „jetzt“
+  verschoben. Nicht mit der Tracker-Geschwindigkeit: Die entsteht aus genau diesen Messungen,
+  und die Rückkopplung schaukelte sich bei schwachem Echo bis ±25 m/s auf (im Test gefunden).
 
-## Schritt 8 – Tracking (`rdsp_track`)
+## Schritt 7 – Tracking (`rdsp_track`)
 
-α-β-Filter (α = 0,4, β = 0,05) auf der Höhe. Die Doppler-Geschwindigkeit fließt mit γ = 0,2
-direkt ein, aber nur wenn sie plausibel ist (±3 m/s um den Track). Zustände: LOST → TENTATIVE
-(3 Treffer) → CONFIRMED → COAST (Vorhersage, bis 15 Paare ≈ 0,25 s gültig) → LOST (nach ~1 s).
-Einzelne Ausreißer außerhalb des Gates werden verworfen. 6 konsistente Messungen außerhalb des
-Gates gelten als echter Sprung (z. B. Gebäudekante) und starten den Track neu.
+α-β-Filter, ein Update pro Messzyklus (16,4 ms): α = 0,4, β = 0,01, Doppler-Geschwindigkeit
+mit γ = 0,03. Bei schwachem Echo (unter 6 dB) wird statt der momentanen die geglättete
+Doppler-Geschwindigkeit verwendet. Die Geschwindigkeit stammt damit fast nur aus dem Doppler:
+β ist klein, weil die Positionen bei schwachem Echo um ±1 Bin springen können.
 
-**Wichtig (im Test gefunden):** Einzelrampen-Messungen hängen selbst von der vorhergesagten
-Geschwindigkeit ab (2,17 m Höhe pro m/s). Würden sie die Geschwindigkeit nachführen,
-entstünde eine instabile Rückkopplung. Sie aktualisieren deshalb nur die Position
-(`rdsp_track_update_pos`).
+Zustände: LOST → TENTATIVE (3 Treffer) → CONFIRMED → COAST (bis 0,25 s gültig) → LOST (nach
+1 s). Ausreißer außerhalb des Gates werden verworfen, 6 konsistente Messungen außerhalb
+gelten als echter Sprung (Gebäudekante) und starten den Track neu.
+
+## Genauigkeit und Reichweite (Simulator, `make -C test range`)
+
+Siehe [hardware/rev_b_f446/README.md](../hardware/rev_b_f446/README.md#mögliche-reichweite).
+Kurz: Über Wiese gültig bis 100–125 m, über Asphalt/Wasser bis 250 m. Bis 30 m/s
+Fluggeschwindigkeit liegt der Fehler meist unter 1 m. **Systematische Grenze:** Die
+Doppler-Spreizung zieht die Vorderkante nach vorn. Die Höhe ist bei 30 m/s um etwa 0,5 m, bei
+60 m/s um 1–2 m zu klein. Korrigieren ließe sich das mit der Fluggeschwindigkeit (z. B. GPS
+über CAN).
 
 ## Wiederverwendung
 
-`lib/rdsp` hat keine Abhängigkeit zur Hardware oder zum Höhenmesser. Typische Nutzung für
-ein anderes FMCW-Projekt:
+`lib/rdsp` hat keine Abhängigkeit zur Hardware oder zum Höhenmesser. Beispiel für ein
+anderes FMCW-Projekt mit ausgedehntem Ziel:
 
 ```c
-rdsp_rfft_init(&fft, N, tw);                  rdsp_window_make(win, N, RDSP_WIN_HANN, &wi);
-rdsp_cfar_init(&cfar, RDSP_CFAR_OS, 12, 3, 0, 1e-4f);
-rdsp_frame_condition_u16(adc, N, x, 8, 4087, 4095, &st);
-rdsp_window_apply(x, win, N); rdsp_rfft(&fft, x); rdsp_rfft_power(x, x, N);
-rdsp_psd_onesided(x, N/2, fs, wi.s2);         rdsp_psd_avg_update(&avg, x);
-n = rdsp_cfar_detect(&cfar, avg.acc, N/2, 2, N/2-2, det, 8);
-f = (det[0].bin + rdsp_peak_interp(x, N/2, det[0].bin, RDSP_INTERP_HANN)) * fs / N;
+rdsp_rfft_init(&fft, NFFT, tw);               rdsp_window_make(win, NS, RDSP_WIN_HANN, &wi);
+rdsp_frame_condition_u16(adc, NS, x, 8, 4087, 4095, &st);  rdsp_frame_detrend(x, NS);
+rdsp_window_apply(x, win, NS);                /* x[NS..NFFT-1] = 0 */
+rdsp_rfft(&fft, x);                           rdsp_clutter_update(&x[2], m, p, nb, beta, 1);
+rdsp_rfft_power(x, x, NFFT);                  rdsp_psd_onesided(x, NFFT/2, fs, wi.s2);
+rdsp_psd_avg_robust(avg, x, NFFT/2, alpha, 10.0f);
+if (rdsp_edge_detect(&ecfg, avg, NFFT/2, 2, bmax, rdsp_median(avg, lo, hi), &e)) { f = e.pos * fs / NFFT; }
 ```
+
+Für Punktziele (Abstandsmesser) stehen weiterhin OS-CFAR (`rdsp_cfar`) und die exakte
+Hann-Interpolation (`rdsp_peak`) zur Verfügung.

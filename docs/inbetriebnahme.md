@@ -44,13 +44,12 @@ Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/b
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
-| ☐ | `module klc1a`. PA4 (DAC): stetiges Dreieck, ohne Sprünge | ~0,2 … 2,0 V, Periode 16,2 ms | |
+| ☐ | `module klc1a`. PA4 (DAC): stetiges Dreieck, ohne Sprünge | Periode 2,35 ms (Rampe 1,17 ms) | |
 | ☐ | Unteres Ende mit DAC-Puffer abgeflacht? Falls deutlich: `dacbuf 0` testen und vergleichen | notieren | |
 | ☐ | Ausgang Sallen-Key (U1B, Pin 7) = VCO-Eingang: glattes Dreieck, linear, keine Begrenzung | Spannungsbereich laut Moduldatenblatt | |
 | ☐ | **LM358 an 5 V kann nur bis ~3,5 V ausgeben**: bei `module ivs465` prüfen, ob das obere Ende abgeschnitten wird | nicht begrenzt | |
-| ☐ | `rmode short`: Periode 4,7 ms, Ecken nur innerhalb der ersten/letzten ~0,3 ms verrundet, Mitte linear | ok | |
-| ☐ | Verzögerung DAC → VCO-Eingang (Kanal 1 PA4, Kanal 2 U1B) | < 0,1 ms | |
-| ☐ | Zurück: `rmode auto` | – | |
+| ☐ | Ecken nur innerhalb der ersten/letzten **160 µs** verrundet (verworfene Randsamples), Mitte linear | ok | |
+| ☐ | Verzögerung DAC → VCO-Eingang (Kanal 1 PA4, Kanal 2 VCO-Eingang) | < 50 µs | |
 
 ## 4 ZF-Kette und ADC (mit Radarmodul, Antenne frei in den Raum)
 
@@ -60,16 +59,15 @@ Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/b
 | ☐ | PC4 Gleichanteil (Multimeter) | 1,0 … 2,3 V (nicht am Rand) | |
 | ☐ | `dump`: Rohdaten beider Rampen speichern, Mittelwert und Rauschen auswerten | Mittelwert 200 … 3895 LSB, Rauschen > 1 LSB rms | |
 | ☐ | Kein `HW_FAULT` (Statusbit `0010`) | nicht gesetzt | |
-| ☐ | FCT2 (PC13) High-Zeit = Rechenzeit pro Rampe, lange Rampe | < 7 ms (erwartet ~1,5 ms) | |
-| ☐ | FCT2 High-Zeit, `rmode short` | **< 2,2 ms** (erwartet ~0,5 ms) | |
-| ☐ | `stat` nach 5 min Betrieb in beiden Modi: `overruns`, `frontend errors`, `uart dropped` | 0 | |
+| ☐ | Debug-Pin (Rev. A FCT2/PC13, Rev. B PB13) High-Zeit = Rechenzeit pro Rampe, auch das Maximum (jede 7. Rampe mit Kantensuche) | **< 1,1 ms** (erwartet 0,3–0,5 ms) | |
+| ☐ | `stat` nach 5 min Betrieb: `overruns`, `frontend errors`, `uart dropped` | 0 | |
 
-## 5 Verstärkungsumschaltung (CD4052)
+## 5 Verstärkungsumschaltung (Rev. A CD4052, Rev. B TS3A5017)
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
 | ☐ | Reflektor in ~10 m. `gain 0` … `gain 3` nacheinander, je `dump`: Amplitude der Beat-Schwingung | steigend mit der Stufe | |
-| ☐ | Pegel PB0/PB1 je Stufe: 0 → 1/1, 1 → 0/1, 2 → 1/0, 3 → 0/0 | wie angegeben | |
+| ☐ | Pegel A/B (Rev. A PB0/PB1, Rev. B PC6/PC7) je Stufe: 0 → 1/1, 1 → 0/1, 2 → 1/0, 3 → 0/0 | wie angegeben | |
 | ☐ | Verhältnis benachbarter Stufen ausrechnen | **≤ 4,25** (sonst `ALT_AGC_LO` in `radar_params.h` senken) | |
 | ☐ | Höchste Stufe ohne Ziel: kein Dauer-Clipping (Statusbit `0008`) | nicht gesetzt | |
 | ☐ | `gain auto`: Reflektor nah/fern bewegen → Gain-Wechsel im `$RALT`, kein Pendeln | stabil | |
@@ -79,22 +77,20 @@ Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/b
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
 | ☐ | `bg off` (ruhendes Ziel, siehe oben) | `info` zeigt `bg off` | |
-| ☐ | `out 2`, Reflektor in ~10 m: `$RDBG` zeigt `f_rise` ≈ `f_fall` (ruhend) | Differenz < 30 Hz | |
-| ☐ | Höhe im `$RALT` vorhanden und stabil (noch unkalibriert) | Streuung < 0,1 m | |
+| ☐ | `out 2`, Reflektor in ~10 m: `$RDBG` zeigt Kante steigend ≈ Kante fallend (ruhend) | Differenz < 300 Hz (≈ 0,5 Bin) | |
+| ☐ | Höhe im `$RALT` vorhanden und stabil (noch unkalibriert) | Streuung < 0,3 m | |
 | ☐ | Reflektor nähert sich langsam → `vs` **negativ**; entfernt sich → positiv. Wenn umgekehrt: `vsign -1` | Vorzeichen korrekt | |
-| ☐ | Reflektor abdecken → nach ≤ 0,25 s ungültig (Statusbit `0001` weg) | ok | |
-| ☐ | Raum ohne Ziel 10 min laufen lassen: keine gültige Fehlmessung | 0 | |
+| ☐ | Reflektor abdecken → nach ≤ 1 s ungültig (Statusbit `0001` weg; die Mittelung braucht etwas) | ok | |
+| ☐ | **Antenne zum freien Himmel, 10 min:** keine einzige gültige Ausgabe (prüft, ob die Rauschform der Hardware Scheinkanten erzeugt) | 0 | |
 
 ## 7 Kalibrierung
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
-| ☐ | `rmode long`. Ziel exakt in Abstand 1 (z. B. 10,00 m, Laser messen), `cal1 10` | Standardabweichung der Beat-Frequenz klein (< 1 % des Mittelwerts) | |
+| ☐ | `bg off`. Reflektor exakt in Abstand 1 (z. B. 10,00 m, Laser messen), `cal1 10` | Standardabweichung der Beat-Frequenz klein (< 1 % des Mittelwerts) | |
 | ☐ | Ziel in Abstand 2 (z. B. 40,00 m), `cal2 40` → Hub und Offset werden angezeigt | Hub plausibel (K-LC1a: einige 10 … 100 MHz), Offset < 1 m | |
-| ☐ | Optional `rmode short`, `cal1`/`cal2` wiederholen → `sweep short` | Abweichung zum langen Hub notieren | |
-| ☐ | `rmode auto`, `save`, Versorgung aus/ein, `info`: Werte erhalten | erhalten | |
-| ☐ | Kontrollmessung bei 3 weiteren Abständen (z. B. 6, 20, 80 m) | Fehler < max(0,3 m, 1 %) | |
-| ☐ | Bei 6 m (Kurzrampe aktiv, `$RDBG` endet auf `S`) und bei 80 m (`L`) | beide innerhalb Toleranz | |
+| ☐ | `save`, Versorgung aus/ein, `info`: Werte erhalten | erhalten | |
+| ☐ | Kontrollmessung mit Reflektor bei 3 weiteren Abständen (z. B. 6, 20, 80 m). Hinweis: Die Höhe kommt aus der Vorderkante, die für den Boden kalibriert ist; ein Punktreflektor erscheint in großem Abstand bis ~1,5 m zu nah | Fehler < max(1 m, 2 %) | |
 
 ## 8 Rampenlinearität und Hintergrund
 
@@ -110,8 +106,8 @@ Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/b
 
 | ☐ | Prüfung | Soll | Ist |
 |---|---|---|---|
-| ☐ | Transceiver an PA11/PA12 (Stecker P6), Bus mit 120 Ω an beiden Enden, `reset` | keine Meldung `CAN init failed` | |
-| ☐ | Frame `0x3A0` mit 500 kbit/s, ~60 Hz; Byte 7 Bits 0–3 zählen hoch | ok | |
+| ☐ | Transceiver an CAN1 (Rev. A PA11/PA12 Stecker P6, Rev. B U8 an PB8/PB9), Bus mit 120 Ω an beiden Enden, `reset` | keine Meldung `CAN init failed` | |
+| ☐ | Frame `0x3A0` mit 500 kbit/s, ~61 Hz; Byte 7 Bits 0–3 zählen hoch | ok | |
 | ☐ | Höhe (int32 mm) stimmt mit `$RALT` überein; bei ungültiger Höhe 0 und Statusbit 0 | ok | |
 | ☐ | Frame `0x3A1` (Diagnose) jede 8. Messung | ok | |
 | ☐ | Bus kurz trennen/kurzschließen → danach Frames wieder vorhanden (Bus-Off-Erholung) | ok | |
@@ -144,7 +140,7 @@ Rev. B (STM32F446): die Pins im Text beziehen sich auf Rev. A, siehe `firmware/b
 | ☐ | Vor dem Flug `bg on`, `save`, `info` prüfen | `bg on` | |
 | ☐ | UART-Log (`out 2`) und Referenz (GPS-Höhe über Boden, Barometer, Video) aufzeichnen | – | |
 | ☐ | Tiefe Überflüge in 10, 30, 100, 200 m über flachem Gelände | Abweichung notieren | |
-| ☐ | Umschaltung `L`/`S` im `$RDBG` bei ~25 m (Sinkflug) bzw. ~35 m (Steigflug), ohne Lücke in der Gültigkeit | ok | |
+| ☐ | Höhe gegen GPS-Höhe über Grund bei verschiedenen Fluggeschwindigkeiten (erwartet: bei 30 m/s ≈ 0,5 m zu niedrig, bei 60 m/s 1–2 m) → Daten für die Kantenkorrektur `ALT_EDGE_CORR_*` | notieren | |
 | ☐ | Landeanflüge mit unterschiedlicher Sinkrate: Verlauf bis zum Aufsetzen (unter ~4 m ungültig ist erwartet) | plausibel | |
 | ☐ | Statusbit `0080` (degradiert) nur im Endanflug unter ~10 m | ok | |
 | ☐ | Höhe > Messbereich: sauber ungültig, keine Scheinhöhen | ok | |

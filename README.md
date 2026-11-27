@@ -3,9 +3,13 @@
 FMCW-Radar-Höhenmesser (Radar Altimeter) für Flugzeuge mit 24-GHz-Radarmodul
 (**RFbeam K-LC1a** oder **InnoSenT IVS-465**) und **STM32F405RGT6** (Rev. A) bzw.
 **STM32F446** auf dem WeAct-Core-Board (Rev. B, [Schaltplan](hardware/rev_b_f446/README.md)).
-Messbereich ca. 4 m … 250 m (abhängig vom Frequenzhub des Moduls), Ausgabe ~60 Hz über
-**UART** und **CAN**. Zwei Rampenmodi: lange Rampe (8,1 ms) für Erfassung und große Höhe,
-**Kurzrampe (2,35 ms) automatisch unter 25 m** für Landung und Abfangbogen.
+Ausgabe ~61 Hz über **UART** und **CAN**. Kurze Dreieckrampen (1,17 ms), viele Rampen
+gemittelt und die **Vorderkante** des Bodenechos ausgewertet: Der Boden ist aus dem Flugzeug
+kein Punktziel, sondern wegen Keule und Fluggeschwindigkeit ein breiter Hügel im Spektrum.
+
+Reichweite mit dem K-LC1a im Simulator (Empfindlichkeit nach Datenblatt, 30 m/s): über Wiese
+bis etwa 100 m, über Asphalt/Wasser bis 250 m, kleinste Höhe etwa 4 m. Einzelheiten:
+[hardware/rev_b_f446/README.md](hardware/rev_b_f446/README.md#mögliche-reichweite).
 
 [![CI](https://github.com/dansparker/radaraltimeter24/actions/workflows/ci.yml/badge.svg)](https://github.com/dansparker/radaraltimeter24/actions/workflows/ci.yml)
 
@@ -16,26 +20,26 @@ lib/rdsp/            portable Radar-DSP-Bibliothek (C99, ohne malloc, wiederverw
 firmware/app/        Höhenmesser-Pipeline, Konfiguration, Protokolle (hardwareunabhängig)
 firmware/bsp/        STM32F405 (Rev. A) / F446 (Rev. B): Startup, Takt, Frontend (DAC/ADC/DMA), UART, CAN, Flash, IWDG
 firmware/src/        main.c, Kommandozeile
-test/                Radar-Simulator + Unit- und End-to-End-Tests (laufen in GitHub Actions)
+test/                Radar-Simulator mit Bodenmodell + Unit-/End-to-End-Tests, Reichweitenauswertung
 docs/                Signalverarbeitung, Hardware, Review/Schwachstellen
 hardware/rev_b_f446/ Schaltplan Rev. B (STM32F446, TLV9064), Reichweitenabschätzung
 ```
 
 ## Signalverarbeitung (Kurzfassung)
 
-Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 8,1 ms bzw. 2,35 ms im Kurzrampen-Modus):
+Dreieck-FMCW (steigende und fallende Rampe abwechselnd, je 1,17 ms; ein Messzyklus = 7 Paare):
 
 | Schritt | Modul | Zweck |
 |---|---|---|
-| 0 | `rdsp_agc` | Verstärkungsregelung (CD4052, 4 Stufen), schnell ab / langsam auf |
+| 0 | `rdsp_agc` | Verstärkungsregelung (4 Stufen), ignoriert einzelne Störpulse |
 | 1 | `rdsp_frame` | ADC → float, Statistik, Clipping, DC-/Trendabzug |
-| 2 | `rdsp_window` | Hann-Fenster (+ Skalierungssummen) |
-| 3 | `rdsp_fft` | reelle FFT 2048 Punkte |
-| 4 | `rdsp_spectrum` | Leistungsdichte (PSD), Welch-Mittelung über Rampen |
-| 5 | `rdsp_cfar` | OS-CFAR-Detektion (auch CA/GO/SO) |
-| 6 | `rdsp_peak` | Sub-Bin-Interpolation (exakt für Hann) |
-| 7 | `rdsp_fmcw` | Up/Down-Kombination → dopplerfreie Entfernung + Geschwindigkeit |
-| 8 | `rdsp_track` | α-β-Tracker mit Gating, Coasting, Wiederaufnahme |
+| 2 | `rdsp_window` | Hann-Fenster über 256 Samples, Nullauffüllung |
+| 3 | `rdsp_fft` | reelle FFT 512 Punkte |
+| 3a | `rdsp_clutter_update` | laufender Abzug fester Echos (Leckage, Fahrwerk), kohärenzgewichtet |
+| 4 | `rdsp_spectrum` | Leistungsdichte, robuste Mittelung über Rampen (τ 40–250 ms) |
+| 5 | `rdsp_edge` | Vorderkante des Bodenechos (nur rückwärts schauendes Rauschfenster) |
+| 6 | `rdsp_fmcw` | Auf/Ab-Kombination → dopplerfreie Entfernung + Geschwindigkeit |
+| 7 | `rdsp_track` | α-β-Tracker mit Gating, Coasting, Wiederaufnahme |
 
 ![Verarbeitung pro Rampe](docs/img/verarbeitung_rampe.svg)
 
@@ -64,14 +68,19 @@ Host-Tests (gcc/clang):
 make -C test
 ```
 
+Reichweite/Genauigkeit gegen das Bodenmodell (einige Minuten):
+
+```bash
+make -C test range
+```
+
 ## Inbetriebnahme
 
 1. Firmware flashen, UART 115200 8N1 öffnen → `$RALT`-Zeilen.
 2. `module klc1a` bzw. `module ivs465`, dann `info`.
-3. **Kalibrierung** (Frequenzhub der Module unbekannt!): `rmode long`, Radar auf ein großes,
-   flaches Ziel in bekanntem Abstand richten, `cal1 <m>`, Abstand ändern (≥ 2 m, besser ≥ 10 m),
-   `cal2 <m>`. Optional dasselbe mit `rmode short` (eigener Hub der Kurzrampe, sonst wird der
-   Wert der langen Rampe verwendet). Dann `rmode auto`, `save`.
+3. **Kalibrierung** (Frequenzhub der Module unbekannt!): `bg off`, Radar auf einen Reflektor
+   (Winkelreflektor, Metallplatte) in bekanntem Abstand richten, `cal1 <m>`, Abstand ändern
+   (≥ 2 m, besser ≥ 10 m), `cal2 <m>`, dann `bg on`, `save`.
 4. Optional, eingebaut am Flugzeug: `zero 0` (Anzeige = 0 auf dem Boden), `save`.
 5. Laufender Hintergrundabzug (`bg on`, Standard) entfernt im Flug feste Echos (Leckage, Radom,
    Fahrwerk). Bei Bodentests mit ruhendem Ziel `bg off`, vor dem Flug wieder `bg on`, `save`.
@@ -85,7 +94,7 @@ UART (NMEA-ähnlich, XOR-Prüfsumme):
 
 ```
 $RALT,<seq>,<höhe_m>,<vs_m/s>,<snr_dB>,<gain>,<status_hex>*CS
-$RDBG,<seq>,<roh_m>,<f_steigend_Hz>,<f_fallend_Hz>,<f_R_Hz>,<track>,<L|S>*CS   (out 2, L/S = Rampenmodus)
+$RDBG,<seq>,<roh_m>,<kante_steigend_Hz>,<kante_fallend_Hz>,<f_R_Hz>,<track>,<tau_ms>*CS   (out 2)
 ```
 
 Höhe und Geschwindigkeit sind leer, wenn ungültig. CAN (Standard-ID `0x3A0`, 500 kbit/s):
@@ -97,14 +106,15 @@ Höhe und Geschwindigkeit sind leer, wenn ungültig. CAN (Standard-ID `0x3A0`, 5
 
 Statusbits: `0x0001` gültig, `0x0002` Coasting, `0x0004` kein Ziel, `0x0008` Clipping,
 `0x0010` Hardwarefehler, `0x0020` nicht kalibriert, `0x0040` Frame-Überlauf,
-`0x0080` degradiert (Einzelrampe/gespiegelt), `0x0100` Kalibrierung läuft,
+`0x0080` degradiert (nur eine Rampenrichtung oder Kante nahe DC), `0x0100` Kalibrierung läuft,
 `0x0200` Gain-Wechsel, `0x0400` Taktausfall (läuft auf HSI).
-Der aktuelle Rampenmodus steht im letzten Feld von `$RDBG` (L lang, S kurz) und in `info`.
+Das letzte Feld von `$RDBG` ist die aktuelle Mittelungszeit in ms.
 
 ## Status / Einschränkungen
 
 Die Firmware ist im Simulator getestet und kompiliert, **aber noch nicht auf der Hardware
-erprobt**. Offene Punkte und gefundene Schwachstellen: [docs/review.md](docs/review.md).
+erprobt**. Bekannte Grenze: Bei hoher Fluggeschwindigkeit misst sie systematisch zu niedrig
+(30 m/s: ≈ 0,5 m, 60 m/s: 1–2 m). Offene Punkte und gefundene Schwachstellen: [docs/review.md](docs/review.md).
 Nicht als zertifiziertes Avionik-Gerät gedacht.
 
 ## Lizenz

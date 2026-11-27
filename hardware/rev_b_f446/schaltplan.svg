@@ -1026,102 +1026,102 @@
 <line class="p" x1="1402" y1="1032" x2="1408" y2="1032"/>
 <polygon class="nl" points="1440,965 1446,957 1496,957 1496,973 1446,973"/>
 <text class="n" x="1449" y="969" text-anchor="start">ADC_IF</text>
-<polyline class="w" points="1270,1110 1270,1100"/>
-<line class="p" x1="1260" y1="1100" x2="1280" y2="1100"/>
-<text class="n" x="1270" y="1096" text-anchor="middle">A3V3</text>
-<polyline class="w" points="1270,1110 1270,1120"/>
-<polyline class="w" points="1270,1150 1270,1160"/>
-<rect class="b" x="1265" y="1120" width="10" height="30"/>
-<text class="r" x="1279" y="1133" text-anchor="start">R33</text>
-<text class="v" x="1279" y="1145" text-anchor="start">10k</text>
-<polyline class="w" points="1270,1160 1270,1180"/>
-<circle cx="1270" cy="1170" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1270,1180 1270,1190"/>
-<polyline class="w" points="1270,1220 1270,1230"/>
-<rect class="b" x="1265" y="1190" width="10" height="30"/>
-<text class="r" x="1279" y="1203" text-anchor="start">R34</text>
-<text class="v" x="1279" y="1215" text-anchor="start">10k</text>
-<polyline class="w" points="1270,1230 1270,1236"/>
-<line class="p" x1="1261" y1="1236" x2="1279" y2="1236"/>
-<line class="p" x1="1264" y1="1239" x2="1276" y2="1239"/>
-<line class="p" x1="1267" y1="1242" x2="1273" y2="1242"/>
-<polyline class="w" points="1270,1170 1335,1170"/>
-<circle cx="1312" cy="1170" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1312,1170 1312,1185"/>
-<polyline class="w" points="1312,1185 1312,1202"/>
-<polyline class="w" points="1312,1208 1312,1225"/>
-<line class="p" x1="1302" y1="1202" x2="1322" y2="1202"/>
-<rect x="1302" y="1207" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1298" y="1199" text-anchor="middle">+</text>
-<text class="r" x="1325" y="1203" text-anchor="start">C28</text>
-<text class="v" x="1325" y="1215" text-anchor="start">10µ Ta</text>
-<polyline class="w" points="1312,1225 1312,1231"/>
-<line class="p" x1="1303" y1="1231" x2="1321" y2="1231"/>
-<line class="p" x1="1306" y1="1234" x2="1318" y2="1234"/>
-<line class="p" x1="1309" y1="1237" x2="1315" y2="1237"/>
-<polygon class="b" points="1350,1153 1350,1217 1415,1185"/>
-<polyline class="w" points="1335,1170 1350,1170"/>
-<polyline class="w" points="1335,1200 1350,1200"/>
-<polyline class="w" points="1415,1185 1430,1185"/>
-<text class="t" x="1355" y="1174" text-anchor="start">+</text>
-<text class="t" x="1355" y="1204" text-anchor="start">−</text>
-<text class="r" x="1376" y="1189" text-anchor="middle">U1D</text>
-<polyline class="w" points="1335,1200 1330,1200 1330,1260 1430,1260 1430,1185"/>
-<circle cx="1430" cy="1185" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1440,1185 1450,1185"/>
-<polyline class="w" points="1480,1185 1490,1185"/>
-<rect class="b" x="1450" y="1180" width="30" height="10"/>
-<text class="r" x="1465" y="1176" text-anchor="middle">R35 47</text>
-<polyline class="w" points="1490,1185 1600,1185"/>
-<circle cx="1510" cy="1185" r="2.8" fill="#1a1a1a"/>
-<circle cx="1545" cy="1185" r="2.8" fill="#1a1a1a"/>
-<circle cx="1570" cy="1185" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1510,1185 1510,1200"/>
-<polyline class="w" points="1510,1200 1510,1217"/>
-<polyline class="w" points="1510,1223 1510,1240"/>
-<line class="p" x1="1500" y1="1217" x2="1520" y2="1217"/>
-<rect x="1500" y="1222" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1524" y="1214" text-anchor="middle">+</text>
-<text class="r" x="1497" y="1218" text-anchor="end">C29</text>
-<text class="v" x="1497" y="1230" text-anchor="end">10µ Ta</text>
-<polyline class="w" points="1510,1240 1510,1246"/>
-<line class="p" x1="1501" y1="1246" x2="1519" y2="1246"/>
-<line class="p" x1="1504" y1="1249" x2="1516" y2="1249"/>
-<line class="p" x1="1507" y1="1252" x2="1513" y2="1252"/>
-<polyline class="w" points="1545,1185 1545,1200"/>
-<polyline class="w" points="1545,1200 1545,1217"/>
-<polyline class="w" points="1545,1223 1545,1240"/>
-<line class="p" x1="1535" y1="1217" x2="1555" y2="1217"/>
-<line class="p" x1="1535" y1="1223" x2="1555" y2="1223"/>
-<text class="r" x="1558" y="1218" text-anchor="start">C30</text>
-<text class="v" x="1558" y="1230" text-anchor="start">100n</text>
-<polyline class="w" points="1545,1240 1545,1246"/>
-<line class="p" x1="1536" y1="1246" x2="1554" y2="1246"/>
-<line class="p" x1="1539" y1="1249" x2="1551" y2="1249"/>
-<line class="p" x1="1542" y1="1252" x2="1548" y2="1252"/>
-<polyline class="w" points="1570,1185 1570,1175"/>
-<line class="p" x1="1560" y1="1175" x2="1580" y2="1175"/>
-<text class="n" x="1570" y="1171" text-anchor="middle">VMID</text>
-<polyline class="w" points="1600,1185 1610,1185"/>
-<polyline class="w" points="1640,1185 1650,1185"/>
-<rect class="b" x="1610" y="1180" width="30" height="10"/>
-<text class="r" x="1625" y="1176" text-anchor="middle">R36 1k</text>
-<polyline class="w" points="1650,1185 1720,1185"/>
-<circle cx="1680" cy="1185" r="2.8" fill="#1a1a1a"/>
-<polyline class="w" points="1680,1185 1680,1200"/>
-<polyline class="w" points="1680,1200 1680,1217"/>
-<polyline class="w" points="1680,1223 1680,1240"/>
-<line class="p" x1="1670" y1="1217" x2="1690" y2="1217"/>
-<rect x="1670" y="1222" width="20" height="3" fill="#1a1a1a"/>
-<text class="v" x="1666" y="1214" text-anchor="middle">+</text>
-<text class="r" x="1693" y="1218" text-anchor="start">C31</text>
-<text class="v" x="1693" y="1230" text-anchor="start">10µ Ta</text>
-<polyline class="w" points="1680,1240 1680,1246"/>
-<line class="p" x1="1671" y1="1246" x2="1689" y2="1246"/>
-<line class="p" x1="1674" y1="1249" x2="1686" y2="1249"/>
-<line class="p" x1="1677" y1="1252" x2="1683" y2="1252"/>
-<polygon class="nl" points="1720,1185 1726,1177 1769,1177 1769,1193 1726,1193"/>
-<text class="n" x="1729" y="1189" text-anchor="start">VMID1</text>
+<polyline class="w" points="1270,1135 1270,1125"/>
+<line class="p" x1="1260" y1="1125" x2="1280" y2="1125"/>
+<text class="n" x="1270" y="1121" text-anchor="middle">A3V3</text>
+<polyline class="w" points="1270,1135 1270,1145"/>
+<polyline class="w" points="1270,1175 1270,1185"/>
+<rect class="b" x="1265" y="1145" width="10" height="30"/>
+<text class="r" x="1279" y="1158" text-anchor="start">R33</text>
+<text class="v" x="1279" y="1170" text-anchor="start">10k</text>
+<polyline class="w" points="1270,1185 1270,1205"/>
+<circle cx="1270" cy="1195" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1270,1205 1270,1215"/>
+<polyline class="w" points="1270,1245 1270,1255"/>
+<rect class="b" x="1265" y="1215" width="10" height="30"/>
+<text class="r" x="1279" y="1228" text-anchor="start">R34</text>
+<text class="v" x="1279" y="1240" text-anchor="start">10k</text>
+<polyline class="w" points="1270,1255 1270,1261"/>
+<line class="p" x1="1261" y1="1261" x2="1279" y2="1261"/>
+<line class="p" x1="1264" y1="1264" x2="1276" y2="1264"/>
+<line class="p" x1="1267" y1="1267" x2="1273" y2="1267"/>
+<polyline class="w" points="1270,1195 1335,1195"/>
+<circle cx="1312" cy="1195" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1312,1195 1312,1210"/>
+<polyline class="w" points="1312,1210 1312,1227"/>
+<polyline class="w" points="1312,1233 1312,1250"/>
+<line class="p" x1="1302" y1="1227" x2="1322" y2="1227"/>
+<rect x="1302" y="1232" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1298" y="1224" text-anchor="middle">+</text>
+<text class="r" x="1325" y="1228" text-anchor="start">C28</text>
+<text class="v" x="1325" y="1240" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1312,1250 1312,1256"/>
+<line class="p" x1="1303" y1="1256" x2="1321" y2="1256"/>
+<line class="p" x1="1306" y1="1259" x2="1318" y2="1259"/>
+<line class="p" x1="1309" y1="1262" x2="1315" y2="1262"/>
+<polygon class="b" points="1350,1178 1350,1242 1415,1210"/>
+<polyline class="w" points="1335,1195 1350,1195"/>
+<polyline class="w" points="1335,1225 1350,1225"/>
+<polyline class="w" points="1415,1210 1430,1210"/>
+<text class="t" x="1355" y="1199" text-anchor="start">+</text>
+<text class="t" x="1355" y="1229" text-anchor="start">−</text>
+<text class="r" x="1376" y="1214" text-anchor="middle">U1D</text>
+<polyline class="w" points="1335,1225 1330,1225 1330,1285 1430,1285 1430,1210"/>
+<circle cx="1430" cy="1210" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1440,1210 1450,1210"/>
+<polyline class="w" points="1480,1210 1490,1210"/>
+<rect class="b" x="1450" y="1205" width="30" height="10"/>
+<text class="r" x="1465" y="1201" text-anchor="middle">R35 47</text>
+<polyline class="w" points="1490,1210 1600,1210"/>
+<circle cx="1510" cy="1210" r="2.8" fill="#1a1a1a"/>
+<circle cx="1545" cy="1210" r="2.8" fill="#1a1a1a"/>
+<circle cx="1570" cy="1210" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1510,1210 1510,1225"/>
+<polyline class="w" points="1510,1225 1510,1242"/>
+<polyline class="w" points="1510,1248 1510,1265"/>
+<line class="p" x1="1500" y1="1242" x2="1520" y2="1242"/>
+<rect x="1500" y="1247" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1524" y="1239" text-anchor="middle">+</text>
+<text class="r" x="1497" y="1243" text-anchor="end">C29</text>
+<text class="v" x="1497" y="1255" text-anchor="end">10µ Ta</text>
+<polyline class="w" points="1510,1265 1510,1271"/>
+<line class="p" x1="1501" y1="1271" x2="1519" y2="1271"/>
+<line class="p" x1="1504" y1="1274" x2="1516" y2="1274"/>
+<line class="p" x1="1507" y1="1277" x2="1513" y2="1277"/>
+<polyline class="w" points="1545,1210 1545,1225"/>
+<polyline class="w" points="1545,1225 1545,1242"/>
+<polyline class="w" points="1545,1248 1545,1265"/>
+<line class="p" x1="1535" y1="1242" x2="1555" y2="1242"/>
+<line class="p" x1="1535" y1="1248" x2="1555" y2="1248"/>
+<text class="r" x="1558" y="1243" text-anchor="start">C30</text>
+<text class="v" x="1558" y="1255" text-anchor="start">100n</text>
+<polyline class="w" points="1545,1265 1545,1271"/>
+<line class="p" x1="1536" y1="1271" x2="1554" y2="1271"/>
+<line class="p" x1="1539" y1="1274" x2="1551" y2="1274"/>
+<line class="p" x1="1542" y1="1277" x2="1548" y2="1277"/>
+<polyline class="w" points="1570,1210 1570,1200"/>
+<line class="p" x1="1560" y1="1200" x2="1580" y2="1200"/>
+<text class="n" x="1570" y="1196" text-anchor="middle">VMID</text>
+<polyline class="w" points="1600,1210 1610,1210"/>
+<polyline class="w" points="1640,1210 1650,1210"/>
+<rect class="b" x="1610" y="1205" width="30" height="10"/>
+<text class="r" x="1625" y="1201" text-anchor="middle">R36 1k</text>
+<polyline class="w" points="1650,1210 1720,1210"/>
+<circle cx="1680" cy="1210" r="2.8" fill="#1a1a1a"/>
+<polyline class="w" points="1680,1210 1680,1225"/>
+<polyline class="w" points="1680,1225 1680,1242"/>
+<polyline class="w" points="1680,1248 1680,1265"/>
+<line class="p" x1="1670" y1="1242" x2="1690" y2="1242"/>
+<rect x="1670" y="1247" width="20" height="3" fill="#1a1a1a"/>
+<text class="v" x="1666" y="1239" text-anchor="middle">+</text>
+<text class="r" x="1693" y="1243" text-anchor="start">C31</text>
+<text class="v" x="1693" y="1255" text-anchor="start">10µ Ta</text>
+<polyline class="w" points="1680,1265 1680,1271"/>
+<line class="p" x1="1671" y1="1271" x2="1689" y2="1271"/>
+<line class="p" x1="1674" y1="1274" x2="1686" y2="1274"/>
+<line class="p" x1="1677" y1="1277" x2="1683" y2="1277"/>
+<polygon class="nl" points="1720,1210 1726,1202 1769,1202 1769,1218 1726,1218"/>
+<text class="n" x="1729" y="1214" text-anchor="start">VMID1</text>
 <text class="note" x="40" y="1135" text-anchor="start">Stufe 1: V1 = 1 + R22/R23 = 11 (21 dB)</text>
 <text class="note" x="40" y="1150" text-anchor="start">Eingangs-HP 34 Hz; R20 = Modul-Last 1 kΩ</text>
 <text class="note" x="40" y="1165" text-anchor="start">C21 Folie, C22/C24 Tantal (nicht mikrofonisch)</text>
